@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Editor de Matriz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="controls">
+    <label>Ancho: <input type="number" id="cols" min="1" value="5" /></label>
+    <label>Alto: <input type="number" id="rows" min="1" value="5" /></label>
+    <button onclick="generarMatriz()">Generar Matriz</button>
+    <button onclick="exportarMatriz()">Exportar</button>
+  </div>
+  <div class="editor">
+    <div class="sidebar" id="sidebar">
+      <div class="tile-group">
+        <h3>Fondos</h3>
+        <div class="tiles">
+          <img src="./tiles/fondo1.png" draggable="true" ondragstart="drag(event)" data-id="fondo1" />
+          <img src="./tiles/fondo2.png" draggable="true" ondragstart="drag(event)" data-id="fondo2" />
+          <img src="./tiles/fondo3.png" draggable="true" ondragstart="drag(event)" data-id="fondo3" />
+          <img src="./tiles/fondo4.png" draggable="true" ondragstart="drag(event)" data-id="fondo4" />
+          <img src="./tiles/fondo5.png" draggable="true" ondragstart="drag(event)" data-id="fondo5" />
+        </div>
+      </div>
+      <div class="tile-group">
+        <h3>Terreno</h3>
+        <div class="tiles">
+          <img src="./tiles/img1.png" draggable="true" ondragstart="drag(event)" data-id="1" />
+          <img src="./tiles/img2.png" draggable="true" ondragstart="drag(event)" data-id="2" />
+          <img src="./tiles/img3.png" draggable="true" ondragstart="drag(event)" data-id="3" />
+          <img src="./tiles/img4.png" draggable="true" ondragstart="drag(event)" data-id="4" />
+        </div>
+      </div>
+      <div class="tile-group">
+        <h3>Objetos</h3>
+        <div class="tiles">
+          <img src="./tiles/img5.png" draggable="true" ondragstart="drag(event)" data-id="5" />
+          <img src="./tiles/img6.png" draggable="true" ondragstart="drag(event)" data-id="6" />
+          <img src="./tiles/img7.png" draggable="true" ondragstart="drag(event)" data-id="7" />
+          <img src="./tiles/img8.png" draggable="true" ondragstart="drag(event)" data-id="8" />
+          <img src="./tiles/img9.png" draggable="true" ondragstart="drag(event)" data-id="9" />
+          <img src="./tiles/img10.png" draggable="true" ondragstart="drag(event)" data-id="10" />
+          <img src="./tiles/img11.png" draggable="true" ondragstart="drag(event)" data-id="11" />
+          <img src="./tiles/img12.png" draggable="true" ondragstart="drag(event)" data-id="12" />
+          <img src="./tiles/img13.png" draggable="true" ondragstart="drag(event)" data-id="13" />
+          <img src="./tiles/img14.png" draggable="true" ondragstart="drag(event)" data-id="14" />
+          <img src="./tiles/img15.png" draggable="true" ondragstart="drag(event)" data-id="15" />
+          <img src="./tiles/img16.png" draggable="true" ondragstart="drag(event)" data-id="16" />
+          <img src="./tiles/img17.png" draggable="true" ondragstart="drag(event)" data-id="17" />
+          <img src="./tiles/img18.png" draggable="true" ondragstart="drag(event)" data-id="18" />
+          <img src="./tiles/img19.png" draggable="true" ondragstart="drag(event)" data-id="19" />
+        </div>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
