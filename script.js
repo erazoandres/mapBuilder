@@ -123,7 +123,23 @@ function drop(ev) {
 }
 
 function exportarMatriz() {
-  const matrizString = JSON.stringify(matriz);
+  let matrizString = 'my_map = [\n';
+  for (let i = 0; i < matriz.length; i++) {
+    matrizString += '[';
+    for (let j = 0; j < matriz[i].length; j++) {
+      const valor = matriz[i][j];
+      if (valor === 0) {
+        matrizString += '0';
+      } else {
+        matrizString += `"${valor}"`;
+      }
+      if (j < matriz[i].length - 1) matrizString += ',';
+    }
+    matrizString += ']';
+    if (i < matriz.length - 1) matrizString += ',\n';
+  }
+  matrizString += ']';
+
   const blob = new Blob([matrizString], { type: 'text/plain' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');

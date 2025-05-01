@@ -63,6 +63,8 @@ body {
   display: grid;
   grid-template-columns: repeat(2, 32px);
   gap: 5px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .tiles img {
