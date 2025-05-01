@@ -87,7 +87,7 @@ body::before {
 .matrix-controls {
   position: fixed;
   top: 20px;
-  left: 220px;
+  left: 260px;
   z-index: 100;
   display: flex;
   gap: 10px;
@@ -131,7 +131,7 @@ body::before {
 
 .editor {
   margin-top: 80px;
-  margin-left: 200px;
+  margin-left: 260px;
   display: flex;
   gap: 20px;
   height: calc(100vh - 100px);
@@ -142,10 +142,42 @@ body::before {
   left: 0;
   top: 0;
   height: 100vh;
-  background-color: #f8f8f8;
-  padding: 10px;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, 
+    rgba(33, 150, 243, 0.1) 0%,
+    rgba(156, 39, 176, 0.1) 50%,
+    rgba(76, 175, 80, 0.1) 100%
+  );
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  box-shadow: 2px 0 15px rgba(0,0,0,0.1);
   z-index: 100;
+  width: 240px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tiles-container {
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.tiles-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tiles-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tiles-container::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.tiles-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .tile-group {
@@ -176,10 +208,12 @@ body::before {
 
 .tiles {
   display: grid;
-  grid-template-columns: repeat(2, 32px);
-  gap: 5px;
+  grid-template-columns: repeat(4, 32px);
+  gap: 8px;
   max-height: 200px;
   overflow-y: auto;
+  justify-content: center;
+  padding: 5px;
 }
 
 .tiles img {
