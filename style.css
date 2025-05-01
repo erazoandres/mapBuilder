@@ -104,11 +104,26 @@ body {
   padding: 0;
 }
 
+.cell.cursor-tile {
+  cursor: none;
+}
+
 .cell img {
   width: 32px;
   height: 32px;
   display: block;
   user-select: none;
+}
+
+.custom-cursor {
+  position: fixed;
+  width: 32px;
+  height: 32px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.7;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
 }
 
 textarea {

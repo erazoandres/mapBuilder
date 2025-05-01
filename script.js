@@ -1,10 +1,24 @@
 let draggedId = null;
 let matriz = [];
 let lastClickedId = null;
-let selectedTileId = null; // Para mantener el ID del tile seleccionado
+let selectedTileId = null;
+let cursorImg = null;
 
 // Cargar mapa al inicio si existe
 window.onload = () => {
+  // Crear el elemento del cursor personalizado
+  cursorImg = document.createElement('img');
+  cursorImg.className = 'custom-cursor';
+  document.body.appendChild(cursorImg);
+
+  // Agregar manejador de movimiento del mouse
+  document.addEventListener('mousemove', (e) => {
+    if (selectedTileId && cursorImg) {
+      cursorImg.style.left = e.pageX + 'px';
+      cursorImg.style.top = e.pageY + 'px';
+    }
+  });
+
   // Agregar manejador de clic a las imágenes del sidebar
   document.querySelectorAll('.tiles img').forEach(img => {
     img.addEventListener('click', (e) => {
@@ -14,7 +28,22 @@ window.onload = () => {
       e.target.classList.add('active');
       // Guardar el ID del tile seleccionado
       selectedTileId = e.target.dataset.id;
+      // Actualizar el cursor
+      cursorImg.src = e.target.src;
+      cursorImg.style.display = 'block';
+      // Agregar clase cursor-tile a todas las celdas
+      document.querySelectorAll('.cell').forEach(cell => cell.classList.add('cursor-tile'));
     });
+  });
+
+  // Agregar manejador para cuando el mouse sale del grid
+  document.querySelector('.grid').addEventListener('mouseleave', () => {
+    if (cursorImg) cursorImg.style.display = 'none';
+  });
+
+  // Agregar manejador para cuando el mouse entra al grid
+  document.querySelector('.grid').addEventListener('mouseenter', () => {
+    if (selectedTileId && cursorImg) cursorImg.style.display = 'block';
   });
 
   if (localStorage.getItem('savedMap')) {
@@ -34,6 +63,20 @@ window.onload = () => {
   }
   generarMatriz();
 };
+
+// Función para deseleccionar el tile actual
+function deselectTile() {
+  selectedTileId = null;
+  document.querySelectorAll('.tiles img').forEach(i => i.classList.remove('active'));
+  if (cursorImg) cursorImg.style.display = 'none';
+  document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('cursor-tile'));
+}
+
+// Modificar el resto de las funciones para incluir la deselección cuando sea necesario
+function drag(ev) {
+  draggedId = ev.target.dataset.id;
+  deselectTile(); // Deseleccionar al empezar a arrastrar
+}
 
 function generarMatriz(useExisting = false) {
   const rows = parseInt(document.getElementById("rows").value) || 10;
@@ -170,10 +213,6 @@ function handleMouseClick(ev) {
     cell.innerHTML = '';
     matriz[row][col] = 0;
   }
-}
-
-function drag(ev) {
-  draggedId = ev.target.dataset.id;
 }
 
 function drop(ev) {
