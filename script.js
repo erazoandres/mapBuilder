@@ -3,6 +3,7 @@ let matriz = [];
 let lastClickedId = null;
 let selectedTileId = null;
 let cursorImg = null;
+let selectedContainer = null;
 
 // Matriz para almacenar las rotaciones de cada celda
 let rotaciones = [];
@@ -299,3 +300,48 @@ function deselectTile() {
   if (cursorImg) cursorImg.style.display = 'none';
   document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('cursor-tile'));
 }
+
+function moveContainerUp() {
+  const container = document.querySelector('.tiles-section.selected');
+  if (container) {
+    const prev = container.previousElementSibling;
+    if (prev && prev.classList.contains('tiles-section')) {
+      container.parentNode.insertBefore(container, prev);
+    }
+  }
+}
+
+function moveContainerDown() {
+  const container = document.querySelector('.tiles-section.selected');
+  if (container) {
+    const next = container.nextElementSibling;
+    if (next && next.classList.contains('tiles-section')) {
+      container.parentNode.insertBefore(next, container);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Agregar el cubo de fondo
+  const cube = document.createElement('div');
+  cube.className = 'background-cube';
+  document.body.appendChild(cube);
+
+  document.querySelectorAll('.tiles-section').forEach(section => {
+    section.addEventListener('click', (e) => {
+      // Solo si el click fue directamente en el contenedor o en su título
+      if (e.target === section || e.target.tagName === 'H3') {
+        if (section.classList.contains('selected')) {
+          // Si ya está seleccionado, lo deseleccionamos
+          section.classList.remove('selected');
+          selectedContainer = null;
+        } else {
+          // Si no está seleccionado, deseleccionamos otros y seleccionamos este
+          document.querySelectorAll('.tiles-section').forEach(s => s.classList.remove('selected'));
+          section.classList.add('selected');
+          selectedContainer = section;
+        }
+      }
+    });
+  });
+});
