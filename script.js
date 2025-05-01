@@ -142,7 +142,8 @@ function generarMatriz(useExisting = false) {
           : `./tiles/img${imgId}.png`;
         img.draggable = true;
         img.ondragstart = (e) => {
-          draggedId = matriz[r][c].toString();
+          // Si hay un tile seleccionado, usar ese en lugar del que se está arrastrando
+          draggedId = selectedTileId || matriz[r][c].toString();
           matriz[r][c] = 0;
           setTimeout(() => e.target.parentElement.innerHTML = '', 0);
         };
@@ -193,7 +194,7 @@ function handleDoubleClick(ev) {
           : `./tiles/img${currentId}.png`;
         img.draggable = true;
         img.ondragstart = (e) => {
-          draggedId = currentId.toString();
+          draggedId = selectedTileId || currentId.toString();
           matriz[row][nextCol] = 0;
           setTimeout(() => e.target.parentElement.innerHTML = '', 0);
         };
