@@ -84,36 +84,57 @@ body::before {
   }
 }
 
-.controls {
+.matrix-controls {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 10px;
-  background: #f0f0f0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  top: 20px;
+  left: 220px;
   z-index: 100;
   display: flex;
   gap: 10px;
-  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  backdrop-filter: blur(5px);
 }
 
-.controls input {
-  width: 80px;
+.matrix-controls input {
+  width: 60px;
   padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 3px;
 }
 
-.controls button {
+.matrix-controls button {
   padding: 5px 15px;
   cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.matrix-controls button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.matrix-controls label {
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .editor {
-  margin-top: 60px;
+  margin-top: 80px;
   margin-left: 200px;
   display: flex;
   gap: 20px;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 100px);
 }
 
 .sidebar {
@@ -207,20 +228,22 @@ body::before {
   height: 32px;
   display: block;
   user-select: none;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
   transform-origin: center;
+  cursor: grab;
+  border: 2px solid transparent;
 }
 
 .rotate-90 {
-  transform: rotate(90deg) !important;
+  transform: rotate(90deg);
 }
 
 .rotate-180 {
-  transform: rotate(180deg) !important;
+  transform: rotate(180deg);
 }
 
 .rotate-270 {
-  transform: rotate(270deg) !important;
+  transform: rotate(270deg);
 }
 
 .custom-cursor {

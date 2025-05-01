@@ -26,12 +26,16 @@ window.onload = () => {
   // Agregar manejador de clic a las imágenes del sidebar
   document.querySelectorAll('.tiles img').forEach(img => {
     img.addEventListener('click', (e) => {
+      // Deseleccionar todas las imágenes primero
       document.querySelectorAll('.tiles img').forEach(i => i.classList.remove('active'));
+      // Seleccionar la imagen actual
       e.target.classList.add('active');
       selectedTileId = e.target.dataset.id;
       cursorImg.src = e.target.src;
       cursorImg.style.display = 'block';
       document.querySelectorAll('.cell').forEach(cell => cell.classList.add('cursor-tile'));
+      // Evitar que el clic se propague al documento
+      e.stopPropagation();
     });
   });
 
@@ -232,16 +236,27 @@ function drop(ev) {
 }
 
 function exportarMatriz() {
+  // Crear un mapa de conversión de IDs
+  const idMap = new Map();
+  let nextId = 1;
+
+  // Primera pasada: construir el mapa de IDs
+  for (let i = 0; i < matriz.length; i++) {
+    for (let j = 0; j < matriz[i].length; j++) {
+      const valor = matriz[i][j];
+      if (valor !== 0 && !idMap.has(valor)) {
+        idMap.set(valor, nextId++);
+      }
+    }
+  }
+
+  // Segunda pasada: generar la matriz con los nuevos IDs
   let matrizString = 'my_map = [\n';
   for (let i = 0; i < matriz.length; i++) {
     matrizString += '[';
     for (let j = 0; j < matriz[i].length; j++) {
       const valor = matriz[i][j];
-      if (valor === 0) {
-        matrizString += '0';
-      } else {
-        matrizString += `"${valor}"`;
-      }
+      matrizString += valor === 0 ? '0' : idMap.get(valor);
       if (j < matriz[i].length - 1) matrizString += ',';
     }
     matrizString += ']';
@@ -249,8 +264,15 @@ function exportarMatriz() {
   }
   matrizString += ']';
 
-  // Guardar en localStorage
+  // Crear un mapeo inverso para referencia
+  const reverseMap = new Map();
+  idMap.forEach((value, key) => {
+    reverseMap.set(value, key);
+  });
+
+  // Guardar tanto la matriz como el mapeo en localStorage
   localStorage.setItem('savedMap', matrizString);
+  localStorage.setItem('idMap', JSON.stringify(Array.from(reverseMap.entries())));
   localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
 
   const blob = new Blob([matrizString], { type: 'text/plain' });
@@ -273,11 +295,24 @@ function importarMatriz(event) {
         const content = e.target.result;
         const mapData = eval(content.replace('my_map = ', ''));
         if (Array.isArray(mapData)) {
-          matriz = mapData;
+          // Recuperar el mapeo de IDs
+          const idMapString = localStorage.getItem('idMap');
+          const idMap = idMapString ? new Map(JSON.parse(idMapString)) : null;
+
+          // Si tenemos el mapeo, convertir los números de vuelta a los IDs originales
+          if (idMap) {
+            matriz = mapData.map(row => 
+              row.map(val => val === 0 ? 0 : (idMap.get(val) || val.toString()))
+            );
+          } else {
+            matriz = mapData;
+          }
+
           // Reiniciar rotaciones al importar nuevo mapa
           rotaciones = Array.from({ length: matriz.length }, () => 
             Array.from({ length: matriz[0].length }, () => 0)
           );
+
           document.getElementById('rows').value = matriz.length;
           document.getElementById('cols').value = matriz[0].length;
           localStorage.setItem('savedMap', content);
@@ -293,6 +328,64 @@ function importarMatriz(event) {
   }
   event.target.value = '';
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Agregar el cubo de fondo
+  const cube = document.createElement('div');
+  cube.className = 'background-cube';
+  document.body.appendChild(cube);
+
+  // Agregar evento de clic al documento para deseleccionar al hacer clic fuera
+  document.addEventListener('click', (e) => {
+    // Si el clic no fue dentro de la matriz (grid) ni en el sidebar ni en los controles
+    if (!e.target.closest('.grid') && !e.target.closest('.sidebar') && !e.target.closest('.matrix-controls')) {
+      deselectTile();
+      // Deseleccionar también el grupo seleccionado
+      document.querySelectorAll('.tile-group').forEach(g => g.classList.remove('selected'));
+      selectedContainer = null;
+    }
+  });
+
+  // Agregar evento de clic a las imágenes del sidebar
+  document.querySelectorAll('.tiles img').forEach(img => {
+    img.addEventListener('click', (e) => {
+      // Deseleccionar todas las imágenes primero
+      document.querySelectorAll('.tiles img').forEach(i => i.classList.remove('active'));
+      // Seleccionar la imagen actual
+      e.target.classList.add('active');
+      selectedTileId = e.target.dataset.id;
+      cursorImg.src = e.target.src;
+      cursorImg.style.display = 'block';
+      document.querySelectorAll('.cell').forEach(cell => cell.classList.add('cursor-tile'));
+      // Evitar que el clic se propague al documento
+      e.stopPropagation();
+    });
+  });
+
+  document.querySelectorAll('.tile-group').forEach(group => {
+    group.addEventListener('click', (e) => {
+      // Solo si el click fue directamente en el contenedor o en su título
+      if (e.target === group || e.target.tagName === 'H3') {
+        if (group.classList.contains('selected')) {
+          // Si ya está seleccionado, lo deseleccionamos
+          group.classList.remove('selected');
+          selectedContainer = null;
+        } else {
+          // Si no está seleccionado, deseleccionamos otros y seleccionamos este
+          document.querySelectorAll('.tile-group').forEach(g => g.classList.remove('selected'));
+          group.classList.add('selected');
+          selectedContainer = group;
+        }
+        // Evitar que el clic se propague al documento
+        e.stopPropagation();
+      }
+    });
+  });
+
+  // Evitar que los clics dentro del sidebar y los controles se propaguen al documento
+  document.querySelector('.sidebar').addEventListener('click', e => e.stopPropagation());
+  document.querySelector('.matrix-controls').addEventListener('click', e => e.stopPropagation());
+});
 
 function deselectTile() {
   selectedTileId = null;
@@ -320,28 +413,3 @@ function moveContainerDown() {
     }
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Agregar el cubo de fondo
-  const cube = document.createElement('div');
-  cube.className = 'background-cube';
-  document.body.appendChild(cube);
-
-  document.querySelectorAll('.tile-group').forEach(group => {
-    group.addEventListener('click', (e) => {
-      // Solo si el click fue directamente en el contenedor o en su título
-      if (e.target === group || e.target.tagName === 'H3') {
-        if (group.classList.contains('selected')) {
-          // Si ya está seleccionado, lo deseleccionamos
-          group.classList.remove('selected');
-          selectedContainer = null;
-        } else {
-          // Si no está seleccionado, deseleccionamos otros y seleccionamos este
-          document.querySelectorAll('.tile-group').forEach(g => g.classList.remove('selected'));
-          group.classList.add('selected');
-          selectedContainer = group;
-        }
-      }
-    });
-  });
-});
