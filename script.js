@@ -4,6 +4,9 @@ let lastClickedId = null;
 let selectedTileId = null;
 let cursorImg = null;
 
+// Matriz para almacenar las rotaciones de cada celda
+let rotaciones = [];
+
 // Cargar mapa al inicio si existe
 window.onload = () => {
   // Crear el elemento del cursor personalizado
@@ -22,26 +25,19 @@ window.onload = () => {
   // Agregar manejador de clic a las imágenes del sidebar
   document.querySelectorAll('.tiles img').forEach(img => {
     img.addEventListener('click', (e) => {
-      // Remover la clase active de todas las imágenes
       document.querySelectorAll('.tiles img').forEach(i => i.classList.remove('active'));
-      // Agregar la clase active a la imagen seleccionada
       e.target.classList.add('active');
-      // Guardar el ID del tile seleccionado
       selectedTileId = e.target.dataset.id;
-      // Actualizar el cursor
       cursorImg.src = e.target.src;
       cursorImg.style.display = 'block';
-      // Agregar clase cursor-tile a todas las celdas
       document.querySelectorAll('.cell').forEach(cell => cell.classList.add('cursor-tile'));
     });
   });
 
-  // Agregar manejador para cuando el mouse sale del grid
   document.querySelector('.grid').addEventListener('mouseleave', () => {
     if (cursorImg) cursorImg.style.display = 'none';
   });
 
-  // Agregar manejador para cuando el mouse entra al grid
   document.querySelector('.grid').addEventListener('mouseenter', () => {
     if (selectedTileId && cursorImg) cursorImg.style.display = 'block';
   });
@@ -52,6 +48,15 @@ window.onload = () => {
       const mapData = eval(savedMap);
       if (Array.isArray(mapData)) {
         matriz = mapData;
+        // Intentar cargar las rotaciones guardadas
+        try {
+          const savedRotations = localStorage.getItem('rotaciones');
+          if (savedRotations) {
+            rotaciones = JSON.parse(savedRotations);
+          }
+        } catch (e) {
+          console.error('Error al cargar rotaciones:', e);
+        }
         document.getElementById('rows').value = matriz.length;
         document.getElementById('cols').value = matriz[0].length;
         generarMatriz(true);
@@ -64,36 +69,35 @@ window.onload = () => {
   generarMatriz();
 };
 
-// Función para deseleccionar el tile actual
-function deselectTile() {
-  selectedTileId = null;
-  document.querySelectorAll('.tiles img').forEach(i => i.classList.remove('active'));
-  if (cursorImg) cursorImg.style.display = 'none';
-  document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('cursor-tile'));
-}
-
-// Modificar el resto de las funciones para incluir la deselección cuando sea necesario
-function drag(ev) {
-  draggedId = ev.target.dataset.id;
-  deselectTile(); // Deseleccionar al empezar a arrastrar
-}
-
 function generarMatriz(useExisting = false) {
   const rows = parseInt(document.getElementById("rows").value) || 10;
   const cols = parseInt(document.getElementById("cols").value) || 15;
   const grid = document.getElementById("grid");
   const matrizAnterior = [...matriz];
+  const rotacionesAnteriores = rotaciones.length ? [...rotaciones] : [];
 
   grid.style.gridTemplateColumns = `repeat(${cols}, 32px)`;
   grid.innerHTML = '';
   
   if (!useExisting) {
-    const nuevaMatriz = Array.from({ length: rows }, (_, r) => 
+    matriz = Array.from({ length: rows }, (_, r) => 
       Array.from({ length: cols }, (_, c) => 
         r < matrizAnterior.length && c < matrizAnterior[0].length ? matrizAnterior[r][c] : 0
       )
     );
-    matriz = nuevaMatriz;
+    
+    // Inicializar matriz de rotaciones si no existe
+    if (!rotaciones.length) {
+      rotaciones = Array.from({ length: rows }, () => 
+        Array.from({ length: cols }, () => 0)
+      );
+    } else {
+      rotaciones = Array.from({ length: rows }, (_, r) => 
+        Array.from({ length: cols }, (_, c) => 
+          r < rotacionesAnteriores.length && c < rotacionesAnteriores[0].length ? rotacionesAnteriores[r][c] : 0
+        )
+      );
+    }
   }
 
   for (let r = 0; r < rows; r++) {
@@ -103,7 +107,6 @@ function generarMatriz(useExisting = false) {
       cell.dataset.row = r;
       cell.dataset.col = c;
       
-      // Agregar manejador de clic para colocar tile seleccionado
       cell.addEventListener('click', () => {
         if (selectedTileId) {
           placeTile(cell, selectedTileId);
@@ -113,23 +116,10 @@ function generarMatriz(useExisting = false) {
       cell.ondragover = (e) => {
         e.preventDefault();
         if (draggedId) {
-          const currentRow = parseInt(cell.dataset.row);
-          const currentCol = parseInt(cell.dataset.col);
-          cell.innerHTML = '';
-          const img = document.createElement("img");
-          img.src = draggedId.startsWith('fondo') 
-            ? `./tiles/${draggedId}.png` 
-            : `./tiles/img${draggedId}.png`;
-          img.draggable = true;
-          img.ondragstart = (e) => {
-            draggedId = matriz[currentRow][currentCol].toString();
-            matriz[currentRow][currentCol] = 0;
-            setTimeout(() => e.target.parentElement.innerHTML = '', 0);
-          };
-          cell.appendChild(img);
-          matriz[currentRow][currentCol] = draggedId;
+          placeTile(cell, draggedId);
         }
       };
+      
       cell.ondrop = drop;
       cell.onmousedown = handleMouseClick;
       cell.ondblclick = handleDoubleClick;
@@ -141,10 +131,16 @@ function generarMatriz(useExisting = false) {
           ? `./tiles/${imgId}.png` 
           : `./tiles/img${imgId}.png`;
         img.draggable = true;
+        
+        // Aplicar rotación si existe
+        if (rotaciones[r][c] > 0) {
+          img.classList.add(`rotate-${rotaciones[r][c] * 90}`);
+        }
+        
         img.ondragstart = (e) => {
-          // Si hay un tile seleccionado, usar ese en lugar del que se está arrastrando
           draggedId = selectedTileId || matriz[r][c].toString();
           matriz[r][c] = 0;
+          rotaciones[r][c] = 0;
           setTimeout(() => e.target.parentElement.innerHTML = '', 0);
         };
         cell.appendChild(img);
@@ -155,52 +151,32 @@ function generarMatriz(useExisting = false) {
   }
 }
 
-// Función para colocar un tile en una celda
-function placeTile(cell, tileId) {
-  const row = parseInt(cell.dataset.row);
-  const col = parseInt(cell.dataset.col);
-  
-  cell.innerHTML = '';
-  const img = document.createElement("img");
-  img.src = tileId.startsWith('fondo') 
-    ? `./tiles/${tileId}.png` 
-    : `./tiles/img${tileId}.png`;
-  img.draggable = true;
-  img.ondragstart = (e) => {
-    draggedId = matriz[row][col].toString();
-    matriz[row][col] = 0;
-    setTimeout(() => e.target.parentElement.innerHTML = '', 0);
-  };
-  cell.appendChild(img);
-  matriz[row][col] = tileId;
-}
-
 function handleDoubleClick(ev) {
+  ev.preventDefault();
   const cell = ev.currentTarget;
   const row = parseInt(cell.dataset.row);
   const col = parseInt(cell.dataset.col);
   
   if (matriz[row][col] !== 0) {
-    const currentId = matriz[row][col];
-    const nextCol = col + 1;
-    
-    if (nextCol < matriz[0].length) {
-      const nextCell = document.querySelector(`.cell[data-row="${row}"][data-col="${nextCol}"]`);
-      if (nextCell) {
-        nextCell.innerHTML = '';
-        const img = document.createElement("img");
-        img.src = typeof currentId === 'string' && currentId.startsWith('fondo') 
-          ? `./tiles/${currentId}.png` 
-          : `./tiles/img${currentId}.png`;
-        img.draggable = true;
-        img.ondragstart = (e) => {
-          draggedId = selectedTileId || currentId.toString();
-          matriz[row][nextCol] = 0;
-          setTimeout(() => e.target.parentElement.innerHTML = '', 0);
-        };
-        nextCell.appendChild(img);
-        matriz[row][nextCol] = currentId;
+    const img = cell.querySelector('img');
+    if (img) {
+      // Inicializar rotación si no existe
+      if (!rotaciones[row]) rotaciones[row] = [];
+      if (typeof rotaciones[row][col] === 'undefined') rotaciones[row][col] = 0;
+      
+      // Rotar la imagen
+      rotaciones[row][col] = ((rotaciones[row][col] || 0) + 1) % 4;
+      
+      // Remover clases de rotación anteriores
+      img.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
+      
+      // Agregar nueva clase de rotación si no es 0
+      if (rotaciones[row][col] > 0) {
+        img.classList.add(`rotate-${rotaciones[row][col] * 90}`);
       }
+      
+      // Guardar el estado actual
+      localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
     }
   }
 }
@@ -213,28 +189,45 @@ function handleMouseClick(ev) {
     const col = parseInt(cell.dataset.col);
     cell.innerHTML = '';
     matriz[row][col] = 0;
+    rotaciones[row][col] = 0;
   }
 }
 
-function drop(ev) {
-  ev.preventDefault();
-  const cell = ev.currentTarget;
+function placeTile(cell, tileId) {
   const row = parseInt(cell.dataset.row);
   const col = parseInt(cell.dataset.col);
   
   cell.innerHTML = '';
   const img = document.createElement("img");
-  img.src = draggedId.startsWith('fondo') 
-    ? `./tiles/${draggedId}.png` 
-    : `./tiles/img${draggedId}.png`;
+  img.src = tileId.startsWith('fondo') 
+    ? `./tiles/${tileId}.png` 
+    : `./tiles/img${tileId}.png`;
   img.draggable = true;
+  
+  // Mantener la rotación si existe
+  if (rotaciones[row][col] > 0) {
+    img.classList.add(`rotate-${rotaciones[row][col] * 90}`);
+  }
+  
   img.ondragstart = (e) => {
-    draggedId = matriz[row][col].toString();
+    draggedId = selectedTileId || matriz[row][col].toString();
     matriz[row][col] = 0;
+    rotaciones[row][col] = 0;
     setTimeout(() => e.target.parentElement.innerHTML = '', 0);
   };
   cell.appendChild(img);
-  matriz[row][col] = draggedId;
+  matriz[row][col] = tileId;
+}
+
+function drag(ev) {
+  draggedId = ev.target.dataset.id;
+  deselectTile();
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  const cell = ev.currentTarget;
+  placeTile(cell, draggedId);
 }
 
 function exportarMatriz() {
@@ -257,6 +250,7 @@ function exportarMatriz() {
 
   // Guardar en localStorage
   localStorage.setItem('savedMap', matrizString);
+  localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
 
   const blob = new Blob([matrizString], { type: 'text/plain' });
   const url = window.URL.createObjectURL(blob);
@@ -276,12 +270,17 @@ function importarMatriz(event) {
     reader.onload = function(e) {
       try {
         const content = e.target.result;
-        const mapData = eval(content.replace('my_map = ', '')); // Convierte el string a array
+        const mapData = eval(content.replace('my_map = ', ''));
         if (Array.isArray(mapData)) {
           matriz = mapData;
+          // Reiniciar rotaciones al importar nuevo mapa
+          rotaciones = Array.from({ length: matriz.length }, () => 
+            Array.from({ length: matriz[0].length }, () => 0)
+          );
           document.getElementById('rows').value = matriz.length;
           document.getElementById('cols').value = matriz[0].length;
           localStorage.setItem('savedMap', content);
+          localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
           generarMatriz(true);
         }
       } catch (error) {
@@ -291,5 +290,12 @@ function importarMatriz(event) {
     };
     reader.readAsText(file);
   }
-  event.target.value = ''; // Resetear el input file
+  event.target.value = '';
+}
+
+function deselectTile() {
+  selectedTileId = null;
+  document.querySelectorAll('.tiles img').forEach(i => i.classList.remove('active'));
+  if (cursorImg) cursorImg.style.display = 'none';
+  document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('cursor-tile'));
 }
