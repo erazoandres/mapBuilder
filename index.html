@@ -8,10 +8,12 @@
 </head>
 <body>
   <div class="controls">
-    <label>Ancho: <input type="number" id="cols" min="1" value="5" /></label>
-    <label>Alto: <input type="number" id="rows" min="1" value="5" /></label>
+    <label>Ancho: <input type="number" id="cols" min="1" value="15" /></label>
+    <label>Alto: <input type="number" id="rows" min="1" value="10" /></label>
     <button onclick="generarMatriz()">Generar Matriz</button>
     <button onclick="exportarMatriz()">Exportar</button>
+    <button onclick="document.getElementById('importFile').click()">Importar</button>
+    <input type="file" id="importFile" style="display: none" accept=".txt" onchange="importarMatriz(event)" />
   </div>
   <div class="editor">
     <div class="sidebar" id="sidebar">

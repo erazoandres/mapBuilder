@@ -71,6 +71,12 @@ body {
   width: 32px;
   height: 32px;
   cursor: grab;
+  border: 2px solid transparent;
+}
+
+.tiles img.active {
+  border: 2px solid #2196F3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
 }
 
 .grid {
