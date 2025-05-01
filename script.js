@@ -28,7 +28,28 @@ function generarMatriz() {
       cell.className = "cell";
       cell.dataset.row = r;
       cell.dataset.col = c;
-      cell.ondragover = (e) => e.preventDefault();
+      cell.ondragover = (e) => {
+        e.preventDefault();
+        if (draggedId) {
+          const currentRow = parseInt(cell.dataset.row);
+          const currentCol = parseInt(cell.dataset.col);
+          if (matriz[currentRow][currentCol] === 0) {
+            cell.innerHTML = '';
+            const img = document.createElement("img");
+            img.src = draggedId.startsWith('fondo') 
+              ? `./tiles/${draggedId}.png` 
+              : `./tiles/img${draggedId}.png`;
+            img.draggable = true;
+            img.ondragstart = (e) => {
+              draggedId = matriz[currentRow][currentCol].toString();
+              matriz[currentRow][currentCol] = 0;
+              setTimeout(() => e.target.parentElement.innerHTML = '', 0);
+            };
+            cell.appendChild(img);
+            matriz[currentRow][currentCol] = draggedId;
+          }
+        }
+      };
       cell.ondrop = drop;
       cell.onmousedown = handleMouseClick;
       cell.ondblclick = handleDoubleClick;
