@@ -76,10 +76,23 @@ body::before {
 }
 
 .tile-group {
-  background-color: white;
-  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tile-group:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.tile-group.selected {
+  border-color: #2196F3;
+  box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+  background: rgba(33, 150, 243, 0.1);
 }
 
 .tile-group h3 {
@@ -170,12 +183,12 @@ body::before {
 }
 
 .container-controls {
-  position: absolute;
-  left: 160px;
-  top: 10px;
+  position: relative;
   display: flex;
   gap: 5px;
-  z-index: 200;
+  margin-bottom: 10px;
+  padding: 5px;
+  justify-content: flex-end;
 }
 
 .container-controls button {

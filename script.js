@@ -302,20 +302,20 @@ function deselectTile() {
 }
 
 function moveContainerUp() {
-  const container = document.querySelector('.tiles-section.selected');
+  const container = document.querySelector('.tile-group.selected');
   if (container) {
     const prev = container.previousElementSibling;
-    if (prev && prev.classList.contains('tiles-section')) {
+    if (prev && prev.classList.contains('tile-group')) {
       container.parentNode.insertBefore(container, prev);
     }
   }
 }
 
 function moveContainerDown() {
-  const container = document.querySelector('.tiles-section.selected');
+  const container = document.querySelector('.tile-group.selected');
   if (container) {
     const next = container.nextElementSibling;
-    if (next && next.classList.contains('tiles-section')) {
+    if (next && next.classList.contains('tile-group')) {
       container.parentNode.insertBefore(next, container);
     }
   }
@@ -327,19 +327,19 @@ document.addEventListener('DOMContentLoaded', () => {
   cube.className = 'background-cube';
   document.body.appendChild(cube);
 
-  document.querySelectorAll('.tiles-section').forEach(section => {
-    section.addEventListener('click', (e) => {
+  document.querySelectorAll('.tile-group').forEach(group => {
+    group.addEventListener('click', (e) => {
       // Solo si el click fue directamente en el contenedor o en su título
-      if (e.target === section || e.target.tagName === 'H3') {
-        if (section.classList.contains('selected')) {
+      if (e.target === group || e.target.tagName === 'H3') {
+        if (group.classList.contains('selected')) {
           // Si ya está seleccionado, lo deseleccionamos
-          section.classList.remove('selected');
+          group.classList.remove('selected');
           selectedContainer = null;
         } else {
           // Si no está seleccionado, deseleccionamos otros y seleccionamos este
-          document.querySelectorAll('.tiles-section').forEach(s => s.classList.remove('selected'));
-          section.classList.add('selected');
-          selectedContainer = section;
+          document.querySelectorAll('.tile-group').forEach(g => g.classList.remove('selected'));
+          group.classList.add('selected');
+          selectedContainer = group;
         }
       }
     });

@@ -5,160 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Editor de Matriz</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="script.js"></script>
 </head>
 <body>
-  <div class="controls">
-    <label>Ancho: <input type="number" id="cols" min="1" value="15" /></label>
-    <label>Alto: <input type="number" id="rows" min="1" value="10" /></label>
-    <button onclick="generarMatriz()">Generar Matriz</button>
-    <button onclick="exportarMatriz()">Exportar</button>
-    <button onclick="document.getElementById('importFile').click()">Importar</button>
-    <input type="file" id="importFile" style="display: none" accept=".txt" onchange="importarMatriz(event)" />
-  </div>
-  <div class="editor">
-    <div class="sidebar" id="sidebar">
-      <div class="container-controls">
-        <button onclick="moveContainerUp()">⬆️</button>
-        <button onclick="moveContainerDown()">⬇️</button>
-      </div>
-      <div class="tiles-container">
-        <div class="tile-group">
-          <h3>Fondos</h3>
-          <div class="tiles">
-            <img src="./tiles/fondo1.png" draggable="true" ondragstart="drag(event)" data-id="fondo1" />
-            <img src="./tiles/fondo2.png" draggable="true" ondragstart="drag(event)" data-id="fondo2" />
-            <img src="./tiles/fondo3.png" draggable="true" ondragstart="drag(event)" data-id="fondo3" />
-            <img src="./tiles/fondo4.png" draggable="true" ondragstart="drag(event)" data-id="fondo4" />
-            <img src="./tiles/fondo5.png" draggable="true" ondragstart="drag(event)" data-id="fondo5" />
-          </div>
-        </div>
-        <div class="tile-group">
-          <h3>Terreno</h3>
-          <div class="tiles">
-            <img src="./tiles/img1.png" draggable="true" ondragstart="drag(event)" data-id="1" />
-            <img src="./tiles/img2.png" draggable="true" ondragstart="drag(event)" data-id="2" />
-            <img src="./tiles/img3.png" draggable="true" ondragstart="drag(event)" data-id="3" />
-            <img src="./tiles/img4.png" draggable="true" ondragstart="drag(event)" data-id="4" />
-          </div>
-        </div>
-        <div class="tile-group">
-          <h3>Objetos</h3>
-          <div class="tiles">
-            <img src="./tiles/img5.png" draggable="true" ondragstart="drag(event)" data-id="5" />
-            <img src="./tiles/img6.png" draggable="true" ondragstart="drag(event)" data-id="6" />
-            <img src="./tiles/img7.png" draggable="true" ondragstart="drag(event)" data-id="7" />
-            <img src="./tiles/img8.png" draggable="true" ondragstart="drag(event)" data-id="8" />
-            <img src="./tiles/img9.png" draggable="true" ondragstart="drag(event)" data-id="9" />
-            <img src="./tiles/img10.png" draggable="true" ondragstart="drag(event)" data-id="10" />
-            <img src="./tiles/img11.png" draggable="true" ondragstart="drag(event)" data-id="11" />
-            <img src="./tiles/img12.png" draggable="true" ondragstart="drag(event)" data-id="12" />
-            <img src="./tiles/img13.png" draggable="true" ondragstart="drag(event)" data-id="13" />
-            <img src="./tiles/img14.png" draggable="true" ondragstart="drag(event)" data-id="14" />
-            <img src="./tiles/img15.png" draggable="true" ondragstart="drag(event)" data-id="15" />
-            <img src="./tiles/img16.png" draggable="true" ondragstart="drag(event)" data-id="16" />
-            <img src="./tiles/img17.png" draggable="true" ondragstart="drag(event)" data-id="17" />
-            <img src="./tiles/img18.png" draggable="true" ondragstart="drag(event)" data-id="18" />
-            <img src="./tiles/img19.png" draggable="true" ondragstart="drag(event)" data-id="19" />
-            <img src="./tiles/img20.png" draggable="true" ondragstart="drag(event)" data-id="20" />
-            <img src="./tiles/img21.png" draggable="true" ondragstart="drag(event)" data-id="21" />
-            <img src="./tiles/img22.png" draggable="true" ondragstart="drag(event)" data-id="22" />
-            <img src="./tiles/img23.png" draggable="true" ondragstart="drag(event)" data-id="23" />
-            <img src="./tiles/img24.png" draggable="true" ondragstart="drag(event)" data-id="24" />
-            <img src="./tiles/img25.png" draggable="true" ondragstart="drag(event)" data-id="25" />
-            <img src="./tiles/img26.png" draggable="true" ondragstart="drag(event)" data-id="26" />
-            <img src="./tiles/img27.png" draggable="true" ondragstart="drag(event)" data-id="27" />
-            <img src="./tiles/img28.png" draggable="true" ondragstart="drag(event)" data-id="28" />
-            <img src="./tiles/img29.png" draggable="true" ondragstart="drag(event)" data-id="29" />
-            <img src="./tiles/img30.png" draggable="true" ondragstart="drag(event)" data-id="30" />
-            <img src="./tiles/img31.png" draggable="true" ondragstart="drag(event)" data-id="31" />
-            <img src="./tiles/img32.png" draggable="true" ondragstart="drag(event)" data-id="32" />
-            <img src="./tiles/img33.png" draggable="true" ondragstart="drag(event)" data-id="33" />
-            <img src="./tiles/img34.png" draggable="true" ondragstart="drag(event)" data-id="34" />
-            <img src="./tiles/img35.png" draggable="true" ondragstart="drag(event)" data-id="35" />
-            <img src="./tiles/img36.png" draggable="true" ondragstart="drag(event)" data-id="36" />
-            <img src="./tiles/img37.png" draggable="true" ondragstart="drag(event)" data-id="37" />
-            <img src="./tiles/img38.png" draggable="true" ondragstart="drag(event)" data-id="38" />
-            <img src="./tiles/img39.png" draggable="true" ondragstart="drag(event)" data-id="39" />
-            <img src="./tiles/img40.png" draggable="true" ondragstart="drag(event)" data-id="40" />
-            <img src="./tiles/img41.png" draggable="true" ondragstart="drag(event)" data-id="41" />
-            <img src="./tiles/img42.png" draggable="true" ondragstart="drag(event)" data-id="42" />
-            <img src="./tiles/img43.png" draggable="true" ondragstart="drag(event)" data-id="43" />
-            <img src="./tiles/img44.png" draggable="true" ondragstart="drag(event)" data-id="44" />
-            <img src="./tiles/img45.png" draggable="true" ondragstart="drag(event)" data-id="45" />
-            <img src="./tiles/img46.png" draggable="true" ondragstart="drag(event)" data-id="46" />
-            <img src="./tiles/img47.png" draggable="true" ondragstart="drag(event)" data-id="47" />
-            <img src="./tiles/img48.png" draggable="true" ondragstart="drag(event)" data-id="48" />
-            <img src="./tiles/img49.png" draggable="true" ondragstart="drag(event)" data-id="49" />
-            <img src="./tiles/img50.png" draggable="true" ondragstart="drag(event)" data-id="50" />
-            <img src="./tiles/img51.png" draggable="true" ondragstart="drag(event)" data-id="51" />
-            <img src="./tiles/img52.png" draggable="true" ondragstart="drag(event)" data-id="52" />
-            <img src="./tiles/img53.png" draggable="true" ondragstart="drag(event)" data-id="53" />
-            <img src="./tiles/img54.png" draggable="true" ondragstart="drag(event)" data-id="54" />
-            <img src="./tiles/img55.png" draggable="true" ondragstart="drag(event)" data-id="55" />
-            <img src="./tiles/img56.png" draggable="true" ondragstart="drag(event)" data-id="56" />
-            <img src="./tiles/img57.png" draggable="true" ondragstart="drag(event)" data-id="57" />
-            <img src="./tiles/img58.png" draggable="true" ondragstart="drag(event)" data-id="58" />
-            <img src="./tiles/img59.png" draggable="true" ondragstart="drag(event)" data-id="59" />
-            <img src="./tiles/img60.png" draggable="true" ondragstart="drag(event)" data-id="60" />
-            <img src="./tiles/img61.png" draggable="true" ondragstart="drag(event)" data-id="61" />
-            <img src="./tiles/img62.png" draggable="true" ondragstart="drag(event)" data-id="62" />
-            <img src="./tiles/img63.png" draggable="true" ondragstart="drag(event)" data-id="63" />
-            <img src="./tiles/img64.png" draggable="true" ondragstart="drag(event)" data-id="64" />
-            <img src="./tiles/img65.png" draggable="true" ondragstart="drag(event)" data-id="65" />
-            <img src="./tiles/img66.png" draggable="true" ondragstart="drag(event)" data-id="66" />
-            <img src="./tiles/img67.png" draggable="true" ondragstart="drag(event)" data-id="67" />
-            <img src="./tiles/img68.png" draggable="true" ondragstart="drag(event)" data-id="68" />
-            <img src="./tiles/img69.png" draggable="true" ondragstart="drag(event)" data-id="69" />
-            <img src="./tiles/img70.png" draggable="true" ondragstart="drag(event)" data-id="70" />
-            <img src="./tiles/img71.png" draggable="true" ondragstart="drag(event)" data-id="71" />
-            <img src="./tiles/img72.png" draggable="true" ondragstart="drag(event)" data-id="72" />
-            <img src="./tiles/img73.png" draggable="true" ondragstart="drag(event)" data-id="73" />
-            <img src="./tiles/img74.png" draggable="true" ondragstart="drag(event)" data-id="74" />
-            <img src="./tiles/img75.png" draggable="true" ondragstart="drag(event)" data-id="75" />
-            <img src="./tiles/img76.png" draggable="true" ondragstart="drag(event)" data-id="76" />
-            <img src="./tiles/img77.png" draggable="true" ondragstart="drag(event)" data-id="77" />
-            <img src="./tiles/img78.png" draggable="true" ondragstart="drag(event)" data-id="78" />
-            <img src="./tiles/img79.png" draggable="true" ondragstart="drag(event)" data-id="79" />
-            <img src="./tiles/img80.png" draggable="true" ondragstart="drag(event)" data-id="80" />
-            <img src="./tiles/img81.png" draggable="true" ondragstart="drag(event)" data-id="81" />
-            <img src="./tiles/img82.png" draggable="true" ondragstart="drag(event)" data-id="82" />
-            <img src="./tiles/img83.png" draggable="true" ondragstart="drag(event)" data-id="83" />
-            <img src="./tiles/img84.png" draggable="true" ondragstart="drag(event)" data-id="84" />
-            <img src="./tiles/img85.png" draggable="true" ondragstart="drag(event)" data-id="85" />
-            <img src="./tiles/img86.png" draggable="true" ondragstart="drag(event)" data-id="86" />
-            <img src="./tiles/img87.png" draggable="true" ondragstart="drag(event)" data-id="87" />
-            <img src="./tiles/img88.png" draggable="true" ondragstart="drag(event)" data-id="88" />
-            <img src="./tiles/img89.png" draggable="true" ondragstart="drag(event)" data-id="89" />
-            <img src="./tiles/img90.png" draggable="true" ondragstart="drag(event)" data-id="90" />
-            <img src="./tiles/img91.png" draggable="true" ondragstart="drag(event)" data-id="91" />
-            <img src="./tiles/img92.png" draggable="true" ondragstart="drag(event)" data-id="92" />
-            <img src="./tiles/img93.png" draggable="true" ondragstart="drag(event)" data-id="93" />
-            <img src="./tiles/img94.png" draggable="true" ondragstart="drag(event)" data-id="94" />
-            <img src="./tiles/img95.png" draggable="true" ondragstart="drag(event)" data-id="95" />
-            <img src="./tiles/img96.png" draggable="true" ondragstart="drag(event)" data-id="96" />
-            <img src="./tiles/img97.png" draggable="true" ondragstart="drag(event)" data-id="97" />
-            <img src="./tiles/img98.png" draggable="true" ondragstart="drag(event)" data-id="98" />
-            <img src="./tiles/img99.png" draggable="true" ondragstart="drag(event)" data-id="99" />
-            <img src="./tiles/img100.png" draggable="true" ondragstart="drag(event)" data-id="100" />
-            <img src="./tiles/img101.png" draggable="true" ondragstart="drag(event)" data-id="101" />
-            <img src="./tiles/img102.png" draggable="true" ondragstart="drag(event)" data-id="102" />
-            <img src="./tiles/img103.png" draggable="true" ondragstart="drag(event)" data-id="103" />
-            <img src="./tiles/img104.png" draggable="true" ondragstart="drag(event)" data-id="104" />
-            <img src="./tiles/img105.png" draggable="true" ondragstart="drag(event)" data-id="105" />
-            <img src="./tiles/img106.png" draggable="true" ondragstart="drag(event)" data-id="106" />
-            <img src="./tiles/img107.png" draggable="true" ondragstart="drag(event)" data-id="107" />
-            <img src="./tiles/img108.png" draggable="true" ondragstart="drag(event)" data-id="108" />
-            <img src="./tiles/img109.png" draggable="true" ondragstart="drag(event)" data-id="109" />
-            <img src="./tiles/img110.png" draggable="true" ondragstart="drag(event)" data-id="110" />
-            <img src="./tiles/img111.png" draggable="true" ondragstart="drag(event)" data-id="111" />
-            <img src="./tiles/img112.png" draggable="true" ondragstart="drag(event)" data-id="112" />
-            <img src="./tiles/img113.png" draggable="true" ondragstart="drag(event)" data-id="113" />
-          </div>
-        </div>
-      </div>
+  <div class="main-container">
+    <div class="matrix-controls">
+      <label>Ancho: <input type="number" id="cols" min="1" value="15" /></label>
+      <label>Alto: <input type="number" id="rows" min="1" value="10" /></label>
+      <button onclick="generarMatriz()">Generar Matriz</button>
+      <button onclick="exportarMatriz()">Exportar</button>
+      <button onclick="document.getElementById('importFile').click()">Importar</button>
+      <input type="file" id="importFile" style="display: none" accept=".txt" onchange="importarMatriz(event)" />
     </div>
-    <div class="grid" id="grid"></div>
+    
+    <div class="editor">
+      <div id="sidebar" class="sidebar">
+        <div class="container-controls">
+          <button onclick="moveContainerUp()">⬆️</button>
+          <button onclick="moveContainerDown()">⬇️</button>
+        </div>
+        <div class="tiles-container">
+          <div class="tile-group">
+            <h3>Fondos</h3>
+            <div class="tiles">
+              <img src="./tiles/fondo1.png" draggable="true" ondragstart="drag(event)" data-id="fondo1" />
+              <img src="./tiles/fondo2.png" draggable="true" ondragstart="drag(event)" data-id="fondo2" />
+              <img src="./tiles/fondo3.png" draggable="true" ondragstart="drag(event)" data-id="fondo3" />
+              <img src="./tiles/fondo4.png" draggable="true" ondragstart="drag(event)" data-id="fondo4" />
+              <img src="./tiles/fondo5.png" draggable="true" ondragstart="drag(event)" data-id="fondo5" />
+            </div>
+          </div>
+          <div class="tile-group">
+            <h3>Terreno</h3>
+            <div class="tiles">
+              <img src="./tiles/img1.png" draggable="true" ondragstart="drag(event)" data-id="1" />
+              <img src="./tiles/img2.png" draggable="true" ondragstart="drag(event)" data-id="2" />
+              <img src="./tiles/img3.png" draggable="true" ondragstart="drag(event)" data-id="3" />
+              <img src="./tiles/img4.png" draggable="true" ondragstart="drag(event)" data-id="4" />
+            </div>
+          </div>
+          <div class="tile-group">
+            <h3>Objetos</h3>
+            <div class="tiles">
+              <img src="./tiles/img5.png" draggable="true" ondragstart="drag(event)" data-id="5" />
+              <img src="./tiles/img6.png" draggable="true" ondragstart="drag(event)" data-id="6" />
+              <img src="./tiles/img7.png" draggable="true" ondragstart="drag(event)" data-id="7" />
+              <img src="./tiles/img8.png" draggable="true" ondragstart="drag(event)" data-id="8" />
+              <img src="./tiles/img9.png" draggable="true" ondragstart="drag(event)" data-id="9" />
+              <img src="./tiles/img10.png" draggable="true" ondragstart="drag(event)" data-id="10" />
+              <img src="./tiles/img11.png" draggable="true" ondragstart="drag(event)" data-id="11" />
+              <img src="./tiles/img12.png" draggable="true" ondragstart="drag(event)" data-id="12" />
+              <img src="./tiles/img13.png" draggable="true" ondragstart="drag(event)" data-id="13" />
+              <img src="./tiles/img14.png" draggable="true" ondragstart="drag(event)" data-id="14" />
+              <img src="./tiles/img15.png" draggable="true" ondragstart="drag(event)" data-id="15" />
+              <img src="./tiles/img16.png" draggable="true" ondragstart="drag(event)" data-id="16" />
+              <img src="./tiles/img17.png" draggable="true" ondragstart="drag(event)" data-id="17" />
+              <img src="./tiles/img18.png" draggable="true" ondragstart="drag(event)" data-id="18" />
+              <img src="./tiles/img19.png" draggable="true" ondragstart="drag(event)" data-id="19" />
+              <img src="./tiles/img20.png" draggable="true" ondragstart="drag(event)" data-id="20" />
+              <img src="./tiles/img21.png" draggable="true" ondragstart="drag(event)" data-id="21" />
+              <img src="./tiles/img22.png" draggable="true" ondragstart="drag(event)" data-id="22" />
+              <img src="./tiles/img23.png" draggable="true" ondragstart="drag(event)" data-id="23" />
+              <img src="./tiles/img24.png" draggable="true" ondragstart="drag(event)" data-id="24" />
+              <img src="./tiles/img25.png" draggable="true" ondragstart="drag(event)" data-id="25" />
+              <img src="./tiles/img26.png" draggable="true" ondragstart="drag(event)" data-id="26" />
+              <img src="./tiles/img27.png" draggable="true" ondragstart="drag(event)" data-id="27" />
+              <img src="./tiles/img28.png" draggable="true" ondragstart="drag(event)" data-id="28" />
+              <img src="./tiles/img29.png" draggable="true" ondragstart="drag(event)" data-id="29" />
+              <img src="./tiles/img30.png" draggable="true" ondragstart="drag(event)" data-id="30" />
+              <img src="./tiles/img31.png" draggable="true" ondragstart="drag(event)" data-id="31" />
+              <img src="./tiles/img32.png" draggable="true" ondragstart="drag(event)" data-id="32" />
+              <img src="./tiles/img33.png" draggable="true" ondragstart="drag(event)" data-id="33" />
+              <img src="./tiles/img34.png" draggable="true" ondragstart="drag(event)" data-id="34" />
+              <img src="./tiles/img35.png" draggable="true" ondragstart="drag(event)" data-id="35" />
+              <img src="./tiles/img36.png" draggable="true" ondragstart="drag(event)" data-id="36" />
+              <img src="./tiles/img37.png" draggable="true" ondragstart="drag(event)" data-id="37" />
+              <img src="./tiles/img38.png" draggable="true" ondragstart="drag(event)" data-id="38" />
+              <img src="./tiles/img39.png" draggable="true" ondragstart="drag(event)" data-id="39" />
+              <img src="./tiles/img40.png" draggable="true" ondragstart="drag(event)" data-id="40" />
+              <img src="./tiles/img41.png" draggable="true" ondragstart="drag(event)" data-id="41" />
+              <img src="./tiles/img42.png" draggable="true" ondragstart="drag(event)" data-id="42" />
+              <img src="./tiles/img43.png" draggable="true" ondragstart="drag(event)" data-id="43" />
+              <img src="./tiles/img44.png" draggable="true" ondragstart="drag(event)" data-id="44" />
+              <img src="./tiles/img45.png" draggable="true" ondragstart="drag(event)" data-id="45" />
+              <img src="./tiles/img46.png" draggable="true" ondragstart="drag(event)" data-id="46" />
+              <img src="./tiles/img47.png" draggable="true" ondragstart="drag(event)" data-id="47" />
+              <img src="./tiles/img48.png" draggable="true" ondragstart="drag(event)" data-id="48" />
+              <img src="./tiles/img49.png" draggable="true" ondragstart="drag(event)" data-id="49" />
+              <img src="./tiles/img50.png" draggable="true" ondragstart="drag(event)" data-id="50" />
+              <img src="./tiles/img51.png" draggable="true" ondragstart="drag(event)" data-id="51" />
+              <img src="./tiles/img52.png" draggable="true" ondragstart="drag(event)" data-id="52" />
+              <img src="./tiles/img53.png" draggable="true" ondragstart="drag(event)" data-id="53" />
+              <img src="./tiles/img54.png" draggable="true" ondragstart="drag(event)" data-id="54" />
+              <img src="./tiles/img55.png" draggable="true" ondragstart="drag(event)" data-id="55" />
+              <img src="./tiles/img56.png" draggable="true" ondragstart="drag(event)" data-id="56" />
+              <img src="./tiles/img57.png" draggable="true" ondragstart="drag(event)" data-id="57" />
+              <img src="./tiles/img58.png" draggable="true" ondragstart="drag(event)" data-id="58" />
+              <img src="./tiles/img59.png" draggable="true" ondragstart="drag(event)" data-id="59" />
+              <img src="./tiles/img60.png" draggable="true" ondragstart="drag(event)" data-id="60" />
+              <img src="./tiles/img61.png" draggable="true" ondragstart="drag(event)" data-id="61" />
+              <img src="./tiles/img62.png" draggable="true" ondragstart="drag(event)" data-id="62" />
+              <img src="./tiles/img63.png" draggable="true" ondragstart="drag(event)" data-id="63" />
+              <img src="./tiles/img64.png" draggable="true" ondragstart="drag(event)" data-id="64" />
+              <img src="./tiles/img65.png" draggable="true" ondragstart="drag(event)" data-id="65" />
+              <img src="./tiles/img66.png" draggable="true" ondragstart="drag(event)" data-id="66" />
+              <img src="./tiles/img67.png" draggable="true" ondragstart="drag(event)" data-id="67" />
+              <img src="./tiles/img68.png" draggable="true" ondragstart="drag(event)" data-id="68" />
+              <img src="./tiles/img69.png" draggable="true" ondragstart="drag(event)" data-id="69" />
+              <img src="./tiles/img70.png" draggable="true" ondragstart="drag(event)" data-id="70" />
+              <img src="./tiles/img71.png" draggable="true" ondragstart="drag(event)" data-id="71" />
+              <img src="./tiles/img72.png" draggable="true" ondragstart="drag(event)" data-id="72" />
+              <img src="./tiles/img73.png" draggable="true" ondragstart="drag(event)" data-id="73" />
+              <img src="./tiles/img74.png" draggable="true" ondragstart="drag(event)" data-id="74" />
+              <img src="./tiles/img75.png" draggable="true" ondragstart="drag(event)" data-id="75" />
+              <img src="./tiles/img76.png" draggable="true" ondragstart="drag(event)" data-id="76" />
+              <img src="./tiles/img77.png" draggable="true" ondragstart="drag(event)" data-id="77" />
+              <img src="./tiles/img78.png" draggable="true" ondragstart="drag(event)" data-id="78" />
+              <img src="./tiles/img79.png" draggable="true" ondragstart="drag(event)" data-id="79" />
+              <img src="./tiles/img80.png" draggable="true" ondragstart="drag(event)" data-id="80" />
+              <img src="./tiles/img81.png" draggable="true" ondragstart="drag(event)" data-id="81" />
+              <img src="./tiles/img82.png" draggable="true" ondragstart="drag(event)" data-id="82" />
+              <img src="./tiles/img83.png" draggable="true" ondragstart="drag(event)" data-id="83" />
+              <img src="./tiles/img84.png" draggable="true" ondragstart="drag(event)" data-id="84" />
+              <img src="./tiles/img85.png" draggable="true" ondragstart="drag(event)" data-id="85" />
+              <img src="./tiles/img86.png" draggable="true" ondragstart="drag(event)" data-id="86" />
+              <img src="./tiles/img87.png" draggable="true" ondragstart="drag(event)" data-id="87" />
+              <img src="./tiles/img88.png" draggable="true" ondragstart="drag(event)" data-id="88" />
+              <img src="./tiles/img89.png" draggable="true" ondragstart="drag(event)" data-id="89" />
+              <img src="./tiles/img90.png" draggable="true" ondragstart="drag(event)" data-id="90" />
+              <img src="./tiles/img91.png" draggable="true" ondragstart="drag(event)" data-id="91" />
+              <img src="./tiles/img92.png" draggable="true" ondragstart="drag(event)" data-id="92" />
+              <img src="./tiles/img93.png" draggable="true" ondragstart="drag(event)" data-id="93" />
+              <img src="./tiles/img94.png" draggable="true" ondragstart="drag(event)" data-id="94" />
+              <img src="./tiles/img95.png" draggable="true" ondragstart="drag(event)" data-id="95" />
+              <img src="./tiles/img96.png" draggable="true" ondragstart="drag(event)" data-id="96" />
+              <img src="./tiles/img97.png" draggable="true" ondragstart="drag(event)" data-id="97" />
+              <img src="./tiles/img98.png" draggable="true" ondragstart="drag(event)" data-id="98" />
+              <img src="./tiles/img99.png" draggable="true" ondragstart="drag(event)" data-id="99" />
+              <img src="./tiles/img100.png" draggable="true" ondragstart="drag(event)" data-id="100" />
+              <img src="./tiles/img101.png" draggable="true" ondragstart="drag(event)" data-id="101" />
+              <img src="./tiles/img102.png" draggable="true" ondragstart="drag(event)" data-id="102" />
+              <img src="./tiles/img103.png" draggable="true" ondragstart="drag(event)" data-id="103" />
+              <img src="./tiles/img104.png" draggable="true" ondragstart="drag(event)" data-id="104" />
+              <img src="./tiles/img105.png" draggable="true" ondragstart="drag(event)" data-id="105" />
+              <img src="./tiles/img106.png" draggable="true" ondragstart="drag(event)" data-id="106" />
+              <img src="./tiles/img107.png" draggable="true" ondragstart="drag(event)" data-id="107" />
+              <img src="./tiles/img108.png" draggable="true" ondragstart="drag(event)" data-id="108" />
+              <img src="./tiles/img109.png" draggable="true" ondragstart="drag(event)" data-id="109" />
+              <img src="./tiles/img110.png" draggable="true" ondragstart="drag(event)" data-id="110" />
+              <img src="./tiles/img111.png" draggable="true" ondragstart="drag(event)" data-id="111" />
+              <img src="./tiles/img112.png" draggable="true" ondragstart="drag(event)" data-id="112" />
+              <img src="./tiles/img113.png" draggable="true" ondragstart="drag(event)" data-id="113" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="grid" class="grid"></div>
+    </div>
   </div>
-  <script src="script.js"></script>
 </body>
 </html>
