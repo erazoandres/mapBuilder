@@ -593,6 +593,7 @@ function moveContainerDown() {
 
 // --- New Function to Clear Grid --- 
 function clearGrid() {
+    console.log("clearGrid function called."); // Debug log
     const rows = matriz.length;
     const cols = (rows > 0 && matriz[0]) ? matriz[0].length : 0;
 
@@ -605,19 +606,11 @@ function clearGrid() {
     matriz = Array.from({ length: rows }, () => Array(cols).fill(0));
     rotaciones = Array.from({ length: rows }, () => Array(cols).fill(0));
 
-    // Clear the visual representation in the DOM
-    const cells = document.querySelectorAll('.grid .cell');
-    cells.forEach(cell => {
-        cell.style.backgroundImage = '';
-        cell.style.transform = 'rotate(0deg)';
-        delete cell.dataset.tileId;
-        // Ensure cell is not draggable
-        cell.draggable = false; 
-        // Optional: remove dragstart listener if it was added dynamically
-        // cell.ondragstart = null; 
-    });
+    // Regenerate the grid using the now empty data
+    console.log("Regenerating grid to clear visuals...");
+    generarMatriz(false); // Call generarMatriz to redraw with empty data
 
-    console.log("Grid cleared.");
+    console.log("Grid cleared by regenerating.");
     // Optional: Save the cleared state to localStorage immediately? 
     // exportarMatriz(); // Uncomment if you want clearing to persist on refresh
 }

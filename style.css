@@ -99,6 +99,11 @@ body::before {
   backdrop-filter: blur(5px);
 }
 
+.matrix-controls > *:not(:last-child) {
+  padding-right: 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .matrix-controls input {
   width: 60px;
   padding: 5px;
