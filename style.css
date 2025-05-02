@@ -203,7 +203,25 @@ body::before {
 .tile-group h3 {
   margin: 0 0 10px 0;
   font-size: 14px;
-  color: #333;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tile-group h3::after {
+  content: '▼';
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.tile-group.minimized h3::after {
+  transform: rotate(-90deg);
+}
+
+.tile-group.minimized .tiles {
+  display: none;
 }
 
 .tiles {

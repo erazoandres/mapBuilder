@@ -346,6 +346,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Minimizar todos los grupos excepto los dos primeros
+  document.querySelectorAll('.tile-group').forEach((group, index) => {
+    if (index >= 2) {
+      group.classList.add('minimized');
+    }
+  });
+
+  // Agregar eventos para minimizar/expandir grupos
+  document.querySelectorAll('.tile-group h3').forEach(header => {
+    header.addEventListener('click', (e) => {
+      const group = e.target.closest('.tile-group');
+      group.classList.toggle('minimized');
+      e.stopPropagation(); // Evitar que el clic se propague al grupo
+    });
+  });
+
   // Agregar evento de clic a las imágenes del sidebar
   document.querySelectorAll('.tiles img').forEach(img => {
     img.addEventListener('click', (e) => {
