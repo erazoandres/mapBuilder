@@ -102,6 +102,13 @@ window.onload = () => {
   }
    // --- Fin lógica de carga modificada ---
 
+   // --- Add event listener for the new clear button ---
+   const clearButton = document.getElementById('clear-grid-btn');
+   if (clearButton) {
+       clearButton.addEventListener('click', clearGrid);
+   }
+   // --- End event listener ---
+
 };
 
 function generarMatriz(useExisting = false) {
@@ -583,3 +590,35 @@ function moveContainerDown() {
     }
   }
 }
+
+// --- New Function to Clear Grid --- 
+function clearGrid() {
+    const rows = matriz.length;
+    const cols = (rows > 0 && matriz[0]) ? matriz[0].length : 0;
+
+    if (rows === 0 || cols === 0) {
+        console.log("Grid is already empty or not initialized.");
+        return; // Nothing to clear
+    }
+
+    // Reset the data arrays
+    matriz = Array.from({ length: rows }, () => Array(cols).fill(0));
+    rotaciones = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+    // Clear the visual representation in the DOM
+    const cells = document.querySelectorAll('.grid .cell');
+    cells.forEach(cell => {
+        cell.style.backgroundImage = '';
+        cell.style.transform = 'rotate(0deg)';
+        delete cell.dataset.tileId;
+        // Ensure cell is not draggable
+        cell.draggable = false; 
+        // Optional: remove dragstart listener if it was added dynamically
+        // cell.ondragstart = null; 
+    });
+
+    console.log("Grid cleared.");
+    // Optional: Save the cleared state to localStorage immediately? 
+    // exportarMatriz(); // Uncomment if you want clearing to persist on refresh
+}
+// --- End Clear Grid Function ---
