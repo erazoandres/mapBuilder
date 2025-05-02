@@ -4,6 +4,7 @@ let lastClickedId = null;
 let selectedTileId = null;
 let cursorImg = null;
 let selectedContainer = null;
+let isPainting = false; // Flag for painting mode
 
 // Matriz para almacenar las rotaciones de cada celda
 let rotaciones = [];
@@ -30,7 +31,7 @@ window.onload = () => {
       document.querySelectorAll('.tiles img').forEach(i => i.classList.remove('active'));
       // Seleccionar la imagen actual
       e.target.classList.add('active');
-      selectedTileId = e.target.dataset.id;
+      selectedTileId = e.target.dataset.id; // selectedTileId es la string ID
       cursorImg.src = e.target.src;
       cursorImg.style.display = 'block';
       document.querySelectorAll('.cell').forEach(cell => cell.classList.add('cursor-tile'));
@@ -47,114 +48,221 @@ window.onload = () => {
     if (selectedTileId && cursorImg) cursorImg.style.display = 'block';
   });
 
-  if (localStorage.getItem('savedMap')) {
+  // --- Lógica de carga modificada ---
+  const savedMapJSON = localStorage.getItem('savedMap');
+  const savedIdMapJSON = localStorage.getItem('idMap');
+  const savedRotationsJSON = localStorage.getItem('rotaciones');
+
+  let loadedSuccessfully = false;
+  if (savedMapJSON && savedIdMapJSON && savedRotationsJSON) {
     try {
-      const savedMap = localStorage.getItem('savedMap');
-      const mapData = eval(savedMap);
-      if (Array.isArray(mapData)) {
-        matriz = mapData;
-        // Intentar cargar las rotaciones guardadas
-        try {
-          const savedRotations = localStorage.getItem('rotaciones');
-          if (savedRotations) {
-            rotaciones = JSON.parse(savedRotations);
-          }
-        } catch (e) {
-          console.error('Error al cargar rotaciones:', e);
-        }
-        document.getElementById('rows').value = matriz.length;
-        document.getElementById('cols').value = matriz[0].length;
-        generarMatriz(true);
-        return;
+      const matrizNumerica = JSON.parse(savedMapJSON);
+      const idMapArray = JSON.parse(savedIdMapJSON);
+      rotaciones = JSON.parse(savedRotationsJSON); // Cargar rotaciones
+
+      // Crear un mapa inverso (numerical ID -> string ID)
+      const reverseIdMap = new Map(idMapArray.map(([stringId, numId]) => [numId, stringId]));
+
+      // Reconstruir la matriz global con los string IDs originales
+      matriz = matrizNumerica.map(row =>
+        row.map(numId => (numId === 0 ? 0 : reverseIdMap.get(numId) || 0)) // Usar 0 si el ID no se encuentra
+      );
+
+      // Validar que la matriz cargada y las rotaciones tengan dimensiones consistentes
+      if (Array.isArray(matriz) && matriz.length > 0 && Array.isArray(matriz[0]) &&
+          Array.isArray(rotaciones) && rotaciones.length === matriz.length &&
+          rotaciones[0].length === matriz[0].length)
+      {
+          document.getElementById('rows').value = matriz.length;
+          document.getElementById('cols').value = matriz[0].length;
+          generarMatriz(true); // Generar usando la matriz cargada (con string IDs)
+          loadedSuccessfully = true;
+      } else {
+           console.error('Error: Datos cargados inconsistentes (matriz/rotaciones).');
+           // Limpiar datos corruptos opcionalmente
+           // localStorage.removeItem('savedMap');
+           // localStorage.removeItem('idMap');
+           // localStorage.removeItem('rotaciones');
       }
+
     } catch (e) {
-      console.error('Error al cargar el mapa:', e);
+      console.error('Error al parsear datos guardados:', e);
+      // Limpiar datos corruptos opcionalmente
+      // localStorage.removeItem('savedMap');
+      // localStorage.removeItem('idMap');
+      // localStorage.removeItem('rotaciones');
     }
   }
-  generarMatriz();
+
+  if (!loadedSuccessfully) {
+    // Si no se cargó, generar matriz por defecto
+    matriz = []; // Asegurar que la matriz esté vacía
+    rotaciones = []; // Asegurar que las rotaciones estén vacías
+    generarMatriz();
+  }
+   // --- Fin lógica de carga modificada ---
+
 };
 
 function generarMatriz(useExisting = false) {
   const rows = parseInt(document.getElementById("rows").value) || 10;
   const cols = parseInt(document.getElementById("cols").value) || 15;
   const grid = document.getElementById("grid");
-  const matrizAnterior = [...matriz];
-  const rotacionesAnteriores = rotaciones.length ? [...rotaciones] : [];
+
+  // Guardar estado anterior solo si no estamos cargando desde localStorage
+  const matrizAnterior = useExisting ? [] : [...matriz];
+  const rotacionesAnteriores = useExisting ? [] : (rotaciones.length ? [...rotaciones] : []);
 
   grid.style.gridTemplateColumns = `repeat(${cols}, 32px)`;
   grid.innerHTML = '';
-  
+
+  // Si no estamos usando datos existentes (cargados de localStorage),
+  // inicializamos o redimensionamos matriz y rotaciones.
   if (!useExisting) {
-    matriz = Array.from({ length: rows }, (_, r) => 
-      Array.from({ length: cols }, (_, c) => 
-        r < matrizAnterior.length && c < matrizAnterior[0].length ? matrizAnterior[r][c] : 0
+    const nuevaMatriz = Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, c) =>
+        (matrizAnterior.length > r && matrizAnterior[0]?.length > c) ? matrizAnterior[r][c] : 0
       )
     );
-    
-    // Inicializar matriz de rotaciones si no existe
-    if (!rotaciones.length) {
-      rotaciones = Array.from({ length: rows }, () => 
-        Array.from({ length: cols }, () => 0)
-      );
-    } else {
-      rotaciones = Array.from({ length: rows }, (_, r) => 
-        Array.from({ length: cols }, (_, c) => 
-          r < rotacionesAnteriores.length && c < rotacionesAnteriores[0].length ? rotacionesAnteriores[r][c] : 0
-        )
-      );
-    }
-  }
+    matriz = nuevaMatriz; // Actualizar la matriz global
 
+    const nuevasRotaciones = Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, c) =>
+        (rotacionesAnteriores.length > r && rotacionesAnteriores[0]?.length > c) ? rotacionesAnteriores[r][c] : 0
+      )
+    );
+    rotaciones = nuevasRotaciones; // Actualizar rotaciones global
+  }
+  // Si useExisting es true, la matriz global y rotaciones ya fueron
+  // cargadas en window.onload
+
+  // Generar celdas y aplicar datos (ya sea nuevos/redimensionados o cargados)
   for (let r = 0; r < rows; r++) {
+    // Asegurarse que la fila exista en rotaciones
+     if (!rotaciones[r]) {
+        rotaciones[r] = Array(cols).fill(0);
+     }
+     // Asegurarse que la fila exista en la matriz
+     if (!matriz[r]) {
+        matriz[r] = Array(cols).fill(0);
+     }
+
     for (let c = 0; c < cols; c++) {
       const cell = document.createElement("div");
       cell.className = "cell";
       cell.dataset.row = r;
       cell.dataset.col = c;
-      
-      cell.addEventListener('click', () => {
+
+      // Asegurarse que la celda exista en rotaciones
+      if (rotaciones[r][c] === undefined) {
+        rotaciones[r][c] = 0;
+      }
+
+      // --- Painting/Placement Logic --- 
+      // REMOVED Original 'click' listener
+      // cell.addEventListener('click', () => {
+      //  if (selectedTileId) {
+      //    placeTile(cell, selectedTileId);
+      //  }
+      // });
+
+      cell.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return; // Only react to left mouse button
         if (selectedTileId) {
           placeTile(cell, selectedTileId);
+          isPainting = true;
+          // Prevent default text selection behavior during drag
+          e.preventDefault(); 
         }
       });
 
+      cell.addEventListener('mouseover', () => {
+        if (isPainting && selectedTileId) {
+          // Check if the tile is different before placing to avoid unnecessary updates
+          const currentRow = parseInt(cell.dataset.row);
+          const currentCol = parseInt(cell.dataset.col);
+          if (matriz[currentRow][currentCol] !== selectedTileId) {
+              placeTile(cell, selectedTileId);
+          }
+        }
+      });
+      
+      // Prevent drag start interfering with painting
+      cell.addEventListener('dragstart', (e) => {
+          if (isPainting) {
+              e.preventDefault();
+          }
+      });
+
+      // --- End Painting/Placement Logic ---
+
+      // Eventos drag/drop
       cell.ondragover = (e) => {
-        e.preventDefault();
-        if (draggedId) {
-          placeTile(cell, draggedId);
-        }
+        e.preventDefault(); // Necesario para permitir drop
       };
-      
-      cell.ondrop = drop;
-      cell.onmousedown = handleMouseClick;
-      cell.ondblclick = handleDoubleClick;
-      
-      if (matriz[r][c] !== 0) {
-        const img = document.createElement("img");
-        const imgId = matriz[r][c];
-        img.src = typeof imgId === 'string' && imgId.startsWith('fondo') 
-          ? `./tiles/${imgId}.png` 
-          : `./tiles/img${imgId}.png`;
-        img.draggable = true;
-        
-        // Aplicar rotación si existe
-        if (rotaciones[r][c] > 0) {
-          img.classList.add(`rotate-${rotaciones[r][c] * 90}`);
+      cell.ondrop = (e) => {
+          e.preventDefault();
+          const tileId = e.dataTransfer.getData("text/plain");
+          if (tileId) {
+              // Validar si tileId es un ID válido del sidebar antes de colocar
+              const tileExists = document.querySelector(`.tiles img[data-id='${tileId}']`);
+              if (tileExists) {
+                 placeTile(cell, tileId);
+              } else {
+                 console.warn("Intento de drop con ID inválido:", tileId);
+              }
+          }
+      };
+
+       // Evento doble click para rotar (código existente)
+       cell.addEventListener('dblclick', handleDoubleClick);
+
+      // Aplicar el tile y la rotación existente (cargado o redimensionado)
+      const currentTileId = matriz[r][c]; // Ya debería ser string ID o 0
+      const currentRotation = rotaciones[r][c];
+
+      if (currentTileId !== 0) {
+        const tileImage = document.querySelector(`.tiles img[data-id='${currentTileId}']`);
+        if (tileImage) {
+          cell.style.backgroundImage = `url(${tileImage.src})`;
+          cell.style.backgroundSize = "cover";
+          cell.dataset.tileId = currentTileId; // Guardar el id
+          // Habilitar drag solo si hay un tile
+          cell.draggable = true;
+          cell.ondragstart = (e) => {
+              if (cell.dataset.tileId && cell.dataset.tileId !== '0') {
+                 e.dataTransfer.setData("text/plain", cell.dataset.tileId);
+              } else {
+                  e.preventDefault(); // No arrastrar celdas vacías
+              }
+          };
+        } else {
+          console.warn(`Tile ID '${currentTileId}' en matriz [${r}][${c}] no encontrado. Limpiando celda.`);
+          matriz[r][c] = 0; // Marcar como vacío si el tile no existe
+          cell.style.backgroundImage = '';
+          delete cell.dataset.tileId;
+          cell.draggable = false;
         }
-        
-        img.ondragstart = (e) => {
-          draggedId = selectedTileId || matriz[r][c].toString();
-          matriz[r][c] = 0;
-          rotaciones[r][c] = 0;
-          setTimeout(() => e.target.parentElement.innerHTML = '', 0);
-        };
-        cell.appendChild(img);
+      } else {
+         cell.style.backgroundImage = ''; // Asegurar que esté vacío
+         delete cell.dataset.tileId;
+         cell.draggable = false; // No arrastrar celdas vacías
       }
-      
+
+      // Aplicar rotación
+      cell.style.transform = `rotate(${currentRotation}deg)`;
+
       grid.appendChild(cell);
     }
   }
 }
+
+// Global listener to stop painting when mouse button is released anywhere
+document.addEventListener('mouseup', () => {
+  if (isPainting) {
+    isPainting = false;
+  }
+});
 
 function handleDoubleClick(ev) {
   ev.preventDefault();
@@ -204,12 +312,13 @@ function placeTile(cell, tileId) {
   
   cell.innerHTML = '';
   const img = document.createElement("img");
-  img.src = tileId.startsWith('fondo') 
-    ? `./tiles/${tileId}.png` 
-    : `./tiles/img${tileId}.png`;
+  const imgId = tileId;
+  img.src = imgId.startsWith('fondo') 
+    ? `./tiles/${imgId}.png` 
+    : `./tiles/img${imgId}.png`;
   img.draggable = true;
   
-  // Mantener la rotación si existe
+  // Aplicar rotación si existe
   if (rotaciones[row][col] > 0) {
     img.classList.add(`rotate-${rotaciones[row][col] * 90}`);
   }
@@ -236,50 +345,95 @@ function drop(ev) {
 }
 
 function exportarMatriz() {
-  // Crear un mapa de conversión de IDs
+  // Crear un mapa de conversión de IDs (string ID -> numerical ID)
   const idMap = new Map();
   let nextId = 1;
+  // Asegurarse que matriz[0] exista antes de acceder a su longitud
+  const rows = matriz.length;
+  const cols = (rows > 0 && matriz[0]) ? matriz[0].length : 0;
+  if (rows === 0 || cols === 0) {
+    console.warn("Exportando matriz vacía.");
+    // Opcional: manejar este caso, quizás no guardar nada o guardar vacío
+    localStorage.setItem('savedMap', JSON.stringify([]));
+    localStorage.setItem('idMap', JSON.stringify([]));
+    localStorage.setItem('rotaciones', JSON.stringify([]));
+    return; // Salir si la matriz está vacía o mal formada
+  }
 
-  // Primera pasada: construir el mapa de IDs
-  for (let i = 0; i < matriz.length; i++) {
-    for (let j = 0; j < matriz[i].length; j++) {
-      const valor = matriz[i][j];
-      if (valor !== 0 && !idMap.has(valor)) {
-        idMap.set(valor, nextId++);
+  const matrizNumerica = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+  // Construir el mapa de IDs y la matriz numérica
+  for (let i = 0; i < rows; i++) {
+    // Asegurarse que la fila exista
+    if (!matriz[i] || matriz[i].length !== cols) {
+        console.error(`Fila ${i} inválida o con longitud incorrecta. Saltando fila en exportación.`);
+        // Rellenar la fila numérica con 0s si hay inconsistencia
+        matrizNumerica[i] = Array(cols).fill(0);
+        continue;
+    }
+    for (let j = 0; j < cols; j++) {
+      const valor = matriz[i][j]; // valor should be the string ID or 0
+      if (valor !== 0) {
+        // Validar que 'valor' sea un string ID esperado o manejar si no lo es
+        if (typeof valor !== 'string'){
+            console.warn(`Valor inesperado en [${i}][${j}]: ${valor}. Tratando como 0.`);
+            matrizNumerica[i][j] = 0;
+            continue;
+        }
+        if (!idMap.has(valor)) {
+          idMap.set(valor, nextId++);
+        }
+        matrizNumerica[i][j] = idMap.get(valor);
+      } else {
+        matrizNumerica[i][j] = 0;
       }
     }
   }
 
-  // Segunda pasada: generar la matriz con los nuevos IDs
-  let matrizString = 'my_map = [\n';
-  for (let i = 0; i < matriz.length; i++) {
-    matrizString += '[';
-    for (let j = 0; j < matriz[i].length; j++) {
-      const valor = matriz[i][j];
-      matrizString += valor === 0 ? '0' : idMap.get(valor);
-      if (j < matriz[i].length - 1) matrizString += ',';
-    }
-    matrizString += ']';
-    if (i < matriz.length - 1) matrizString += ',\n';
-  }
-  matrizString += ']';
+  // Convertir el mapa a un array para guardarlo en JSON (stringID, numID)
+  const idMapArray = Array.from(idMap.entries());
 
-  // Crear un mapeo inverso para referencia
-  const reverseMap = new Map();
-  idMap.forEach((value, key) => {
-    reverseMap.set(value, key);
+  // Guardar la matriz numérica y el mapeo en localStorage como JSON
+  try {
+      localStorage.setItem('savedMap', JSON.stringify(matrizNumerica));
+      localStorage.setItem('idMap', JSON.stringify(idMapArray));
+      // Asegurarse que 'rotaciones' tenga las dimensiones correctas antes de guardar
+      if (rotaciones.length === rows && rotaciones[0]?.length === cols) {
+         localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
+      } else {
+         console.warn("Dimensiones de 'rotaciones' no coinciden con la matriz. Guardando rotaciones vacías.");
+         // Generar rotaciones vacías si hay inconsistencia
+         const rotacionesVacias = Array.from({ length: rows }, () => Array(cols).fill(0));
+         localStorage.setItem('rotaciones', JSON.stringify(rotacionesVacias));
+      }
+  } catch (e) {
+      console.error("Error guardando datos en localStorage:", e);
+      // Podría ser por exceder el límite de tamaño de localStorage
+      alert("Error al guardar el mapa. Posiblemente el mapa es demasiado grande.");
+      return;
+  }
+
+
+  // Generar la cadena para el archivo descargado (formato my_map = [...])
+  let matrizStringParaArchivo = 'my_map = [\n';
+  for (let i = 0; i < matrizNumerica.length; i++) {
+    matrizStringParaArchivo += '  [' + matrizNumerica[i].join(',') + ']';
+    if (i < matrizNumerica.length - 1) matrizStringParaArchivo += ',\n';
+  }
+  matrizStringParaArchivo += '\n];\n\n'; // Añadir punto y coma y salto de línea
+
+  // Añadir el mapeo de IDs como comentario en el archivo
+  matrizStringParaArchivo += '// ID Mapping (Numeric ID: Original ID)\n';
+  idMap.forEach((numId, stringId) => {
+      matrizStringParaArchivo += `// ${numId}: ${stringId}\n`;
   });
 
-  // Guardar tanto la matriz como el mapeo en localStorage
-  localStorage.setItem('savedMap', matrizString);
-  localStorage.setItem('idMap', JSON.stringify(Array.from(reverseMap.entries())));
-  localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
 
-  const blob = new Blob([matrizString], { type: 'text/plain' });
+  const blob = new Blob([matrizStringParaArchivo], { type: 'text/plain;charset=utf-8' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'matriz.txt';
+  a.download = 'matriz_mapa.txt'; // Cambiar nombre de archivo si se desea
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
