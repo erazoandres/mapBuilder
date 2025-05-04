@@ -102,12 +102,14 @@ window.onload = () => {
   }
    // --- Fin lógica de carga modificada ---
 
-   // --- Add event listener for the new clear button ---
-   const clearButton = document.getElementById('clear-grid-btn');
-   if (clearButton) {
-       clearButton.addEventListener('click', clearGrid);
-   }
-   // --- End event listener ---
+   // --- Add Event Listener for Clear Grid Button ---
+  const clearButton = document.getElementById('clear-grid-btn');
+  if (clearButton) {
+    clearButton.addEventListener('click', clearGrid);
+  } else {
+    console.error("Clear Grid button not found!"); // Debug log
+  }
+  // --- End Add Event Listener ---
 
 };
 
@@ -165,6 +167,24 @@ function generarMatriz(useExisting = false) {
         rotaciones[r][c] = 0;
       }
 
+      // --- Apply existing tile data (if any) ---
+      const currentTileId = matriz[r] ? matriz[r][c] : 0;
+      if (currentTileId !== 0) {
+        const sourceImg = document.querySelector(`.tiles img[data-id='${currentTileId}']`);
+        if (sourceImg) {
+          cell.style.backgroundImage = `url('${sourceImg.src}')`;
+          cell.style.backgroundSize = 'cover';
+          cell.style.transform = `rotate(${rotaciones[r][c] || 0}deg)`;
+          cell.dataset.id = currentTileId; // Set data-id for consistency
+        } else {
+          console.warn(`Tile ID ${currentTileId} found in matrix at [${r},${c}] but no corresponding image in sidebar.`);
+          // Clear the data if the image is missing to avoid broken state
+          if (matriz[r]) matriz[r][c] = 0;
+          if (rotaciones[r]) rotaciones[r][c] = 0;
+        }
+      }
+      // --- End applying existing tile data ---
+
       // --- Painting/Placement Logic --- 
       // REMOVED Original 'click' listener
       // cell.addEventListener('click', () => {
@@ -174,16 +194,17 @@ function generarMatriz(useExisting = false) {
       // });
 
       cell.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return; // Only react to left mouse button
-        if (selectedTileId) {
-          placeTile(cell, selectedTileId);
-          isPainting = true;
-          // Prevent default text selection behavior during drag
-          e.preventDefault(); 
+        if (e.button === 0) { // Only react to left mouse button
+          if (selectedTileId) {
+            placeTile(cell, selectedTileId);
+            isPainting = true;
+            // Prevent default text selection behavior during drag
+            e.preventDefault(); 
+          }
         }
       });
 
-      cell.addEventListener('mouseover', () => {
+      cell.addEventListener('mouseenter', (e) => {
         if (isPainting && selectedTileId) {
           // Check if the tile is different before placing to avoid unnecessary updates
           const currentRow = parseInt(cell.dataset.row);
@@ -201,7 +222,44 @@ function generarMatriz(useExisting = false) {
           }
       });
 
-      // --- End Painting/Placement Logic ---
+      // Add event listener for middle-click (wheel button) for deletion
+      cell.addEventListener('mousedown', (e) => {
+        if (e.button === 1) { // 1 is the middle button
+          e.preventDefault(); // Prevent default middle-click behavior (like autoscroll)
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+
+          // Clear the cell data
+          if (matriz[row] && matriz[row][col] !== 0) {
+             matriz[row][col] = 0;
+          }
+          if (rotaciones[row] && rotaciones[row][col] !== 0) {
+            rotaciones[row][col] = 0;
+          }
+
+          // Clear the visual representation
+          cell.style.backgroundImage = '';
+          cell.style.transform = ''; // Remove rotation
+          cell.dataset.id = 0; // Update data-id attribute
+
+          // console.log(`Deleted tile at [${row}, ${col}]`); // Optional: for debugging
+        }
+      });
+
+      // Add event listener for double-click to rotate
+      cell.addEventListener('dblclick', (e) => {
+        e.preventDefault(); // Prevent potential text selection or other default dblclick actions
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+
+        // Only rotate if there's a tile in the cell
+        if (matriz[row][col] !== 0) {
+          // Increment rotation by 90 degrees, wrap around using modulo 360
+          rotaciones[row][col] = (rotaciones[row][col] + 90) % 360;
+          cell.style.transform = `rotate(${rotaciones[row][col]}deg)`;
+          // console.log(`Rotated tile at [${row}, ${col}] to ${rotaciones[row][col]}deg`); // Optional: for debugging
+        }
+      });
 
       // Eventos drag/drop
       cell.ondragover = (e) => {
@@ -225,39 +283,39 @@ function generarMatriz(useExisting = false) {
        cell.addEventListener('dblclick', handleDoubleClick);
 
       // Aplicar el tile y la rotación existente (cargado o redimensionado)
-      const currentTileId = matriz[r][c]; // Ya debería ser string ID o 0
-      const currentRotation = rotaciones[r][c];
+      // const currentTileId = matriz[r][c]; // Ya debería ser string ID o 0
+      // const currentRotation = rotaciones[r][c];
 
-      if (currentTileId !== 0) {
-        const tileImage = document.querySelector(`.tiles img[data-id='${currentTileId}']`);
-        if (tileImage) {
-          cell.style.backgroundImage = `url(${tileImage.src})`;
-          cell.style.backgroundSize = "cover";
-          cell.dataset.tileId = currentTileId; // Guardar el id
-          // Habilitar drag solo si hay un tile
-          cell.draggable = true;
-          cell.ondragstart = (e) => {
-              if (cell.dataset.tileId && cell.dataset.tileId !== '0') {
-                 e.dataTransfer.setData("text/plain", cell.dataset.tileId);
-              } else {
-                  e.preventDefault(); // No arrastrar celdas vacías
-              }
-          };
-        } else {
-          console.warn(`Tile ID '${currentTileId}' en matriz [${r}][${c}] no encontrado. Limpiando celda.`);
-          matriz[r][c] = 0; // Marcar como vacío si el tile no existe
-          cell.style.backgroundImage = '';
-          delete cell.dataset.tileId;
-          cell.draggable = false;
-        }
-      } else {
-         cell.style.backgroundImage = ''; // Asegurar que esté vacío
-         delete cell.dataset.tileId;
-         cell.draggable = false; // No arrastrar celdas vacías
-      }
+      // if (currentTileId !== 0) {
+      //   const tileImage = document.querySelector(`.tiles img[data-id='${currentTileId}']`);
+      //   if (tileImage) {
+      //     cell.style.backgroundImage = `url(${tileImage.src})`;
+      //     cell.style.backgroundSize = "cover";
+      //     cell.dataset.tileId = currentTileId; // Guardar el id
+      //     // Habilitar drag solo si hay un tile
+      //     cell.draggable = true;
+      //     cell.ondragstart = (e) => {
+      //         if (cell.dataset.tileId && cell.dataset.tileId !== '0') {
+      //            e.dataTransfer.setData("text/plain", cell.dataset.tileId);
+      //         } else {
+      //             e.preventDefault(); // No arrastrar celdas vacías
+      //         }
+      //     };
+      //   } else {
+      //     console.warn(`Tile ID '${currentTileId}' en matriz [${r}][${c}] no encontrado. Limpiando celda.`);
+      //     matriz[r][c] = 0; // Marcar como vacío si el tile no existe
+      //     cell.style.backgroundImage = '';
+      //     delete cell.dataset.tileId;
+      //     cell.draggable = false;
+      //   }
+      // } else {
+      //    cell.style.backgroundImage = ''; // Asegurar que esté vacío
+      //    delete cell.dataset.tileId;
+      //    cell.draggable = false; // No arrastrar celdas vacías
+      // }
 
       // Aplicar rotación
-      cell.style.transform = `rotate(${currentRotation}deg)`;
+      // cell.style.transform = `rotate(${currentRotation}deg)`;
 
       grid.appendChild(cell);
     }
@@ -316,28 +374,34 @@ function handleMouseClick(ev) {
 function placeTile(cell, tileId) {
   const row = parseInt(cell.dataset.row);
   const col = parseInt(cell.dataset.col);
-  
-  cell.innerHTML = '';
-  const img = document.createElement("img");
-  const imgId = tileId;
-  img.src = imgId.startsWith('fondo') 
-    ? `./tiles/${imgId}.png` 
-    : `./tiles/img${imgId}.png`;
-  img.draggable = true;
-  
-  // Aplicar rotación si existe
-  if (rotaciones[row][col] > 0) {
-    img.classList.add(`rotate-${rotaciones[row][col] * 90}`);
+
+  // Find the source image element in the sidebar using data-id
+  const sourceImg = document.querySelector(`.tiles img[data-id='${tileId}']`);
+
+  if (sourceImg) {
+    // Update the matrix data
+    matriz[row][col] = tileId;
+    // We'll keep the existing rotation when placing a tile over another
+    // If you want placing a tile to *reset* rotation, uncomment the next line:
+    // rotaciones[row][col] = 0;
+
+    // Apply the background image and rotation directly to the cell
+    cell.style.backgroundImage = `url('${sourceImg.src}')`;
+    cell.style.backgroundSize = 'cover'; // Ensure image fills the cell
+    cell.style.transform = `rotate(${rotaciones[row][col] || 0}deg)`; // Apply existing or 0 rotation
+    cell.dataset.id = tileId; // Update the cell's data-id
+  } else {
+    console.error(`Source image not found in sidebar for tileId: ${tileId}`);
+    // Optional: Clear the cell if the source image is missing
+    // cell.style.backgroundImage = '';
+    // cell.style.transform = '';
+    // matriz[row][col] = 0;
+    // rotaciones[row][col] = 0;
+    // cell.dataset.id = 0;
   }
-  
-  img.ondragstart = (e) => {
-    draggedId = selectedTileId || matriz[row][col].toString();
-    matriz[row][col] = 0;
-    rotaciones[row][col] = 0;
-    setTimeout(() => e.target.parentElement.innerHTML = '', 0);
-  };
-  cell.appendChild(img);
-  matriz[row][col] = tileId;
+  // Remove the old logic that created an <img> element inside the cell
+  // cell.innerHTML = '';
+  // const img = document.createElement("img"); ... etc ...
 }
 
 function drag(ev) {
@@ -350,7 +414,7 @@ function drop(ev) {
   const cell = ev.currentTarget;
   placeTile(cell, draggedId);
 }
-
+      
 function exportarMatriz() {
   // Crear un mapa de conversión de IDs (string ID -> numerical ID)
   const idMap = new Map();
@@ -400,51 +464,89 @@ function exportarMatriz() {
   // Convertir el mapa a un array para guardarlo en JSON (stringID, numID)
   const idMapArray = Array.from(idMap.entries());
 
-  // Guardar la matriz numérica y el mapeo en localStorage como JSON
-  try {
-      localStorage.setItem('savedMap', JSON.stringify(matrizNumerica));
-      localStorage.setItem('idMap', JSON.stringify(idMapArray));
-      // Asegurarse que 'rotaciones' tenga las dimensiones correctas antes de guardar
-      if (rotaciones.length === rows && rotaciones[0]?.length === cols) {
-         localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
-      } else {
-         console.warn("Dimensiones de 'rotaciones' no coinciden con la matriz. Guardando rotaciones vacías.");
-         // Generar rotaciones vacías si hay inconsistencia
-         const rotacionesVacias = Array.from({ length: rows }, () => Array(cols).fill(0));
-         localStorage.setItem('rotaciones', JSON.stringify(rotacionesVacias));
-      }
-  } catch (e) {
-      console.error("Error guardando datos en localStorage:", e);
-      // Podría ser por exceder el límite de tamaño de localStorage
-      alert("Error al guardar el mapa. Posiblemente el mapa es demasiado grande.");
-      return;
+  // --- Prepare final rotations ensuring correct dimensions --- 
+  let finalRotations = rotaciones;
+  if (!(rotaciones.length === rows && rotaciones[0]?.length === cols)) {
+      console.warn("Dimensiones de 'rotaciones' no coinciden con la matriz. Exportando rotaciones vacías.");
+      finalRotations = Array.from({ length: rows }, () => Array(cols).fill(0));
   }
 
-
-  // Generar la cadena para el archivo descargado (formato my_map = [...])
-  let matrizStringParaArchivo = 'my_map = [\n';
+  // --- Start .txt file generation logic --- 
+  // Generate the string for the numeric matrix
+  let fileContentString = 'my_map = [\n';
   for (let i = 0; i < matrizNumerica.length; i++) {
-    matrizStringParaArchivo += '  [' + matrizNumerica[i].join(',') + ']';
-    if (i < matrizNumerica.length - 1) matrizStringParaArchivo += ',\n';
+    fileContentString += '  [' + matrizNumerica[i].join(',') + ']';
+    if (i < matrizNumerica.length - 1) fileContentString += ',\n';
   }
-  matrizStringParaArchivo += '\n];\n\n'; // Añadir punto y coma y salto de línea
+  fileContentString += '\n];\n\n'; // End my_map definition
 
-  // Añadir el mapeo de IDs como comentario en el archivo
-  matrizStringParaArchivo += '// ID Mapping (Numeric ID: Original ID)\n';
+  // Generate the string for the rotations matrix
+  fileContentString += 'my_rotations = [\n';
+   for (let i = 0; i < finalRotations.length; i++) {
+      // Ensure row exists before joining
+      const rowString = finalRotations[i] ? finalRotations[i].join(',') : '';
+      fileContentString += '  [' + rowString + ']';
+      if (i < finalRotations.length - 1) fileContentString += ',\n';
+  }
+  fileContentString += '\n];\n\n'; // End my_rotations definition
+
+  // Add the ID mapping as comments
+  fileContentString += '// ID Mapping (Numeric ID: Original ID)\n';
   idMap.forEach((numId, stringId) => {
-      matrizStringParaArchivo += `// ${numId}: ${stringId}\n`;
+      // Sanitize stringId in case it contains characters that break comments (like newline)
+      const safeStringId = stringId.replace(/\n/g, '\\n').replace(/\r/g, ''); 
+      fileContentString += `// ${numId}: ${safeStringId}\n`;
   });
+  fileContentString += '// End ID Mapping\n'; // Add an end marker for easier parsing
 
-
-  const blob = new Blob([matrizStringParaArchivo], { type: 'text/plain;charset=utf-8' });
+  // Create a Blob with the text data
+  const blob = new Blob([fileContentString], { type: 'text/plain;charset=utf-8' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'matriz_mapa.txt'; // Cambiar nombre de archivo si se desea
+  a.download = 'mapa_exportado.txt'; // Change file extension back to .txt
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
+  // --- End .txt file generation logic ---
+
+  // Guardar la matriz numérica y el mapeo en localStorage como JSON (Keep this part)
+  try {
+      localStorage.setItem('savedMap', JSON.stringify(matrizNumerica));
+      localStorage.setItem('idMap', JSON.stringify(idMapArray));
+      // Save the potentially fixed rotations to localStorage as well
+      localStorage.setItem('rotaciones', JSON.stringify(finalRotations));
+  } catch (e) {
+      console.error("Error guardando datos en localStorage:", e);
+      // Podría ser por exceder el límite de tamaño de localStorage
+      alert("Error al guardar el mapa en almacenamiento local. Posiblemente el mapa es demasiado grande.");
+      return; // Return if localStorage saving fails
+  }
+
+  // --- Remove JSON export logic ---
+  // // Create an object containing all data for export
+  // const exportData = {
+  //   matrixData: matrizNumerica,
+  //   idMapping: idMapArray,
+  //   rotationData: finalRotations // Use the validated or generated empty rotations
+  // };
+  
+  // // Convert the export object to a JSON string
+  // const exportJsonString = JSON.stringify(exportData, null, 2); // null, 2 for pretty printing
+
+  // // Create a Blob with the JSON data
+  // const blob = new Blob([exportJsonString], { type: 'application/json;charset=utf-8' });
+  // const url = window.URL.createObjectURL(blob);
+  // const a = document.createElement('a');
+  // a.href = url;
+  // a.download = 'mapa_exportado.json'; // Change file extension
+  // document.body.appendChild(a);
+  // a.click();
+  // document.body.removeChild(a);
+  // window.URL.revokeObjectURL(url);
+  // --- End JSON export logic ---
+
 }
 
 function importarMatriz(event) {
@@ -454,40 +556,115 @@ function importarMatriz(event) {
     reader.onload = function(e) {
       try {
         const content = e.target.result;
-        const mapData = eval(content.replace('my_map = ', ''));
-        if (Array.isArray(mapData)) {
-          // Recuperar el mapeo de IDs
-          const idMapString = localStorage.getItem('idMap');
-          const idMap = idMapString ? new Map(JSON.parse(idMapString)) : null;
 
-          // Si tenemos el mapeo, convertir los números de vuelta a los IDs originales
-          if (idMap) {
-            matriz = mapData.map(row => 
-              row.map(val => val === 0 ? 0 : (idMap.get(val) || val.toString()))
-            );
-          } else {
-            matriz = mapData;
-          }
+        // Extract my_map array string using regex and parse it safely
+        const mapMatch = content.match(/my_map\s*=\s*(\[[\s\S]*?\])\s*;/);
+        if (!mapMatch || !mapMatch[1]) throw new Error("Could not find 'my_map = [...] ;' array definition in file.");
+        const numericMatrix = JSON.parse(mapMatch[1].replace(/,\s*\]/g, ']').replace(/,\s*\n/g,',')); // Parse extracted string, clean up trailing commas if any
 
-          // Reiniciar rotaciones al importar nuevo mapa
-          rotaciones = Array.from({ length: matriz.length }, () => 
-            Array.from({ length: matriz[0].length }, () => 0)
-          );
+        // Extract my_rotations array string using regex and parse it safely
+        const rotMatch = content.match(/my_rotations\s*=\s*(\[[\s\S]*?\])\s*;/);
+         if (!rotMatch || !rotMatch[1]) throw new Error("Could not find 'my_rotations = [...] ;' array definition in file.");
+        const importedRotations = JSON.parse(rotMatch[1].replace(/,\s*\]/g, ']').replace(/,\s*\n/g,',')); // Parse extracted string, clean up trailing commas
 
-          document.getElementById('rows').value = matriz.length;
-          document.getElementById('cols').value = matriz[0].length;
-          localStorage.setItem('savedMap', content);
-          localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
-          generarMatriz(true);
+        // Extract ID mapping from comments
+        const reverseIdMap = new Map();
+        const lines = content.split(/[\r\n]+/); // Split by newline characters
+        let inMappingSection = false;
+        const mappingRegex = /^\/\/\s*(\d+):\s*(.*)$/; // Regex: // NumID: StringID
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('// ID Mapping')) {
+                inMappingSection = true;
+                continue; // Skip the header line
+            }
+            if (trimmedLine.startsWith('// End ID Mapping')) {
+                inMappingSection = false;
+                break; // Stop processing comments
+            }
+            if (inMappingSection) {
+                const match = trimmedLine.match(mappingRegex);
+                if (match) {
+                    const numId = parseInt(match[1], 10);
+                    // Unescape the potentially escaped characters from export
+                    const stringId = match[2].replace(/\\\\n/g, '\n').trim(); 
+                    if (!isNaN(numId)) {
+                        reverseIdMap.set(numId, stringId);
+                    } else {
+                         console.warn("Found invalid numeric ID in mapping comment:", line);
+                    }
+                } else {
+                    console.warn("Skipping non-matching comment line in mapping section:", line);
+                }
+            }
         }
+        if (reverseIdMap.size === 0) {
+            console.warn("No ID mapping found or parsed from comments. Tile IDs might be incorrect.");
+            // Consider whether to throw an error or proceed with potentially wrong IDs
+        }
+
+
+        // --- Data Validation ---
+        const rows = numericMatrix.length;
+        if (rows === 0) {
+           console.log("Imported matrix is empty.");
+           matriz = []; rotaciones = [];
+           document.getElementById('rows').value = 0; document.getElementById('cols').value = 0;
+           generarMatriz(false);
+           return;
+        }
+        const cols = numericMatrix[0]?.length || 0;
+        if (cols === 0) throw new Error("Imported matrix has rows but no columns.");
+
+        if (importedRotations.length !== rows || importedRotations[0]?.length !== cols) {
+            console.warn("Rotation data dimensions mismatch. Resetting rotations.");
+            rotaciones = Array.from({ length: rows }, () => Array(cols).fill(0));
+        } else {
+            rotaciones = importedRotations; // Assign parsed rotations
+        }
+        // --- End Validation ---
+
+
+        // Rebuild global 'matriz' with original string IDs using the parsed map
+        matriz = numericMatrix.map(row =>
+          row.map(numId => {
+            if (numId === 0) return 0;
+            const stringId = reverseIdMap.get(numId);
+            if (!stringId) {
+                console.warn(`Numeric ID ${numId} not found in parsed ID map. Using 0.`);
+                return 0; // Fallback
+            }
+            return stringId;
+          })
+        );
+
+        // Update UI controls
+        document.getElementById('rows').value = rows;
+        document.getElementById('cols').value = cols;
+
+        // --- Save to localStorage (reconstruct idMapArray) ---
+        const idMapArray = Array.from(reverseIdMap.entries()).map(([numId, stringId]) => [stringId, numId]);
+        try {
+           localStorage.setItem('savedMap', JSON.stringify(numericMatrix));
+           localStorage.setItem('idMap', JSON.stringify(idMapArray));
+           localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
+        } catch (lsError) {
+           console.error("Error saving imported map to localStorage:", lsError);
+        }
+        // --- End localStorage Save ---
+
+        // Generate the grid using the newly loaded matriz and rotaciones
+        generarMatriz(true);
+
       } catch (error) {
-        console.error('Error al importar el mapa:', error);
-        alert('Error al importar el mapa. Asegúrate de que el formato sea correcto.');
+        console.error('Error al importar el mapa (.txt):', error);
+        alert('Error al importar el mapa (.txt): ' + error.message + '\nAsegúrate de que el formato del archivo .txt sea correcto (contiene my_map = [...]; my_rotations = [...]; y el mapeo de IDs en comentarios).');
       }
     };
     reader.readAsText(file);
   }
-  event.target.value = '';
+  event.target.value = ''; // Reset file input
 }
 
 document.addEventListener('DOMContentLoaded', () => {
