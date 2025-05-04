@@ -824,6 +824,8 @@ function createSecondLayer() {
     // Position the second layer exactly on top of the first layer
     layer2Container.style.position = "absolute";
     layer2Container.style.top = "0";
+    layer2Container.style.paddingLeft = "10px";
+    layer2Container.style.paddingRight = "10px";
     layer2Container.style.left = "0";
     layer2Container.style.pointerEvents = "auto"; // Allow interactions with this layer
     
