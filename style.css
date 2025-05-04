@@ -350,6 +350,43 @@ body::before {
   transform: translateY(-1px);
 }
 
+/* Second Layer Grid Styles */
+.grid-layer2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10; /* Position above the first grid */
+  pointer-events: auto;
+  background: transparent; /* Make the grid background transparent */
+}
+
+.layer2-cell {
+  background-color: transparent !important; /* Ensure cells are transparent */
+  outline: 0.5px dashed rgba(0, 128, 255, 0.5); /* Blue dashed outline to distinguish from layer 1 */
+  position: relative;
+}
+
+.layer2-cell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 128, 255, 0.1); /* Slight blue tint */
+  pointer-events: none; /* Allow clicks to pass through */
+  z-index: -1;
+}
+
+/* When active layer is 2, highlight layer 2 cells */
+.active-layer2 .layer2-cell {
+  outline: 0.5px solid rgba(0, 128, 255, 0.8); /* Stronger outline when active */
+}
+
+.active-layer2 .layer2-cell::after {
+  background-color: rgba(0, 128, 255, 0.2); /* Stronger tint when active */
+}
+
 textarea {
   width: 100%;
   height: 150px;
