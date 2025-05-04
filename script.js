@@ -828,6 +828,7 @@ function createSecondLayer() {
     layer2Container.style.paddingRight = "10px";
     layer2Container.style.left = "0";
     layer2Container.style.pointerEvents = "auto"; // Allow interactions with this layer
+    layer2Container.style.height = "auto"; // Set height to auto
     
     // Add it to the grid container (as a sibling to the first grid)
     const gridContainer = document.getElementById("grid").parentElement;
@@ -835,8 +836,14 @@ function createSecondLayer() {
     gridContainer.appendChild(layer2Container);
   }
   
-  // Set the grid template to match the first layer
-  layer2Container.style.gridTemplateColumns = `repeat(${cols}, 32px)`;
+  // Get the first grid to match its properties
+  const firstGrid = document.getElementById("grid");
+  
+  // Set the grid template to match the first layer exactly
+  layer2Container.style.gridTemplateColumns = firstGrid.style.gridTemplateColumns;
+  layer2Container.style.gap = firstGrid.style.gap || "0";
+  layer2Container.style.padding = firstGrid.style.padding || "10px";
+  
   layer2Container.innerHTML = '';
   
   // Generate cells for the second layer
@@ -849,6 +856,18 @@ function createSecondLayer() {
       
       // Add transparency to second layer cells to see through to first layer
       cell.style.backgroundColor = "transparent";
+      
+      // Match the exact size of the first layer cells
+      const firstLayerCell = firstGrid.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      if (firstLayerCell) {
+        // Copy the width and height from the first layer cell
+        cell.style.width = getComputedStyle(firstLayerCell).width;
+        cell.style.height = getComputedStyle(firstLayerCell).height;
+      } else {
+        // Default size if first layer cell not found
+        cell.style.width = "32px";
+        cell.style.height = "32px";
+      }
       
       // Add the same event listeners as the first layer
       cell.addEventListener('mousedown', (e) => {
@@ -934,11 +953,9 @@ function createSecondLayer() {
   console.log("Second layer created with dimensions:", rows, "x", cols);
   
   // Make the second layer visible and position it correctly
-  const firstGrid = document.getElementById("grid");
   const firstGridRect = firstGrid.getBoundingClientRect();
   
   layer2Container.style.width = `${firstGridRect.width}px`;
-  layer2Container.style.height = `${firstGridRect.height}px`;
   
   // Return to make it chainable
   return layer2Container;
