@@ -12,6 +12,7 @@ let rotaciones = [];
 // Variables para la segunda capa/matriz
 let matriz2 = [];
 let rotaciones2 = [];
+let items = []; // Nueva matriz para almacenar los items de la segunda capa
 let activeLayer = 1; // 1 = primera capa, 2 = segunda capa
 
 // Cargar mapa al inicio si existe
@@ -495,6 +496,15 @@ function exportarMatriz() {
   }
   fileContentString += '\n];\n\n'; // End my_rotations definition
 
+  // Generate the string for the items matrix
+  fileContentString += 'my_items = [\n';
+  for (let i = 0; i < items.length; i++) {
+    const rowString = items[i] ? items[i].join(',') : '';
+    fileContentString += '  [' + rowString + ']';
+    if (i < items.length - 1) fileContentString += ',\n';
+  }
+  fileContentString += '\n];\n\n'; // End my_items definition
+
   // Add the ID mapping as comments
   fileContentString += '// ID Mapping (Numeric ID: Original ID)\n';
   idMap.forEach((numId, stringId) => {
@@ -522,6 +532,7 @@ function exportarMatriz() {
       localStorage.setItem('idMap', JSON.stringify(idMapArray));
       // Save the potentially fixed rotations to localStorage as well
       localStorage.setItem('rotaciones', JSON.stringify(finalRotations));
+      localStorage.setItem('items', JSON.stringify(items)); // Guardar items en localStorage
   } catch (e) {
       console.error("Error guardando datos en localStorage:", e);
       // Podría ser por exceder el límite de tamaño de localStorage
@@ -572,6 +583,11 @@ function importarMatriz(event) {
          if (!rotMatch || !rotMatch[1]) throw new Error("Could not find 'my_rotations = [...] ;' array definition in file.");
         const importedRotations = JSON.parse(rotMatch[1].replace(/,\s*\]/g, ']').replace(/,\s*\n/g,',')); // Parse extracted string, clean up trailing commas
 
+        // Extract my_items array string using regex and parse it safely
+        const itemsMatch = content.match(/my_items\s*=\s*(\[[\s\S]*?\])\s*;/);
+        if (!itemsMatch || !itemsMatch[1]) throw new Error("Could not find 'my_items = [...] ;' array definition in file.");
+        const importedItems = JSON.parse(itemsMatch[1].replace(/,\s*\]/g, ']').replace(/,\s*\n/g,',')); // Parse extracted string, clean up trailing commas
+
         // Extract ID mapping from comments
         const reverseIdMap = new Map();
         const lines = content.split(/[\r\n]+/); // Split by newline characters
@@ -614,7 +630,7 @@ function importarMatriz(event) {
         const rows = numericMatrix.length;
         if (rows === 0) {
            console.log("Imported matrix is empty.");
-           matriz = []; rotaciones = [];
+           matriz = []; rotaciones = []; items = [];
            document.getElementById('rows').value = 0; document.getElementById('cols').value = 0;
            generarMatriz(false);
            return;
@@ -627,6 +643,13 @@ function importarMatriz(event) {
             rotaciones = Array.from({ length: rows }, () => Array(cols).fill(0));
         } else {
             rotaciones = importedRotations; // Assign parsed rotations
+        }
+
+        if (importedItems.length !== rows || importedItems[0]?.length !== cols) {
+            console.warn("Items data dimensions mismatch. Resetting items.");
+            items = Array.from({ length: rows }, () => Array(cols).fill(0));
+        } else {
+            items = importedItems; // Assign parsed items
         }
         // --- End Validation ---
 
@@ -655,6 +678,7 @@ function importarMatriz(event) {
            localStorage.setItem('idMap', JSON.stringify(idMapArray));
            // Save the potentially fixed rotations to localStorage as well
            localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
+           localStorage.setItem('items', JSON.stringify(items)); // Guardar items en localStorage
         } catch (lsError) {
            console.error("Error saving imported map to localStorage:", lsError);
         }
@@ -806,8 +830,11 @@ function createSecondLayer() {
   const rows = matriz.length || parseInt(document.getElementById("rows").value) || 10;
   const cols = matriz[0]?.length || parseInt(document.getElementById("cols").value) || 15;
 
-  matriz2 = Array.from({ length: rows }, () => Array(cols).fill(0));
-  rotaciones2 = Array.from({ length: rows }, () => Array(cols).fill(0));
+  if (!window.matriz2 || matriz2.length !== rows || matriz2[0].length !== cols) {
+    matriz2 = Array.from({ length: rows }, () => Array(cols).fill(0));
+    rotaciones2 = Array.from({ length: rows }, () => Array(cols).fill(0));
+    items = Array.from({ length: rows }, () => Array(cols).fill(0)); // Inicializar matriz items
+  }
 
   activeLayer = 2;
 
@@ -819,7 +846,7 @@ function createSecondLayer() {
     layer2Container.className = "grid grid-layer2";
     layer2Container.style.position = "absolute";
     layer2Container.style.opacity = "1";
-    layer2Container.style.transition = "opacity 0.3s ease"; // transición suave
+    layer2Container.style.transition = "opacity 0.3s ease";
     layer2Container.style.top = "0";
     layer2Container.style.left = "0";
     layer2Container.style.paddingLeft = "10px";
@@ -831,11 +858,15 @@ function createSecondLayer() {
     gridContainer.style.position = "relative";
     gridContainer.appendChild(layer2Container);
   } else {
-    // Alternar visibilidad: si está visible, ocultar; si está oculta, mostrar
     const isVisible = layer2Container.style.opacity === "1";
     layer2Container.style.opacity = isVisible ? "0" : "1";
     layer2Container.style.pointerEvents = isVisible ? "none" : "auto";
-    if (isVisible) return; // si se ocultó, no continuar generando celdas
+
+    if (!isVisible) {
+      redrawSecondLayerTiles(layer2Container);
+    }
+
+    if (isVisible) return;
   }
 
   const firstGrid = document.getElementById("grid");
@@ -844,6 +875,7 @@ function createSecondLayer() {
   layer2Container.style.padding = firstGrid.style.padding || "10px";
   layer2Container.innerHTML = '';
 
+  // Redibujar las celdas con los datos guardados
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const cell = document.createElement("div");
@@ -861,12 +893,33 @@ function createSecondLayer() {
         cell.style.height = "32px";
       }
 
+      // Mostrar los tiles ya colocados en la segunda capa (matriz2)
+      const tileId = matriz2[r][c];
+      const rotation = rotaciones2[r][c];
+
+      if (tileId && tileId !== 0) {
+        const sourceImg = document.querySelector(`.tiles img[data-id='${tileId}']`);
+        if (sourceImg) {
+          cell.style.backgroundImage = `url('${sourceImg.src}')`;
+          cell.style.backgroundSize = 'cover';
+          cell.dataset.id = tileId;
+          cell.style.transform = `rotate(${rotation}deg)`;
+        }
+      }
+
+      // Si la celda tiene la clase 'custom-cursor', guardarla en la matriz2
+      if (cell.classList.contains("custom-cursor")) {
+        matriz2[r][c] = 'custom-cursor';  // Guardamos 'custom-cursor' en la matriz2
+        console.log(`Celda con custom-cursor en (${r}, ${c})`);
+      }
+
       cell.addEventListener('mousedown', (e) => {
         const row = parseInt(cell.dataset.row);
         const col = parseInt(cell.dataset.col);
 
         if (e.button === 0 && selectedTileId) {
           matriz2[row][col] = selectedTileId;
+          items[row][col] = selectedTileId; // Guardar en la matriz items
           const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
           if (sourceImg) {
             cell.style.backgroundImage = `url('${sourceImg.src}')`;
@@ -878,6 +931,7 @@ function createSecondLayer() {
         } else if (e.button === 1) {
           e.preventDefault();
           matriz2[row][col] = 0;
+          items[row][col] = 0; // Limpiar en la matriz items
           rotaciones2[row][col] = 0;
           cell.style.backgroundImage = '';
           cell.style.transform = '';
@@ -891,6 +945,7 @@ function createSecondLayer() {
 
         if (isPainting && selectedTileId && matriz2[row][col] !== selectedTileId) {
           matriz2[row][col] = selectedTileId;
+          items[row][col] = selectedTileId; // Guardar en la matriz items
           const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
           if (sourceImg) {
             cell.style.backgroundImage = `url('${sourceImg.src}')`;
@@ -924,4 +979,37 @@ function createSecondLayer() {
 
   console.log("Second layer created with dimensions:", rows, "x", cols);
   return layer2Container;
+
+  function redrawSecondLayerTiles(container) {
+    for (let r = 0; r < matriz2.length; r++) {
+      for (let c = 0; c < matriz2[0].length; c++) {
+        const cell = container.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+        const tileId = matriz2[r][c];
+        const rotation = rotaciones2[r][c];
+
+        if (cell) {
+          if (tileId && tileId !== 0) {
+            const sourceImg = document.querySelector(`.tiles img[data-id='${tileId}']`);
+            if (sourceImg) {
+              cell.style.backgroundImage = `url('${sourceImg.src}')`;
+              cell.style.backgroundSize = 'cover';
+              cell.dataset.id = tileId;
+              cell.style.transform = `rotate(${rotation}deg)`;
+              items[r][c] = tileId; // Asegurar que items esté sincronizado
+            }
+          } else {
+            cell.style.backgroundImage = '';
+            cell.style.transform = '';
+            cell.dataset.id = 0;
+            items[r][c] = 0; // Asegurar que items esté sincronizado
+          }
+
+          // Verificar si la celda tiene la clase 'custom-cursor' y mostrarla en consola
+          if (cell.classList.contains("custom-cursor")) {
+            console.log(`Celda con custom-cursor en (${r}, ${c})`);
+          }
+        }
+      }
+    }
+  }
 }
