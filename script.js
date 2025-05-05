@@ -573,123 +573,111 @@ function importarMatriz(event) {
       try {
         const content = e.target.result;
 
-        // Extract my_map array string using regex and parse it safely
-        const mapMatch = content.match(/my_map\s*=\s*(\[[\s\S]*?\])\s*;/);
-        if (!mapMatch || !mapMatch[1]) throw new Error("Could not find 'my_map = [...] ;' array definition in file.");
-        const numericMatrix = JSON.parse(mapMatch[1].replace(/,\s*\]/g, ']').replace(/,\s*\n/g,',')); // Parse extracted string, clean up trailing commas if any
+        // Función auxiliar para extraer y parsear matrices
+        function extractMatrix(content, matrixName) {
+          const regex = new RegExp(`${matrixName}\\s*=\\s*(\\[\\s*\\[.*?\\]\\s*\\])`, 's');
+          const match = content.match(regex);
+          if (!match || !match[1]) {
+            throw new Error(`No se pudo encontrar la matriz '${matrixName}'`);
+          }
+          
+          // Limpiar y parsear la matriz
+          const matrixStr = match[1]
+            .replace(/\s+/g, '') // Remover espacios en blanco
+            .replace(/\],\[/g, '],[') // Normalizar separadores
+            .replace(/objeto(\d+)/g, '"objeto$1"'); // Convertir objetos a strings
+            
+          try {
+            return JSON.parse(matrixStr);
+          } catch (parseError) {
+            throw new Error(`Error al parsear la matriz ${matrixName}: ${parseError.message}`);
+          }
+        }
 
-        // Extract my_rotations array string using regex and parse it safely
-        const rotMatch = content.match(/my_rotations\s*=\s*(\[[\s\S]*?\])\s*;/);
-         if (!rotMatch || !rotMatch[1]) throw new Error("Could not find 'my_rotations = [...] ;' array definition in file.");
-        const importedRotations = JSON.parse(rotMatch[1].replace(/,\s*\]/g, ']').replace(/,\s*\n/g,',')); // Parse extracted string, clean up trailing commas
+        // Extraer las tres matrices
+        const numericMatrix = extractMatrix(content, 'my_map');
+        const importedRotations = extractMatrix(content, 'my_rotations');
+        const importedItems = extractMatrix(content, 'my_items');
 
-        // Extract my_items array string using regex and parse it safely
-        const itemsMatch = content.match(/my_items\s*=\s*(\[[\s\S]*?\])\s*;/);
-        if (!itemsMatch || !itemsMatch[1]) throw new Error("Could not find 'my_items = [...] ;' array definition in file.");
-        const importedItems = JSON.parse(itemsMatch[1].replace(/,\s*\]/g, ']').replace(/,\s*\n/g,',')); // Parse extracted string, clean up trailing commas
+        // Validación de dimensiones
+        const rows = numericMatrix.length;
+        const cols = numericMatrix[0]?.length || 0;
+
+        if (rows === 0 || cols === 0) {
+          throw new Error("La matriz importada está vacía o mal formada");
+        }
+
+        // Validar que todas las matrices tengan las mismas dimensiones
+        if (!importedRotations.every(row => row.length === cols) || importedRotations.length !== rows) {
+          throw new Error("Las dimensiones de la matriz de rotaciones no coinciden");
+        }
+
+        if (!importedItems.every(row => row.length === cols) || importedItems.length !== rows) {
+          throw new Error("Las dimensiones de la matriz de items no coinciden");
+        }
 
         // Extract ID mapping from comments
         const reverseIdMap = new Map();
-        const lines = content.split(/[\r\n]+/); // Split by newline characters
+        const lines = content.split(/[\r\n]+/);
         let inMappingSection = false;
-        const mappingRegex = /^\/\/\s*(\d+):\s*(.*)$/; // Regex: // NumID: StringID
+        const mappingRegex = /^\/\/\s*(\d+):\s*(.*)$/;
 
         for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startsWith('// ID Mapping')) {
-                inMappingSection = true;
-                continue; // Skip the header line
+          const trimmedLine = line.trim();
+          if (trimmedLine.startsWith('// ID Mapping')) {
+            inMappingSection = true;
+            continue;
+          }
+          if (trimmedLine.startsWith('// End ID Mapping')) {
+            inMappingSection = false;
+            break;
+          }
+          if (inMappingSection) {
+            const match = trimmedLine.match(mappingRegex);
+            if (match) {
+              const [, numId, stringId] = match;
+              reverseIdMap.set(parseInt(numId, 10), stringId.trim());
             }
-            if (trimmedLine.startsWith('// End ID Mapping')) {
-                inMappingSection = false;
-                break; // Stop processing comments
-            }
-            if (inMappingSection) {
-                const match = trimmedLine.match(mappingRegex);
-                if (match) {
-                    const numId = parseInt(match[1], 10);
-                    // Unescape the potentially escaped characters from export
-                    const stringId = match[2].replace(/\\\\n/g, '\n').trim(); 
-                    if (!isNaN(numId)) {
-                        reverseIdMap.set(numId, stringId);
-                    } else {
-                         console.warn("Found invalid numeric ID in mapping comment:", line);
-                    }
-                } else {
-                    console.warn("Skipping non-matching comment line in mapping section:", line);
-                }
-            }
-        }
-        if (reverseIdMap.size === 0) {
-            console.warn("No ID mapping found or parsed from comments. Tile IDs might be incorrect.");
-            // Consider whether to throw an error or proceed with potentially wrong IDs
+          }
         }
 
-
-        // --- Data Validation ---
-        const rows = numericMatrix.length;
-        if (rows === 0) {
-           console.log("Imported matrix is empty.");
-           matriz = []; rotaciones = []; items = [];
-           document.getElementById('rows').value = 0; document.getElementById('cols').value = 0;
-           generarMatriz(false);
-           return;
-        }
-        const cols = numericMatrix[0]?.length || 0;
-        if (cols === 0) throw new Error("Imported matrix has rows but no columns.");
-
-        if (importedRotations.length !== rows || importedRotations[0]?.length !== cols) {
-            console.warn("Rotation data dimensions mismatch. Resetting rotations.");
-            rotaciones = Array.from({ length: rows }, () => Array(cols).fill(0));
-        } else {
-            rotaciones = importedRotations; // Assign parsed rotations
-        }
-
-        if (importedItems.length !== rows || importedItems[0]?.length !== cols) {
-            console.warn("Items data dimensions mismatch. Resetting items.");
-            items = Array.from({ length: rows }, () => Array(cols).fill(0));
-        } else {
-            items = importedItems; // Assign parsed items
-        }
-        // --- End Validation ---
-
-
-        // Rebuild global 'matriz' with original string IDs using the parsed map
+        // Convertir matriz numérica a IDs de string
         matriz = numericMatrix.map(row =>
           row.map(numId => {
             if (numId === 0) return 0;
             const stringId = reverseIdMap.get(numId);
             if (!stringId) {
-                console.warn(`Numeric ID ${numId} not found in parsed ID map. Using 0.`);
-                return 0; // Fallback
+              console.warn(`ID numérico ${numId} no encontrado en el mapeo. Usando 0.`);
+              return 0;
             }
             return stringId;
           })
         );
 
-        // Update UI controls
+        // Asignar matrices importadas
+        rotaciones = importedRotations;
+        items = importedItems;
+
+        // Actualizar controles de UI
         document.getElementById('rows').value = rows;
         document.getElementById('cols').value = cols;
 
-        // --- Save to localStorage (reconstruct idMapArray) ---
-        const idMapArray = Array.from(reverseIdMap.entries()).map(([numId, stringId]) => [stringId, numId]);
+        // Guardar en localStorage
         try {
-           localStorage.setItem('savedMap', JSON.stringify(numericMatrix));
-           localStorage.setItem('idMap', JSON.stringify(idMapArray));
-           // Save the potentially fixed rotations to localStorage as well
-           localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
-           localStorage.setItem('items', JSON.stringify(items)); // Guardar items en localStorage
+          localStorage.setItem('savedMap', JSON.stringify(numericMatrix));
+          localStorage.setItem('idMap', JSON.stringify(Array.from(reverseIdMap.entries()).map(([numId, stringId]) => [stringId, numId])));
+          localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
+          localStorage.setItem('items', JSON.stringify(items));
         } catch (lsError) {
-           console.error("Error saving imported map to localStorage:", lsError);
+          console.error("Error al guardar en localStorage:", lsError);
         }
-        // --- End localStorage Save ---
 
-        // Generate the grid using the newly loaded matriz and rotaciones
+        // Regenerar la grilla
         generarMatriz(true);
 
       } catch (error) {
-        console.error('Error al importar el mapa (.txt):', error);
-        alert('Error al importar el mapa (.txt): ' + error.message + '\nAsegúrate de que el formato del archivo .txt sea correcto (contiene my_map = [...]; my_rotations = [...]; y el mapeo de IDs en comentarios).');
+        console.error('Error al importar el mapa:', error);
+        alert(`Error al importar el mapa: ${error.message}\nVerifique el formato del archivo.`);
       }
     };
     reader.readAsText(file);
