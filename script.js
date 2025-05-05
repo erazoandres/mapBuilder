@@ -594,10 +594,20 @@ function importarMatriz(event) {
           }
         }
 
-        // Extraer las tres matrices
+        // Extraer las matrices
         const numericMatrix = extractMatrix(content, 'my_map');
         const importedRotations = extractMatrix(content, 'my_rotations');
-        const importedItems = extractMatrix(content, 'my_items');
+        
+        // Intentar extraer matriz de items si existe, sino crear una vacía
+        let importedItems;
+        try {
+          importedItems = extractMatrix(content, 'my_items');
+        } catch (e) {
+          // Si no existe la matriz de items, crear una vacía con las mismas dimensiones
+          importedItems = Array(numericMatrix.length).fill().map(() => 
+            Array(numericMatrix[0].length).fill(0)
+          );
+        }
 
         // Validación de dimensiones
         const rows = numericMatrix.length;
@@ -657,6 +667,8 @@ function importarMatriz(event) {
         // Asignar matrices importadas
         rotaciones = importedRotations;
         items = importedItems;
+        matriz2 = Array(rows).fill().map(() => Array(cols).fill(0)); // Inicializar matriz2
+        rotaciones2 = Array(rows).fill().map(() => Array(cols).fill(0)); // Inicializar rotaciones2
 
         // Actualizar controles de UI
         document.getElementById('rows').value = rows;
