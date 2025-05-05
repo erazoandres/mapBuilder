@@ -827,13 +827,34 @@ function clearGrid() {
 function createSecondLayer() {
   console.log("Creating second layer matrix...");
 
-  const rows = matriz.length || parseInt(document.getElementById("rows").value) || 10;
-  const cols = matriz[0]?.length || parseInt(document.getElementById("cols").value) || 15;
+  // Obtener las dimensiones de manera segura
+  let rows = 10;
+  let cols = 15;
 
-  if (!window.matriz2 || matriz2.length !== rows || matriz2[0].length !== cols) {
+  // Intentar obtener las dimensiones de la matriz existente
+  if (matriz && matriz.length > 0) {
+    rows = matriz.length;
+    cols = matriz[0].length;
+  } else {
+    // Si no hay matriz, intentar obtener los valores de los inputs
+    const rowsInput = document.getElementById("rows");
+    const colsInput = document.getElementById("cols");
+    if (rowsInput) rows = parseInt(rowsInput.value) || rows;
+    if (colsInput) cols = parseInt(colsInput.value) || cols;
+  }
+
+  // Inicializar las matrices si no existen o si sus dimensiones no coinciden
+  if (!matriz2 || matriz2.length !== rows || matriz2[0]?.length !== cols) {
     matriz2 = Array.from({ length: rows }, () => Array(cols).fill(0));
     rotaciones2 = Array.from({ length: rows }, () => Array(cols).fill(0));
-    items = Array.from({ length: rows }, () => Array(cols).fill(0)); // Inicializar matriz items
+    items = Array.from({ length: rows }, () => Array(cols).fill(0));
+  }
+
+  // Asegurar que cada fila esté inicializada
+  for (let i = 0; i < rows; i++) {
+    if (!matriz2[i]) matriz2[i] = Array(cols).fill(0);
+    if (!rotaciones2[i]) rotaciones2[i] = Array(cols).fill(0);
+    if (!items[i]) items[i] = Array(cols).fill(0);
   }
 
   activeLayer = 2;
