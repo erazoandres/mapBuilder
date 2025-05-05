@@ -802,162 +802,126 @@ function clearGrid() {
 // --- New Function to Create Second Layer ---
 function createSecondLayer() {
   console.log("Creating second layer matrix...");
-  
-  // Get current dimensions from the first matrix
+
   const rows = matriz.length || parseInt(document.getElementById("rows").value) || 10;
   const cols = matriz[0]?.length || parseInt(document.getElementById("cols").value) || 15;
-  
-  // Initialize the second layer matrices as empty (filled with 0s)
+
   matriz2 = Array.from({ length: rows }, () => Array(cols).fill(0));
   rotaciones2 = Array.from({ length: rows }, () => Array(cols).fill(0));
-  
-  // Set the active layer to the second layer
+
   activeLayer = 2;
-  
-  // Create a container for the second layer if it doesn't exist
+
   let layer2Container = document.getElementById("grid-layer2");
+
   if (!layer2Container) {
     layer2Container = document.createElement("div");
     layer2Container.id = "grid-layer2";
     layer2Container.className = "grid grid-layer2";
-    
-    // Position the second layer exactly on top of the first layer
     layer2Container.style.position = "absolute";
+    layer2Container.style.opacity = "1";
+    layer2Container.style.transition = "opacity 0.3s ease"; // transición suave
     layer2Container.style.top = "0";
+    layer2Container.style.left = "0";
     layer2Container.style.paddingLeft = "10px";
     layer2Container.style.paddingRight = "10px";
-    layer2Container.style.left = "0";
-    layer2Container.style.pointerEvents = "auto"; // Allow interactions with this layer
-    layer2Container.style.height = "auto"; // Set height to auto
-    
-    // Add it to the grid container (as a sibling to the first grid)
+    layer2Container.style.pointerEvents = "auto";
+    layer2Container.style.height = "auto";
+
     const gridContainer = document.getElementById("grid").parentElement;
-    gridContainer.style.position = "relative"; // Ensure the container can position absolute children
+    gridContainer.style.position = "relative";
     gridContainer.appendChild(layer2Container);
+  } else {
+    // Alternar visibilidad: si está visible, ocultar; si está oculta, mostrar
+    const isVisible = layer2Container.style.opacity === "1";
+    layer2Container.style.opacity = isVisible ? "0" : "1";
+    layer2Container.style.pointerEvents = isVisible ? "none" : "auto";
+    if (isVisible) return; // si se ocultó, no continuar generando celdas
   }
-  
-  // Get the first grid to match its properties
+
   const firstGrid = document.getElementById("grid");
-  
-  // Set the grid template to match the first layer exactly
   layer2Container.style.gridTemplateColumns = firstGrid.style.gridTemplateColumns;
   layer2Container.style.gap = firstGrid.style.gap || "0";
   layer2Container.style.padding = firstGrid.style.padding || "10px";
-  
   layer2Container.innerHTML = '';
-  
-  // Generate cells for the second layer
+
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const cell = document.createElement("div");
       cell.className = "cell layer2-cell";
       cell.dataset.row = r;
       cell.dataset.col = c;
-      
-      // Add transparency to second layer cells to see through to first layer
       cell.style.backgroundColor = "transparent";
-      
-      // Match the exact size of the first layer cells
+
       const firstLayerCell = firstGrid.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
       if (firstLayerCell) {
-        // Copy the width and height from the first layer cell
         cell.style.width = getComputedStyle(firstLayerCell).width;
         cell.style.height = getComputedStyle(firstLayerCell).height;
       } else {
-        // Default size if first layer cell not found
         cell.style.width = "32px";
         cell.style.height = "32px";
       }
-      
-      // Add the same event listeners as the first layer
+
       cell.addEventListener('mousedown', (e) => {
-        if (e.button === 0) { // Left mouse button
-          if (selectedTileId) {
-            // Place tile on the second layer
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            matriz2[row][col] = selectedTileId;
-            
-            // Update the cell appearance
-            const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
-            if (sourceImg) {
-              cell.style.backgroundImage = `url('${sourceImg.src}')`;
-              cell.style.backgroundSize = 'cover';
-              cell.dataset.id = selectedTileId;
-            }
-            
-            isPainting = true;
-            e.preventDefault();
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+
+        if (e.button === 0 && selectedTileId) {
+          matriz2[row][col] = selectedTileId;
+          const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
+          if (sourceImg) {
+            cell.style.backgroundImage = `url('${sourceImg.src}')`;
+            cell.style.backgroundSize = 'cover';
+            cell.dataset.id = selectedTileId;
           }
-        } else if (e.button === 1) { // Middle mouse button for deletion
+          isPainting = true;
           e.preventDefault();
-          const row = parseInt(cell.dataset.row);
-          const col = parseInt(cell.dataset.col);
-          
-          // Clear the cell data in the second layer
+        } else if (e.button === 1) {
+          e.preventDefault();
           matriz2[row][col] = 0;
           rotaciones2[row][col] = 0;
-          
-          // Clear the visual representation
           cell.style.backgroundImage = '';
           cell.style.transform = '';
           cell.dataset.id = 0;
         }
       });
-      
-      // Support for painting (dragging)
+
       cell.addEventListener('mouseenter', (e) => {
-        if (isPainting && selectedTileId) {
-          const currentRow = parseInt(cell.dataset.row);
-          const currentCol = parseInt(cell.dataset.col);
-          
-          if (matriz2[currentRow][currentCol] !== selectedTileId) {
-            matriz2[currentRow][currentCol] = selectedTileId;
-            
-            // Update the cell appearance
-            const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
-            if (sourceImg) {
-              cell.style.backgroundImage = `url('${sourceImg.src}')`;
-              cell.style.backgroundSize = 'cover';
-              cell.dataset.id = selectedTileId;
-            }
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+
+        if (isPainting && selectedTileId && matriz2[row][col] !== selectedTileId) {
+          matriz2[row][col] = selectedTileId;
+          const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
+          if (sourceImg) {
+            cell.style.backgroundImage = `url('${sourceImg.src}')`;
+            cell.style.backgroundSize = 'cover';
+            cell.dataset.id = selectedTileId;
           }
         }
       });
-      
-      // Support for double-click rotation
+
       cell.addEventListener('dblclick', (e) => {
-        if (e.button === 0) { // Left mouse button
+        if (e.button === 0) {
           const row = parseInt(cell.dataset.row);
           const col = parseInt(cell.dataset.col);
-          
           if (matriz2[row][col] !== 0) {
-            // Rotate by 90 degrees clockwise
             rotaciones2[row][col] = (rotaciones2[row][col] + 90) % 360;
             cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
           }
         }
       });
-      
-      // Prevent drag start interfering with painting
+
       cell.addEventListener('dragstart', (e) => {
-        if (isPainting) {
-          e.preventDefault();
-        }
+        if (isPainting) e.preventDefault();
       });
-      
+
       layer2Container.appendChild(cell);
     }
   }
-  
-  console.log("Second layer created with dimensions:", rows, "x", cols);
-  
-  // Make the second layer visible and position it correctly
+
   const firstGridRect = firstGrid.getBoundingClientRect();
-  
   layer2Container.style.width = `${firstGridRect.width}px`;
-  
-  // Return to make it chainable
+
+  console.log("Second layer created with dimensions:", rows, "x", cols);
   return layer2Container;
 }
-// --- End Create Second Layer Function ---
