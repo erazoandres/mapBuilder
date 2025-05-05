@@ -902,8 +902,8 @@ function createSecondLayer() {
         cell.style.height = "32px";
       }
 
-      // Mostrar los tiles ya colocados en la segunda capa (matriz2)
-      const tileId = matriz2[r][c];
+      // Mostrar los tiles ya colocados en la segunda capa (usando items)
+      const tileId = items[r][c];
       const rotation = rotaciones2[r][c];
 
       if (tileId && tileId !== 0) {
@@ -993,7 +993,7 @@ function createSecondLayer() {
     for (let r = 0; r < matriz2.length; r++) {
       for (let c = 0; c < matriz2[0].length; c++) {
         const cell = container.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
-        const tileId = matriz2[r][c];
+        const tileId = items[r][c];
         const rotation = rotaciones2[r][c];
 
         if (cell) {
