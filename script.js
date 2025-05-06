@@ -928,32 +928,33 @@ function createSecondLayer() {
         }
       }
 
-      // Si la celda tiene la clase 'custom-cursor', guardarla en la matriz2
-      if (cell.classList.contains("custom-cursor")) {
-        matriz2[r][c] = 'custom-cursor';  // Guardamos 'custom-cursor' en la matriz2
-        console.log(`Celda con custom-cursor en (${r}, ${c})`);
-      }
-
+      // Eventos de mouse para la segunda capa
       cell.addEventListener('mousedown', (e) => {
-        const row = parseInt(cell.dataset.row);
-        const col = parseInt(cell.dataset.col);
-
-        if (e.button === 0 && selectedTileId) {
+        if (e.button === 0 && selectedTileId) { // Click izquierdo
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+          
           matriz2[row][col] = selectedTileId;
-          items[row][col] = selectedTileId; // Guardar en la matriz items
+          items[row][col] = selectedTileId;
+          
           const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
           if (sourceImg) {
             cell.style.backgroundImage = `url('${sourceImg.src}')`;
             cell.style.backgroundSize = 'cover';
             cell.dataset.id = selectedTileId;
           }
+          
           isPainting = true;
           e.preventDefault();
-        } else if (e.button === 1) {
+        } else if (e.button === 1) { // Click medio
           e.preventDefault();
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+          
           matriz2[row][col] = 0;
-          items[row][col] = 0; // Limpiar en la matriz items
+          items[row][col] = 0;
           rotaciones2[row][col] = 0;
+          
           cell.style.backgroundImage = '';
           cell.style.transform = '';
           cell.dataset.id = 0;
@@ -961,17 +962,20 @@ function createSecondLayer() {
       });
 
       cell.addEventListener('mouseenter', (e) => {
-        const row = parseInt(cell.dataset.row);
-        const col = parseInt(cell.dataset.col);
-
-        if (isPainting && selectedTileId && matriz2[row][col] !== selectedTileId) {
-          matriz2[row][col] = selectedTileId;
-          items[row][col] = selectedTileId; // Guardar en la matriz items
-          const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
-          if (sourceImg) {
-            cell.style.backgroundImage = `url('${sourceImg.src}')`;
-            cell.style.backgroundSize = 'cover';
-            cell.dataset.id = selectedTileId;
+        if (isPainting && selectedTileId) {
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+          
+          if (matriz2[row][col] !== selectedTileId) {
+            matriz2[row][col] = selectedTileId;
+            items[row][col] = selectedTileId;
+            
+            const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
+            if (sourceImg) {
+              cell.style.backgroundImage = `url('${sourceImg.src}')`;
+              cell.style.backgroundSize = 'cover';
+              cell.dataset.id = selectedTileId;
+            }
           }
         }
       });
@@ -980,6 +984,7 @@ function createSecondLayer() {
         if (e.button === 0) {
           const row = parseInt(cell.dataset.row);
           const col = parseInt(cell.dataset.col);
+          
           if (matriz2[row][col] !== 0) {
             rotaciones2[row][col] = (rotaciones2[row][col] + 90) % 360;
             cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
@@ -1000,35 +1005,35 @@ function createSecondLayer() {
 
   console.log("Second layer created with dimensions:", rows, "x", cols);
   return layer2Container;
+}
 
-  function redrawSecondLayerTiles(container) {
-    for (let r = 0; r < matriz2.length; r++) {
-      for (let c = 0; c < matriz2[0].length; c++) {
-        const cell = container.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
-        const tileId = items[r][c];
-        const rotation = rotaciones2[r][c];
+function redrawSecondLayerTiles(container) {
+  for (let r = 0; r < matriz2.length; r++) {
+    for (let c = 0; c < matriz2[0].length; c++) {
+      const cell = container.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+      const tileId = items[r][c];
+      const rotation = rotaciones2[r][c];
 
-        if (cell) {
-          if (tileId && tileId !== 0) {
-            const sourceImg = document.querySelector(`.tiles img[data-id='${tileId}']`);
-            if (sourceImg) {
-              cell.style.backgroundImage = `url('${sourceImg.src}')`;
-              cell.style.backgroundSize = 'cover';
-              cell.dataset.id = tileId;
-              cell.style.transform = `rotate(${rotation}deg)`;
-              items[r][c] = tileId; // Asegurar que items esté sincronizado
-            }
-          } else {
-            cell.style.backgroundImage = '';
-            cell.style.transform = '';
-            cell.dataset.id = 0;
-            items[r][c] = 0; // Asegurar que items esté sincronizado
+      if (cell) {
+        if (tileId && tileId !== 0) {
+          const sourceImg = document.querySelector(`.tiles img[data-id='${tileId}']`);
+          if (sourceImg) {
+            cell.style.backgroundImage = `url('${sourceImg.src}')`;
+            cell.style.backgroundSize = 'cover';
+            cell.dataset.id = tileId;
+            cell.style.transform = `rotate(${rotation}deg)`;
+            items[r][c] = tileId; // Asegurar que items esté sincronizado
           }
+        } else {
+          cell.style.backgroundImage = '';
+          cell.style.transform = '';
+          cell.dataset.id = 0;
+          items[r][c] = 0; // Asegurar que items esté sincronizado
+        }
 
-          // Verificar si la celda tiene la clase 'custom-cursor' y mostrarla en consola
-          if (cell.classList.contains("custom-cursor")) {
-            console.log(`Celda con custom-cursor en (${r}, ${c})`);
-          }
+        // Verificar si la celda tiene la clase 'custom-cursor' y mostrarla en consola
+        if (cell.classList.contains("custom-cursor")) {
+          console.log(`Celda con custom-cursor en (${r}, ${c})`);
         }
       }
     }
