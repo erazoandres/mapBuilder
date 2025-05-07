@@ -827,6 +827,22 @@ function clearGrid() {
 function createSecondLayer() {
   console.log("Creating second layer matrix...");
 
+  // Obtener el botón y cambiar su apariencia
+  const button = document.getElementById('generate-new-btn');
+  const isVisible = button.classList.contains('visible');
+  
+  // Cambiar el estado del botón
+  button.classList.toggle('visible');
+  
+  // Actualizar el contenido del botón con un efecto de slide
+  if (isVisible) {
+    button.innerHTML = '<span class="slide-icon">👁️</span>';
+    button.title = "Mostrar segunda capa";
+  } else {
+    button.innerHTML = '<span class="slide-icon">👁️‍🗨️</span>';
+    button.title = "Ocultar segunda capa";
+  }
+
   // Obtener las dimensiones de manera segura
   let rows = 10;
   let cols = 15;
@@ -867,7 +883,7 @@ function createSecondLayer() {
     layer2Container.className = "grid grid-layer2";
     layer2Container.style.position = "absolute";
     layer2Container.style.opacity = "1";
-    layer2Container.style.transition = "opacity 0.3s ease";
+    layer2Container.style.transition = "opacity 0.3s ease, transform 0.3s ease";
     layer2Container.style.top = "0";
     layer2Container.style.left = "0";
     layer2Container.style.paddingLeft = "10px";
@@ -881,6 +897,7 @@ function createSecondLayer() {
   } else {
     const isVisible = layer2Container.style.opacity === "1";
     layer2Container.style.opacity = isVisible ? "0" : "1";
+    layer2Container.style.transform = isVisible ? "translateY(-10px)" : "translateY(0)";
     layer2Container.style.pointerEvents = isVisible ? "none" : "auto";
 
     if (!isVisible) {

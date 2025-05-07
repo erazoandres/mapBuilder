@@ -17,7 +17,10 @@
       <button onclick="document.getElementById('importFile').click()">Importar</button>
       <input type="file" id="importFile" style="display: none" accept=".txt" onchange="importarMatriz(event)" />
       <button id="clear-grid-btn">Clear Grid</button>
-      <button id="generate-new-btn" onclick="createSecondLayer()">OK</button>
+      <label class="switch">
+        <input type="checkbox" id="generate-new-btn" onchange="createSecondLayer()">
+        <span class="slider round"></span>
+      </label>
     </div>
     
     <div class="editor">
