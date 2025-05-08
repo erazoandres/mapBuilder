@@ -17,11 +17,13 @@ HITBOX_HEIGHT = TILE_SIZE * 0.8
 # Lista de elementos colisionables
 ELEMENTOS_COLISIONABLES = [2, 3]  # IDs de los tiles con los que colisiona el personaje
 ITEMS_COLISIONABLES = [5]  # IDs de los items con los que colisiona el personaje
+OBJETOS_INTERACTIVOS = [4]  # IDs de los objetos con los que se puede interactuar
 
 personaje = Actor("creature", topleft = (200, 100))
 personaje.velocidad_y = 0
 personaje.velocidad_x = 0
 personaje.en_suelo = False
+personaje.objetos_cerca = []  # Lista para almacenar objetos cercanos
 
 # Mapa base
 my_map = [
@@ -104,6 +106,34 @@ def verificar_colision_vertical(x, y):
             return True
     return False
 
+def verificar_interaccion():
+    # Limpiar lista de objetos cercanos
+    personaje.objetos_cerca = []
+    
+    # Verificar en un área alrededor del personaje
+    radio_interaccion = TILE_SIZE * 1.5  # Radio de interacción
+    
+    # Obtener el rango de tiles a verificar
+    inicio_x = max(0, int((personaje.x - radio_interaccion) // TILE_SIZE))
+    fin_x = min(len(my_map[0]), int((personaje.x + radio_interaccion) // TILE_SIZE) + 1)
+    inicio_y = max(0, int((personaje.y - radio_interaccion) // TILE_SIZE))
+    fin_y = min(len(my_map), int((personaje.y + radio_interaccion) // TILE_SIZE) + 1)
+    
+    # Verificar cada tile en el rango
+    for y in range(inicio_y, fin_y):
+        for x in range(inicio_x, fin_x):
+            tile_id, item_id = my_map[y][x], my_items[y][x]
+            
+            # Si hay un objeto interactivo, agregarlo a la lista
+            if item_id in OBJETOS_INTERACTIVOS:
+                # Calcular distancia al personaje
+                dist_x = (x * TILE_SIZE + TILE_SIZE/2) - (personaje.x + TILE_SIZE/2)
+                dist_y = (y * TILE_SIZE + TILE_SIZE/2) - (personaje.y + TILE_SIZE/2)
+                distancia = (dist_x**2 + dist_y**2)**0.5
+                
+                if distancia <= radio_interaccion:
+                    personaje.objetos_cerca.append((x, y, item_id))
+
 def update():
     # Aplicar gravedad
     personaje.velocidad_y += GRAVEDAD
@@ -144,12 +174,28 @@ def update():
     
     # Mantener al personaje dentro de los límites horizontales
     personaje.x = max(0, min(WIDTH - TILE_SIZE, personaje.x))
+    
+    # Verificar objetos interactivos cercanos
+    verificar_interaccion()
 
 def on_key_down(key):
     # Salto
     if key == keys.SPACE and personaje.en_suelo:
         personaje.velocidad_y = VELOCIDAD_SALTO
         personaje.en_suelo = False
+    
+    # Interacción con objetos
+    if key == keys.E and personaje.objetos_cerca:
+        # Interactuar con el objeto más cercano
+        x, y, item_id = personaje.objetos_cerca[0]
+        print(f"Interactuando con objeto {item_id} en posición ({x}, {y})")
+        # Eliminar el objeto del mapa de items
+        my_items[y][x] = 0
+        # Eliminar el objeto de la lista de objetos cercanos
+        personaje.objetos_cerca.remove((x, y, item_id))
+        # Aquí puedes agregar la lógica específica para cada tipo de objeto
+        if item_id == 4:
+            print("¡Has interactuado con el objeto 4!")
 
 def draw():
     screen.clear()
@@ -161,22 +207,25 @@ def draw():
 
             # Dibuja el fondo del mapa (tiles)
             tile_id = my_map[fila][columna]
-            tile_name = "tile" + str(tile_id)  # Ajusta el nombre de la imagen
+            tile_name = "tile" + str(tile_id)
             tile_actor = Actor(tile_name, (x + TILE_SIZE // 2, y + TILE_SIZE // 2))
             tile_actor.draw()
 
             # Dibuja los ítems sobre el mapa
             item_id = my_items[fila][columna]
-            if item_id != 0:  # Si hay un ítem (no es 0)
-                item_name = "tile" + str(item_id)  # Usa el mismo formato de nombre
+            if item_id != 0:
+                item_name = "tile" + str(item_id)
                 item_actor = Actor(item_name, (x + TILE_SIZE // 2, y + TILE_SIZE // 2))
                 item_actor.draw()
+                
+                # Resaltar objetos interactivos cercanos
+                if item_id in OBJETOS_INTERACTIVOS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
+                    screen.draw.rect(Rect((x, y), (TILE_SIZE, TILE_SIZE)), (255, 255, 0))
 
     personaje.draw()
     
-    # Dibujar hitbox (para debug)
-    # screen.draw.rect(Rect((personaje.x + TILE_SIZE//2 - HITBOX_WIDTH/2, 
-    #                       personaje.y + TILE_SIZE//2 - HITBOX_HEIGHT/2), 
-    #                      (HITBOX_WIDTH, HITBOX_HEIGHT)), (255, 0, 0))
+    # Mostrar mensaje de interacción si hay objetos cercanos
+    if personaje.objetos_cerca:
+        screen.draw.text("Presiona E para interactuar", (10, 10), color="white")
 
 pgzrun.go()
