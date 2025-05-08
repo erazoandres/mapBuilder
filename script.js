@@ -434,144 +434,120 @@ function exportarMatriz() {
   // Crear un mapa de conversión de IDs (string ID -> numerical ID)
   const idMap = new Map();
   let nextId = 1;
+
   // Asegurarse que matriz[0] exista antes de acceder a su longitud
   const rows = matriz.length;
   const cols = (rows > 0 && matriz[0]) ? matriz[0].length : 0;
   if (rows === 0 || cols === 0) {
     console.warn("Exportando matriz vacía.");
-    // Opcional: manejar este caso, quizás no guardar nada o guardar vacío
     localStorage.setItem('savedMap', JSON.stringify([]));
     localStorage.setItem('idMap', JSON.stringify([]));
     localStorage.setItem('rotaciones', JSON.stringify([]));
-    return; // Salir si la matriz está vacía o mal formada
+    return;
   }
 
+  // Crear matrices numéricas para ambas capas
   const matrizNumerica = Array.from({ length: rows }, () => Array(cols).fill(0));
+  const itemsNumerica = Array.from({ length: rows }, () => Array(cols).fill(0));
 
-  // Construir el mapa de IDs y la matriz numérica
+  // Función auxiliar para asignar IDs numéricos
+  function asignarIdNumerico(stringId) {
+    if (stringId === 0) return 0;
+    if (!idMap.has(stringId)) {
+      idMap.set(stringId, nextId++);
+    }
+    return idMap.get(stringId);
+  }
+
+  // Procesar la primera matriz (my_map)
   for (let i = 0; i < rows; i++) {
-    // Asegurarse que la fila exista
     if (!matriz[i] || matriz[i].length !== cols) {
-        console.error(`Fila ${i} inválida o con longitud incorrecta. Saltando fila en exportación.`);
-        // Rellenar la fila numérica con 0s si hay inconsistencia
-        matrizNumerica[i] = Array(cols).fill(0);
-        continue;
+      console.error(`Fila ${i} inválida o con longitud incorrecta. Saltando fila en exportación.`);
+      matrizNumerica[i] = Array(cols).fill(0);
+      continue;
     }
     for (let j = 0; j < cols; j++) {
-      const valor = matriz[i][j]; // valor should be the string ID or 0
-      if (valor !== 0) {
-        // Validar que 'valor' sea un string ID esperado o manejar si no lo es
-        if (typeof valor !== 'string'){
-            console.warn(`Valor inesperado en [${i}][${j}]: ${valor}. Tratando como 0.`);
-            matrizNumerica[i][j] = 0;
-            continue;
-        }
-        if (!idMap.has(valor)) {
-          idMap.set(valor, nextId++);
-        }
-        matrizNumerica[i][j] = idMap.get(valor);
-      } else {
-        matrizNumerica[i][j] = 0;
-      }
+      const valor = matriz[i][j];
+      matrizNumerica[i][j] = asignarIdNumerico(valor);
     }
   }
 
-  // Convertir el mapa a un array para guardarlo en JSON (stringID, numID)
-  const idMapArray = Array.from(idMap.entries());
-
-  // --- Prepare final rotations ensuring correct dimensions --- 
-  let finalRotations = rotaciones;
-  if (!(rotaciones.length === rows && rotaciones[0]?.length === cols)) {
-      console.warn("Dimensiones de 'rotaciones' no coinciden con la matriz. Exportando rotaciones vacías.");
-      finalRotations = Array.from({ length: rows }, () => Array(cols).fill(0));
+  // Procesar la segunda matriz (my_items)
+  for (let i = 0; i < rows; i++) {
+    if (!items[i] || items[i].length !== cols) {
+      console.error(`Fila ${i} inválida o con longitud incorrecta en items. Saltando fila en exportación.`);
+      itemsNumerica[i] = Array(cols).fill(0);
+      continue;
+    }
+    for (let j = 0; j < cols; j++) {
+      const valor = items[i][j];
+      itemsNumerica[i][j] = asignarIdNumerico(valor);
+    }
   }
 
-  // --- Start .txt file generation logic --- 
-  // Generate the string for the numeric matrix
+  // Convertir el mapa a un array para guardarlo en JSON
+  const idMapArray = Array.from(idMap.entries());
+
+  // Preparar rotaciones finales
+  let finalRotations = rotaciones;
+  if (!(rotaciones.length === rows && rotaciones[0]?.length === cols)) {
+    console.warn("Dimensiones de 'rotaciones' no coinciden con la matriz. Exportando rotaciones vacías.");
+    finalRotations = Array.from({ length: rows }, () => Array(cols).fill(0));
+  }
+
+  // Generar contenido del archivo
   let fileContentString = 'my_map = [\n';
   for (let i = 0; i < matrizNumerica.length; i++) {
     fileContentString += '  [' + matrizNumerica[i].join(',') + ']';
     if (i < matrizNumerica.length - 1) fileContentString += ',\n';
   }
-  fileContentString += '\n];\n\n'; // End my_map definition
+  fileContentString += '\n];\n\n';
 
-  // Generate the string for the rotations matrix
   fileContentString += 'my_rotations = [\n';
-   for (let i = 0; i < finalRotations.length; i++) {
-      // Ensure row exists before joining
-      const rowString = finalRotations[i] ? finalRotations[i].join(',') : '';
-      fileContentString += '  [' + rowString + ']';
-      if (i < finalRotations.length - 1) fileContentString += ',\n';
-  }
-  fileContentString += '\n];\n\n'; // End my_rotations definition
-
-  // Generate the string for the items matrix
-  fileContentString += 'my_items = [\n';
-  for (let i = 0; i < items.length; i++) {
-    const rowString = items[i] ? items[i].join(',') : '';
+  for (let i = 0; i < finalRotations.length; i++) {
+    const rowString = finalRotations[i] ? finalRotations[i].join(',') : '';
     fileContentString += '  [' + rowString + ']';
-    if (i < items.length - 1) fileContentString += ',\n';
+    if (i < finalRotations.length - 1) fileContentString += ',\n';
   }
-  fileContentString += '\n];\n\n'; // End my_items definition
+  fileContentString += '\n];\n\n';
 
-  // Add the ID mapping as comments
+  fileContentString += 'my_items = [\n';
+  for (let i = 0; i < itemsNumerica.length; i++) {
+    const rowString = itemsNumerica[i] ? itemsNumerica[i].join(',') : '';
+    fileContentString += '  [' + rowString + ']';
+    if (i < itemsNumerica.length - 1) fileContentString += ',\n';
+  }
+  fileContentString += '\n];\n\n';
+
+  // Agregar el mapeo de IDs como comentarios
   fileContentString += '// ID Mapping (Numeric ID: Original ID)\n';
   idMap.forEach((numId, stringId) => {
-      // Sanitize stringId in case it contains characters that break comments (like newline)
-      const safeStringId = stringId.replace(/\n/g, '\\n').replace(/\r/g, ''); 
-      fileContentString += `// ${numId}: ${safeStringId}\n`;
+    const safeStringId = stringId.replace(/\n/g, '\\n').replace(/\r/g, '');
+    fileContentString += `// ${numId}: ${safeStringId}\n`;
   });
-  fileContentString += '// End ID Mapping\n'; // Add an end marker for easier parsing
+  fileContentString += '// End ID Mapping\n';
 
-  // Create a Blob with the text data
+  // Crear y descargar el archivo
   const blob = new Blob([fileContentString], { type: 'text/plain;charset=utf-8' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'mapa_exportado.txt'; // Change file extension back to .txt
+  a.download = 'mapa_exportado.txt';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
-  // --- End .txt file generation logic ---
 
-  // Guardar la matriz numérica y el mapeo en localStorage como JSON (Keep this part)
+  // Guardar en localStorage
   try {
-      localStorage.setItem('savedMap', JSON.stringify(matrizNumerica));
-      localStorage.setItem('idMap', JSON.stringify(idMapArray));
-      // Save the potentially fixed rotations to localStorage as well
-      localStorage.setItem('rotaciones', JSON.stringify(finalRotations));
-      localStorage.setItem('items', JSON.stringify(items)); // Guardar items en localStorage
+    localStorage.setItem('savedMap', JSON.stringify(matrizNumerica));
+    localStorage.setItem('idMap', JSON.stringify(idMapArray));
+    localStorage.setItem('rotaciones', JSON.stringify(finalRotations));
+    localStorage.setItem('items', JSON.stringify(itemsNumerica));
   } catch (e) {
-      console.error("Error guardando datos en localStorage:", e);
-      // Podría ser por exceder el límite de tamaño de localStorage
-      alert("Error al guardar el mapa en almacenamiento local. Posiblemente el mapa es demasiado grande.");
-      return; // Return if localStorage saving fails
+    console.error("Error guardando datos en localStorage:", e);
+    alert("Error al guardar el mapa en almacenamiento local. Posiblemente el mapa es demasiado grande.");
   }
-
-  // --- Remove JSON export logic ---
-  // // Create an object containing all data for export
-  // const exportData = {
-  //   matrixData: matrizNumerica,
-  //   idMapping: idMapArray,
-  //   rotationData: finalRotations // Use the validated or generated empty rotations
-  // };
-  
-  // // Convert the export object to a JSON string
-  // const exportJsonString = JSON.stringify(exportData, null, 2); // null, 2 for pretty printing
-
-  // // Create a Blob with the JSON data
-  // const blob = new Blob([exportJsonString], { type: 'application/json;charset=utf-8' });
-  // const url = window.URL.createObjectURL(blob);
-  // const a = document.createElement('a');
-  // a.href = url;
-  // a.download = 'mapa_exportado.json'; // Change file extension
-  // document.body.appendChild(a);
-  // a.click();
-  // document.body.removeChild(a);
-  // window.URL.revokeObjectURL(url);
-  // --- End JSON export logic ---
-
 }
 
 function importarMatriz(event) {
@@ -594,7 +570,6 @@ function importarMatriz(event) {
           const matrixStr = match[1]
             .replace(/\s+/g, '') // Remover espacios en blanco
             .replace(/\],\[/g, '],[') // Normalizar separadores
-            .replace(/objeto(\d+)/g, '"objeto$1"'); // Convertir objetos a strings
             
           try {
             return JSON.parse(matrixStr);
@@ -603,21 +578,11 @@ function importarMatriz(event) {
           }
         }
 
-        // Extraer las matrices
+        // Extraer las matrices numéricas
         const numericMatrix = extractMatrix(content, 'my_map');
         const importedRotations = extractMatrix(content, 'my_rotations');
+        const importedItems = extractMatrix(content, 'my_items');
         
-        // Intentar extraer matriz de items si existe, sino crear una vacía
-        let importedItems;
-        try {
-          importedItems = extractMatrix(content, 'my_items');
-        } catch (e) {
-          // Si no existe la matriz de items, crear una vacía con las mismas dimensiones
-          importedItems = Array(numericMatrix.length).fill().map(() => 
-            Array(numericMatrix[0].length).fill(0)
-          );
-        }
-
         // Validación de dimensiones
         const rows = numericMatrix.length;
         const cols = numericMatrix[0]?.length || 0;
@@ -635,7 +600,7 @@ function importarMatriz(event) {
           throw new Error("Las dimensiones de la matriz de items no coinciden");
         }
 
-        // Extract ID mapping from comments
+        // Extraer el mapeo de IDs de los comentarios
         const reverseIdMap = new Map();
         const lines = content.split(/[\r\n]+/);
         let inMappingSection = false;
@@ -660,8 +625,21 @@ function importarMatriz(event) {
           }
         }
 
-        // Convertir matriz numérica a IDs de string
+        // Convertir matrices numéricas a IDs de string
         matriz = numericMatrix.map(row =>
+          row.map(numId => {
+            if (numId === 0) return 0;
+            const stringId = reverseIdMap.get(numId);
+            if (!stringId) {
+              console.warn(`ID numérico ${numId} no encontrado en el mapeo. Usando 0.`);
+              return 0;
+            }
+            return stringId;
+          })
+        );
+
+        // Convertir matriz de items a IDs de string
+        items = importedItems.map(row =>
           row.map(numId => {
             if (numId === 0) return 0;
             const stringId = reverseIdMap.get(numId);
@@ -675,7 +653,6 @@ function importarMatriz(event) {
 
         // Asignar matrices importadas
         rotaciones = importedRotations;
-        items = importedItems;
         matriz2 = Array(rows).fill().map(() => Array(cols).fill(0)); // Inicializar matriz2
         rotaciones2 = Array(rows).fill().map(() => Array(cols).fill(0)); // Inicializar rotaciones2
 
@@ -688,7 +665,7 @@ function importarMatriz(event) {
           localStorage.setItem('savedMap', JSON.stringify(numericMatrix));
           localStorage.setItem('idMap', JSON.stringify(Array.from(reverseIdMap.entries()).map(([numId, stringId]) => [stringId, numId])));
           localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
-          localStorage.setItem('items', JSON.stringify(items));
+          localStorage.setItem('items', JSON.stringify(importedItems));
           localStorage.setItem('matriz2', JSON.stringify(matriz2));
           localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
         } catch (lsError) {
@@ -701,12 +678,10 @@ function importarMatriz(event) {
         // Si existe la capa 2, actualizarla
         const layer2Container = document.getElementById("grid-layer2");
         if (layer2Container) {
-          // Asegurarse de que la capa 2 esté visible
           layer2Container.style.opacity = "1";
           layer2Container.style.pointerEvents = "auto";
           redrawSecondLayerTiles(layer2Container);
         } else {
-          // Si no existe la capa 2, crearla
           createSecondLayer();
         }
 
