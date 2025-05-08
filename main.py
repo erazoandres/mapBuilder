@@ -46,4 +46,12 @@ def draw():
             tile_name = "tile" + str(tile_id)  # Ajusta el nombre de la imagen
             tile_actor = Actor(tile_name, (x + TILE_SIZE // 2, y + TILE_SIZE // 2))
             tile_actor.draw()
+
+            # Dibuja los ítems sobre el mapa
+            item_id = my_items[fila][columna]
+            if item_id != 0:  # Si hay un ítem (no es 0)
+                item_name = "tile" + str(item_id)  # Usa el mismo formato de nombre
+                item_actor = Actor(item_name, (x + TILE_SIZE // 2, y + TILE_SIZE // 2))
+                item_actor.draw()
+
 pgzrun.go()
