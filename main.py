@@ -39,31 +39,33 @@ personaje.objetos_cerca = []  # Lista para almacenar objetos cercanos
 
 # Mapa base
 my_map = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [2,2,1,1,1,1,1,1,1,1,1,2,1,1,1],
-    [2,2,1,1,2,2,1,1,1,1,2,2,2,1,1],
-    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
-    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
-    [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
-]
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,2,2,2,2,2,2,2,2,2,2,2,2,2],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [2,2,1,1,1,1,1,1,1,1,1,1,1,2,2],
+  [1,2,2,2,2,1,1,1,1,1,1,2,2,2,1],
+  [1,1,1,1,1,2,2,2,1,1,2,2,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [2,2,2,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,2,1,1,1,1,1,1,1,1,1,1,1,2],
+  [1,1,2,2,2,2,2,2,2,2,2,2,2,2,2]
+];
 
 # Ítems sobre el mapa
 my_items = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,4,0,5,0,0,0,0,0,0,5,4,0,0],
-    [0,0,5,5,5,0,0,4,0,0,0,5,5,0,0],
-    [0,0,0,0,0,0,0,5,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-]
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [4,0,3,0,0,0,0,0,0,0,0,0,3,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
+  [3,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+  [0,0,0,0,0,0,0,0,4,0,0,0,0,0,0],
+  [4,4,0,3,0,0,0,0,0,0,0,0,0,0,0],
+  [4,4,0,0,0,0,0,0,0,0,0,0,0,0,0]
+];
+# Estado del juego
+game_over = False
 
 def obtener_tile_en_posicion(x, y):
     columna = int(x // TILE_SIZE)
@@ -188,7 +190,43 @@ def verificar_colision_horizontal_enemigo(x, y):
             return True
     return False
 
+def verificar_colision_con_enemigo():
+    # Obtener el centro del personaje
+    personaje_centro_x = personaje.x + TILE_SIZE/2
+    personaje_centro_y = personaje.y + TILE_SIZE/2
+    
+    # Calcular los límites de la hitbox del personaje
+    personaje_izq = personaje_centro_x - HITBOX_WIDTH/2
+    personaje_der = personaje_centro_x + HITBOX_WIDTH/2
+    personaje_arriba = personaje_centro_y - HITBOX_HEIGHT/2
+    personaje_abajo = personaje_centro_y + HITBOX_HEIGHT/2
+    
+    # Verificar colisión con cada enemigo
+    for enemigo in enemigos:
+        # Obtener el centro del enemigo
+        enemigo_centro_x = enemigo[0] + TILE_SIZE/2
+        enemigo_centro_y = enemigo[1] + TILE_SIZE/2
+        
+        # Calcular los límites de la hitbox del enemigo
+        enemigo_izq = enemigo_centro_x - ENEMY_HITBOX_WIDTH/2
+        enemigo_der = enemigo_centro_x + ENEMY_HITBOX_WIDTH/2
+        enemigo_arriba = enemigo_centro_y - ENEMY_HITBOX_HEIGHT/2
+        enemigo_abajo = enemigo_centro_y + ENEMY_HITBOX_HEIGHT/2
+        
+        # Verificar si hay colisión
+        if (personaje_der > enemigo_izq and 
+            personaje_izq < enemigo_der and 
+            personaje_abajo > enemigo_arriba and 
+            personaje_arriba < enemigo_abajo):
+            return True
+    return False
+
 def update():
+    global game_over
+    
+    if game_over:
+        return
+        
     # Aplicar gravedad
     personaje.velocidad_y += GRAVEDAD
     
@@ -198,8 +236,10 @@ def update():
     # Movimiento horizontal
     if keyboard.left:
         personaje.velocidad_x -= ACELERACION
+        personaje.image = "creature_left"
     if keyboard.right:
         personaje.velocidad_x += ACELERACION
+        personaje.image = "creature"
     
     # Limitar velocidad horizontal
     personaje.velocidad_x = max(-VELOCIDAD_MOVIMIENTO, min(VELOCIDAD_MOVIMIENTO, personaje.velocidad_x))
@@ -266,7 +306,23 @@ def update():
         # Mantener dentro de los límites horizontales
         enemigo[0] = max(0, min(WIDTH - TILE_SIZE, enemigo[0]))
 
+    # Verificar colisión con enemigos
+    if verificar_colision_con_enemigo():
+        game_over = True
+
 def on_key_down(key):
+    global game_over
+    
+    if game_over:
+        if key == keys.R:
+            # Reiniciar el juego
+            game_over = False
+            personaje.x = 200
+            personaje.y = 100
+            personaje.velocidad_x = 0
+            personaje.velocidad_y = 0
+            return
+            
     # Salto
     if key == keys.SPACE and personaje.en_suelo:
         personaje.velocidad_y = VELOCIDAD_SALTO
@@ -308,7 +364,12 @@ def draw():
                 
                 # Resaltar objetos interactivos cercanos
                 if item_id in OBJETOS_INTERACTIVOS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
-                    screen.draw.rect(Rect((x, y), (TILE_SIZE, TILE_SIZE)), (255, 255, 0))
+                    # Dibujar un borde amarillo alrededor del objeto
+                    for i in range(4):  # Grosor del borde
+                        screen.draw.line((x + i, y + i), (x + TILE_SIZE - i, y + i), (255, 255, 0))  # Línea superior
+                        screen.draw.line((x + i, y + i), (x + i, y + TILE_SIZE - i), (255, 255, 0))  # Línea izquierda
+                        screen.draw.line((x + TILE_SIZE - i, y + i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))  # Línea derecha
+                        screen.draw.line((x + i, y + TILE_SIZE - i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))  # Línea inferior
 
     personaje.draw()
     
@@ -320,5 +381,10 @@ def draw():
     for enemigo in enemigos:
         enemy_actor = Actor("enemy1", topleft=(enemigo[0], enemigo[1]))
         enemy_actor.draw()
+        
+    # Mostrar mensaje de game over
+    if game_over:
+        screen.draw.text("¡Has perdido!", center=(WIDTH//2, HEIGHT//2), fontsize=60, color="red")
+        screen.draw.text("Presiona R para reiniciar", center=(WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
 
 pgzrun.go()
