@@ -9,15 +9,27 @@ VELOCIDAD_SALTO = -15
 VELOCIDAD_MOVIMIENTO = 5
 ACELERACION = 0.5
 FRICCION = 0.85
+VELOCIDAD_ENEMIGO = 2
 
 # Tamaño de la hitbox del personaje (más pequeña que el tile)
 HITBOX_WIDTH = TILE_SIZE * 0.8
 HITBOX_HEIGHT = TILE_SIZE * 0.8
 
+# Tamaño de la hitbox de los enemigos
+ENEMY_HITBOX_WIDTH = TILE_SIZE * 0.8
+ENEMY_HITBOX_HEIGHT = TILE_SIZE * 0.9  # Aumentamos la altura para que se detenga más arriba
+
 # Lista de elementos colisionables
 ELEMENTOS_COLISIONABLES = [2, 3]  # IDs de los tiles con los que colisiona el personaje
 ITEMS_COLISIONABLES = [5]  # IDs de los items con los que colisiona el personaje
 OBJETOS_INTERACTIVOS = [4]  # IDs de los objetos con los que se puede interactuar
+
+# Lista de enemigos [x, y, velocidad_x, velocidad_y, dirección, en_suelo]
+enemigos = [
+    [200, 180, 0, 0, -1, False],  # x, y, vel_x, vel_y, dirección, en_suelo
+    [200, 180, 0, 0, 1, False],
+    [200, 100, 0, 0, 1, False]
+]
 
 personaje = Actor("creature", topleft = (200, 100))
 personaje.velocidad_y = 0
@@ -134,6 +146,48 @@ def verificar_interaccion():
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
 
+def verificar_colision_vertical_enemigo(x, y):
+    # Ajustar las coordenadas para el punto topleft
+    x_centro = x + TILE_SIZE // 2
+    y_centro = y + TILE_SIZE // 2
+    
+    # Solo verificar los puntos superior e inferior
+    puntos_colision = [
+        (x_centro, y_centro - ENEMY_HITBOX_HEIGHT/2),  # Centro superior
+        (x_centro, y_centro + ENEMY_HITBOX_HEIGHT/2 + 9),  # Centro inferior (ajustado más arriba)
+        (x_centro - ENEMY_HITBOX_WIDTH/3, y_centro - ENEMY_HITBOX_HEIGHT/2),  # Izquierda superior
+        (x_centro + ENEMY_HITBOX_WIDTH/3, y_centro - ENEMY_HITBOX_HEIGHT/2),  # Derecha superior
+        (x_centro - ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2 - 5),  # Izquierda inferior (ajustado)
+        (x_centro + ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2 - 5)   # Derecha inferior (ajustado)
+    ]
+    
+    for punto_x, punto_y in puntos_colision:
+        tile_id, item_id = obtener_tile_en_posicion(punto_x, punto_y)
+        if tile_id in ELEMENTOS_COLISIONABLES or item_id in ITEMS_COLISIONABLES:
+            return True
+    return False
+
+def verificar_colision_horizontal_enemigo(x, y):
+    # Ajustar las coordenadas para el punto topleft
+    x_centro = x + TILE_SIZE // 2
+    y_centro = y + TILE_SIZE // 2
+    
+    # Solo verificar los puntos laterales
+    puntos_colision = [
+        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro),   # Centro izquierda
+        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro),   # Centro derecha
+        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro - ENEMY_HITBOX_HEIGHT/3),  # Izquierda superior
+        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro - ENEMY_HITBOX_HEIGHT/3),  # Derecha superior
+        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro + ENEMY_HITBOX_HEIGHT/3),  # Izquierda inferior
+        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro + ENEMY_HITBOX_HEIGHT/3)   # Derecha inferior
+    ]
+    
+    for punto_x, punto_y in puntos_colision:
+        tile_id, item_id = obtener_tile_en_posicion(punto_x, punto_y)
+        if tile_id in ELEMENTOS_COLISIONABLES or item_id in ITEMS_COLISIONABLES:
+            return True
+    return False
+
 def update():
     # Aplicar gravedad
     personaje.velocidad_y += GRAVEDAD
@@ -177,6 +231,40 @@ def update():
     
     # Verificar objetos interactivos cercanos
     verificar_interaccion()
+
+    # Actualizar enemigos
+    for enemigo in enemigos:
+        # Aplicar gravedad
+        enemigo[3] += GRAVEDAD
+        
+        # Aplicar velocidad horizontal
+        enemigo[2] = VELOCIDAD_ENEMIGO * enemigo[4]
+        
+        # Intentar mover horizontalmente
+        nueva_x = enemigo[0] + enemigo[2]
+        if not verificar_colision_horizontal_enemigo(nueva_x, enemigo[1]):
+            enemigo[0] = nueva_x
+        else:
+            enemigo[4] *= -1  # Cambiar dirección
+        
+        # Intentar mover verticalmente
+        nueva_y = enemigo[1] + enemigo[3]
+        if not verificar_colision_vertical_enemigo(enemigo[0], nueva_y):
+            enemigo[1] = nueva_y
+            enemigo[5] = False
+        else:
+            if enemigo[3] > 0:  # Si está cayendo
+                enemigo[5] = True
+            enemigo[3] = 0
+        
+        # Verificar colisión con el suelo
+        if enemigo[1] >= HEIGHT - TILE_SIZE:
+            enemigo[1] = HEIGHT - TILE_SIZE
+            enemigo[3] = 0
+            enemigo[5] = True
+        
+        # Mantener dentro de los límites horizontales
+        enemigo[0] = max(0, min(WIDTH - TILE_SIZE, enemigo[0]))
 
 def on_key_down(key):
     # Salto
@@ -227,5 +315,10 @@ def draw():
     # Mostrar mensaje de interacción si hay objetos cercanos
     if personaje.objetos_cerca:
         screen.draw.text("Presiona E para interactuar", (10, 10), color="white")
+
+    # Dibujar enemigos
+    for enemigo in enemigos:
+        enemy_actor = Actor("enemy1", topleft=(enemigo[0], enemigo[1]))
+        enemy_actor.draw()
 
 pgzrun.go()
