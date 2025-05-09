@@ -352,14 +352,14 @@ def draw():
             # Dibuja el fondo del mapa (tiles)
             tile_id = my_map[fila][columna]
             tile_name = "tile" + str(tile_id)
-            tile_actor = Actor(tile_name, (x + TILE_SIZE // 2, y + TILE_SIZE // 2))
+            tile_actor = Actor(tile_name, topleft=(x, y))
             tile_actor.draw()
 
             # Dibuja los ítems sobre el mapa
             item_id = my_items[fila][columna]
             if item_id != 0:
                 item_name = "tile" + str(item_id)
-                item_actor = Actor(item_name, (x + TILE_SIZE // 2, y + TILE_SIZE // 2))
+                item_actor = Actor(item_name, topleft=(x, y))
                 item_actor.draw()
                 
                 # Resaltar objetos interactivos cercanos
