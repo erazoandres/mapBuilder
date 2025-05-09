@@ -26,9 +26,9 @@ OBJETOS_INTERACTIVOS = [4]  # IDs de los objetos con los que se puede interactua
 
 # Lista de enemigos [x, y, velocidad_x, velocidad_y, dirección, en_suelo]
 enemigos = [
-    [200, 180, 0, 0, -1, False],  # x, y, vel_x, vel_y, dirección, en_suelo
-    [200, 180, 0, 0, 1, False],
-    [200, 100, 0, 0, 1, False]
+    [200, 0, 0, 0, -1, False],  # x, y, vel_x, vel_y, dirección, en_suelo
+    [200, 190, 0, 0, 1, False],
+    [250, 100, 0, 0, 1, False]
 ]
 
 personaje = Actor("creature", topleft = (200, 100))
