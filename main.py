@@ -2,70 +2,88 @@ import pgzrun
 
 # Constantes
 TILE_SIZE = 32
-WIDTH = 15 * TILE_SIZE
-HEIGHT = 10 * TILE_SIZE
+
+# Dimensiones de la matriz
+MATRIZ_ANCHO = 30
+MATRIZ_ALTO = 10
+
+# Dimensiones de la ventana
+WIDTH = MATRIZ_ANCHO * TILE_SIZE
+HEIGHT = MATRIZ_ALTO * TILE_SIZE
 GRAVEDAD = 0.8
 VELOCIDAD_SALTO = -15
-VELOCIDAD_MOVIMIENTO = 5
-ACELERACION = 0.5
-FRICCION = 0.85
 VELOCIDAD_ENEMIGO = 2
 
 # Tamaño de la hitbox del personaje (más pequeña que el tile)
-HITBOX_WIDTH = TILE_SIZE * 0.8
-HITBOX_HEIGHT = TILE_SIZE * 0.8
+HITBOX_WIDTH = TILE_SIZE 
+HITBOX_HEIGHT = TILE_SIZE
 
 # Tamaño de la hitbox de los enemigos
 ENEMY_HITBOX_WIDTH = TILE_SIZE * 0.8
-ENEMY_HITBOX_HEIGHT = TILE_SIZE * 0.9  # Aumentamos la altura para que se detenga más arriba
+ENEMY_HITBOX_HEIGHT = TILE_SIZE * 0.8  # Reducimos la altura para que se detecte mejor el suelo
 
 # Lista de elementos colisionables
-ELEMENTOS_COLISIONABLES = [2, 3]  # IDs de los tiles con los que colisiona el personaje
+ELEMENTOS_COLISIONABLES = [1]  # IDs de los tiles con los que colisiona el personaje
 ITEMS_COLISIONABLES = [5]  # IDs de los items con los que colisiona el personaje
 OBJETOS_INTERACTIVOS = [4]  # IDs de los objetos con los que se puede interactuar
 
 # Lista de enemigos [x, y, velocidad_x, velocidad_y, dirección, en_suelo]
 enemigos = [
-    [200, 0, 0, 0, -1, False],  # x, y, vel_x, vel_y, dirección, en_suelo
+    [200, 0, 0, 0, 1, False],  # x, y, vel_x, vel_y, dirección, en_suelo
     [200, 190, 0, 0, 1, False],
     [250, 100, 0, 0, 1, False]
 ]
 
-personaje = Actor("creature", topleft = (200, 100))
-personaje.velocidad_y = 0
-personaje.velocidad_x = 0
+personaje = Actor("creature")
+personaje.velocidad_y = 0  # Solo mantenemos la velocidad vertical para la gravedad
 personaje.en_suelo = False
-personaje.objetos_cerca = []  # Lista para almacenar objetos cercanos
+personaje.objetos_cerca = []
 
 # Mapa base
 my_map = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,1,2,2,2,2,2,2,2,2,2,2,2,2,2],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [2,2,1,1,1,1,1,1,1,1,1,1,1,2,2],
-  [1,2,2,2,2,1,1,1,1,1,1,2,2,2,1],
-  [1,1,1,1,1,2,2,2,1,1,2,2,1,1,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [2,2,2,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,1,2,1,1,1,1,1,1,1,1,1,1,1,2],
-  [1,1,2,2,2,2,2,2,2,2,2,2,2,2,2]
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+  [0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+  [0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+];
+
+my_rotations = [
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ];
 
 # Ítems sobre el mapa
 my_items = [
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [4,0,3,0,0,0,0,0,0,0,0,0,3,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,3],
-  [3,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
-  [0,0,0,0,0,0,0,0,4,0,0,0,0,0,0],
-  [4,4,0,3,0,0,0,0,0,0,0,0,0,0,0],
-  [4,4,0,0,0,0,0,0,0,0,0,0,0,0,0]
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ];
 # Estado del juego
 game_over = False
+modo_desarrollador = False  # Nueva variable para el modo desarrollador
+personaje_moviendose = False  # Nueva variable para controlar el movimiento
+personaje_direccion = 0  # 0: quieto, -1: izquierda, 1: derecha
 
 def obtener_tile_en_posicion(x, y):
     columna = int(x // TILE_SIZE)
@@ -77,18 +95,19 @@ def obtener_tile_en_posicion(x, y):
     return None, None
 
 def verificar_colision_horizontal(x, y):
-    # Ajustar las coordenadas para el punto topleft
-    x_centro = x + TILE_SIZE // 2
-    y_centro = y + TILE_SIZE // 2
+    # Ajustar las coordenadas para el punto bottomright
+    x_centro = x + TILE_SIZE  # Ahora x es la esquina inferior derecha
+    y_centro = y + TILE_SIZE  # Ahora y es la esquina inferior derecha
     
-    # Solo verificar los puntos laterales
+    # Solo verificar los puntos laterales con un margen más pequeño
+    margen = 2  # Reducimos el margen para hacer la colisión menos sensible
     puntos_colision = [
-        (x_centro - HITBOX_WIDTH/2, y_centro),   # Centro izquierda
-        (x_centro + HITBOX_WIDTH/2, y_centro),   # Centro derecha
-        (x_centro - HITBOX_WIDTH/2, y_centro - HITBOX_HEIGHT/3),  # Izquierda superior
-        (x_centro + HITBOX_WIDTH/2, y_centro - HITBOX_HEIGHT/3),  # Derecha superior
-        (x_centro - HITBOX_WIDTH/2, y_centro + HITBOX_HEIGHT/3),  # Izquierda inferior
-        (x_centro + HITBOX_WIDTH/2, y_centro + HITBOX_HEIGHT/3)   # Derecha inferior
+        (x_centro - TILE_SIZE, y_centro - TILE_SIZE/2),  # Izquierda centro
+        (x_centro, y_centro - TILE_SIZE/2),  # Derecha centro
+        (x_centro - TILE_SIZE, y_centro - TILE_SIZE + margen),  # Izquierda inferior
+        (x_centro, y_centro - TILE_SIZE + margen),  # Derecha inferior
+        (x_centro - TILE_SIZE, y_centro - TILE_SIZE/4),  # Izquierda superior
+        (x_centro, y_centro - TILE_SIZE/4)  # Derecha superior
     ]
     
     for punto_x, punto_y in puntos_colision:
@@ -99,18 +118,19 @@ def verificar_colision_horizontal(x, y):
     return False
 
 def verificar_colision_vertical(x, y):
-    # Ajustar las coordenadas para el punto topleft
-    x_centro = x + TILE_SIZE // 2
-    y_centro = y + TILE_SIZE // 2
+    # Ajustar las coordenadas para el punto bottomright
+    x_centro = x + TILE_SIZE
+    y_centro = y + TILE_SIZE
     
     # Solo verificar los puntos superior e inferior
+    margen = 2
     puntos_colision = [
-        (x_centro, y_centro - HITBOX_HEIGHT/2),  # Centro superior
-        (x_centro, y_centro + HITBOX_HEIGHT/2),  # Centro inferior
-        (x_centro - HITBOX_WIDTH/3, y_centro - HITBOX_HEIGHT/2),  # Izquierda superior
-        (x_centro + HITBOX_WIDTH/3, y_centro - HITBOX_HEIGHT/2),  # Derecha superior
-        (x_centro - HITBOX_WIDTH/3, y_centro + HITBOX_HEIGHT/2),  # Izquierda inferior
-        (x_centro + HITBOX_WIDTH/3, y_centro + HITBOX_HEIGHT/2)   # Derecha inferior
+        (x_centro - TILE_SIZE/2, y_centro - TILE_SIZE),  # Centro superior
+        (x_centro - TILE_SIZE/2, y_centro),  # Centro inferior
+        (x_centro - TILE_SIZE + margen, y_centro - TILE_SIZE),  # Izquierda superior
+        (x_centro - margen, y_centro - TILE_SIZE),  # Derecha superior
+        (x_centro - TILE_SIZE + margen, y_centro),  # Izquierda inferior
+        (x_centro - margen, y_centro)  # Derecha inferior
     ]
     
     for punto_x, punto_y in puntos_colision:
@@ -156,11 +176,11 @@ def verificar_colision_vertical_enemigo(x, y):
     # Solo verificar los puntos superior e inferior
     puntos_colision = [
         (x_centro, y_centro - ENEMY_HITBOX_HEIGHT/2),  # Centro superior
-        (x_centro, y_centro + ENEMY_HITBOX_HEIGHT/2 + 9),  # Centro inferior (ajustado más arriba)
+        (x_centro, y_centro + ENEMY_HITBOX_HEIGHT/2),  # Centro inferior (ajustado más abajo)
         (x_centro - ENEMY_HITBOX_WIDTH/3, y_centro - ENEMY_HITBOX_HEIGHT/2),  # Izquierda superior
         (x_centro + ENEMY_HITBOX_WIDTH/3, y_centro - ENEMY_HITBOX_HEIGHT/2),  # Derecha superior
-        (x_centro - ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2 - 5),  # Izquierda inferior (ajustado)
-        (x_centro + ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2 - 5)   # Derecha inferior (ajustado)
+        (x_centro - ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2),  # Izquierda inferior (ajustado más abajo)
+        (x_centro + ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2)   # Derecha inferior (ajustado más abajo)
     ]
     
     for punto_x, punto_y in puntos_colision:
@@ -170,20 +190,19 @@ def verificar_colision_vertical_enemigo(x, y):
     return False
 
 def verificar_colision_horizontal_enemigo(x, y):
-    # Ajustar las coordenadas para el punto topleft
     x_centro = x + TILE_SIZE // 2
     y_centro = y + TILE_SIZE // 2
-    
-    # Solo verificar los puntos laterales
+
+    margen = 2  # Puedes probar con 2, 3 o más
     puntos_colision = [
-        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro),   # Centro izquierda
-        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro),   # Centro derecha
-        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro - ENEMY_HITBOX_HEIGHT/3),  # Izquierda superior
-        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro - ENEMY_HITBOX_HEIGHT/3),  # Derecha superior
-        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro + ENEMY_HITBOX_HEIGHT/3),  # Izquierda inferior
-        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro + ENEMY_HITBOX_HEIGHT/3)   # Derecha inferior
+        (x_centro - ENEMY_HITBOX_WIDTH/2 - margen, y_centro),   # Centro izquierda
+        (x_centro + ENEMY_HITBOX_WIDTH/2 + margen, y_centro),   # Centro derecha
+        (x_centro - ENEMY_HITBOX_WIDTH/2 - margen, y_centro - ENEMY_HITBOX_HEIGHT/3),
+        (x_centro + ENEMY_HITBOX_WIDTH/2 + margen, y_centro - ENEMY_HITBOX_HEIGHT/3),
+        (x_centro - ENEMY_HITBOX_WIDTH/2 - margen, y_centro + ENEMY_HITBOX_HEIGHT/3),
+        (x_centro + ENEMY_HITBOX_WIDTH/2 + margen, y_centro + ENEMY_HITBOX_HEIGHT/3)
     ]
-    
+
     for punto_x, punto_y in puntos_colision:
         tile_id, item_id = obtener_tile_en_posicion(punto_x, punto_y)
         if tile_id in ELEMENTOS_COLISIONABLES or item_id in ITEMS_COLISIONABLES:
@@ -230,25 +249,6 @@ def update():
     # Aplicar gravedad
     personaje.velocidad_y += GRAVEDAD
     
-    # Aplicar fricción horizontal
-    personaje.velocidad_x *= FRICCION
-    
-    # Movimiento horizontal
-    if keyboard.left:
-        personaje.velocidad_x -= ACELERACION
-        personaje.image = "creature_left"
-    if keyboard.right:
-        personaje.velocidad_x += ACELERACION
-        personaje.image = "creature"
-    
-    # Limitar velocidad horizontal
-    personaje.velocidad_x = max(-VELOCIDAD_MOVIMIENTO, min(VELOCIDAD_MOVIMIENTO, personaje.velocidad_x))
-    
-    # Intentar mover horizontalmente
-    nueva_x = personaje.x + personaje.velocidad_x
-    if not verificar_colision_horizontal(nueva_x, personaje.y):
-        personaje.x = nueva_x
-    
     # Intentar mover verticalmente
     nueva_y = personaje.y + personaje.velocidad_y
     if not verificar_colision_vertical(personaje.x, nueva_y):
@@ -282,7 +282,11 @@ def update():
         
         # Intentar mover horizontalmente
         nueva_x = enemigo[0] + enemigo[2]
-        if not verificar_colision_horizontal_enemigo(nueva_x, enemigo[1]):
+        
+        # Verificar límites de la ventana
+        if nueva_x <= 0 or nueva_x >= WIDTH - TILE_SIZE:
+            enemigo[4] *= -1  # Cambiar dirección
+        elif not verificar_colision_horizontal_enemigo(nueva_x, enemigo[1]):
             enemigo[0] = nueva_x
         else:
             enemigo[4] *= -1  # Cambiar dirección
@@ -302,31 +306,46 @@ def update():
             enemigo[1] = HEIGHT - TILE_SIZE
             enemigo[3] = 0
             enemigo[5] = True
-        
-        # Mantener dentro de los límites horizontales
-        enemigo[0] = max(0, min(WIDTH - TILE_SIZE, enemigo[0]))
 
     # Verificar colisión con enemigos
     if verificar_colision_con_enemigo():
         game_over = True
 
 def on_key_down(key):
-    global game_over
+    global game_over, modo_desarrollador, personaje_moviendose, personaje_direccion
     
     if game_over:
         if key == keys.R:
             # Reiniciar el juego
             game_over = False
-            personaje.x = 200
-            personaje.y = 100
+            personaje.x = 0
+            personaje.y = 0
             personaje.velocidad_x = 0
             personaje.velocidad_y = 0
             return
+    
+    # Activar/desactivar modo desarrollador
+    if key == keys.F:
+        modo_desarrollador = not modo_desarrollador
             
     # Salto
     if key == keys.SPACE and personaje.en_suelo:
         personaje.velocidad_y = VELOCIDAD_SALTO
         personaje.en_suelo = False
+    
+    # Movimiento horizontal por celdas (ahora funciona en el aire también)
+    if key == keys.LEFT:
+        nueva_x = personaje.x - TILE_SIZE
+        if nueva_x >= 0 and not verificar_colision_horizontal(nueva_x, personaje.y):
+            personaje.x = nueva_x
+        personaje.image = "creature_left"
+        personaje_direccion = -1
+    if key == keys.RIGHT:
+        nueva_x = personaje.x + TILE_SIZE
+        if nueva_x <= WIDTH - TILE_SIZE and not verificar_colision_horizontal(nueva_x, personaje.y):
+            personaje.x = nueva_x
+        personaje.image = "creature"
+        personaje_direccion = 1
     
     # Interacción con objetos
     if key == keys.E and personaje.objetos_cerca:
@@ -371,7 +390,9 @@ def draw():
                         screen.draw.line((x + TILE_SIZE - i, y + i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))  # Línea derecha
                         screen.draw.line((x + i, y + TILE_SIZE - i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))  # Línea inferior
 
-    personaje.draw()
+    # Dibujar el personaje
+    personaje_actor = Actor(personaje.image, bottomright=(personaje.x + TILE_SIZE, personaje.y + TILE_SIZE))
+    personaje_actor.draw()
     
     # Mostrar mensaje de interacción si hay objetos cercanos
     if personaje.objetos_cerca:
@@ -379,12 +400,40 @@ def draw():
 
     # Dibujar enemigos
     for enemigo in enemigos:
-        enemy_actor = Actor("enemy1", topleft=(enemigo[0], enemigo[1]))
+        enemy_actor = Actor("enemy1", bottomright=(enemigo[0] + TILE_SIZE, enemigo[1] + TILE_SIZE))
         enemy_actor.draw()
         
     # Mostrar mensaje de game over
     if game_over:
         screen.draw.text("¡Has perdido!", center=(WIDTH//2, HEIGHT//2), fontsize=60, color="red")
         screen.draw.text("Presiona R para reiniciar", center=(WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
+
+    # Modo desarrollador: mostrar hitboxes
+    if modo_desarrollador:
+        # Hitbox del personaje
+        screen.draw.rect(
+            Rect(
+                personaje.x,  # x desde la esquina inferior derecha
+                personaje.y, # y desde la esquina inferior derecha
+                TILE_SIZE,
+                TILE_SIZE
+            ),
+            (255, 0, 0)  # Color rojo para el personaje
+        )
+
+        # Hitboxes de los enemigos
+        for enemigo in enemigos:
+            screen.draw.rect(
+                Rect(
+                    enemigo[0],  # x desde la esquina inferior derecha
+                    enemigo[1], # y desde la esquina inferior derecha
+                    TILE_SIZE,
+                    TILE_SIZE
+                ),
+                (0, 255, 0)  # Color verde para los enemigos
+            )
+
+        # Mostrar mensaje de modo desarrollador
+        screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow")
 
 pgzrun.go()
