@@ -37,11 +37,11 @@ my_items = [
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ];
 
-// ID Mapping (Numeric ID: Original ID)
-// 1: fondo4
-// 2: terreno10
-// 3: terreno8
-// 4: terreno6
-// 5: objeto13
-// 6: terreno12
-// End ID Mapping
+# ID Mapping (Numeric ID: Original ID)
+# 1: fondo4
+# 2: terreno10
+# 3: terreno8
+# 4: terreno6
+# 5: objeto13
+# 6: terreno12
+# End ID Mapping

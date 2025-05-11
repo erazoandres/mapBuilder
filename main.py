@@ -39,33 +39,36 @@ personaje.velocidad_y = 0
 personaje.en_suelo = False
 personaje.objetos_cerca = []
 
-# Mapa base
-my_map = [
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
-  [0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-  [0,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-]
+# Cargar mapas desde archivo
+with open('mapa.txt', 'r') as f:
+    exec(f.read())
 
-# Ítems sobre el mapa
-my_items = [
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-]
+# Expandir el mapa base a 30x10 rellenando con 0s
+expanded_map = []
+for row in my_map:
+    new_row = row + [0] * (30 - len(row))
+    expanded_map.append(new_row)
+while len(expanded_map) < 10:
+    expanded_map.append([0] * 30)
+my_map = expanded_map
+
+# Expandir items a 30x10 rellenando con 0s
+expanded_items = []
+for row in my_items:
+    new_row = row + [0] * (30 - len(row))
+    expanded_items.append(new_row)
+while len(expanded_items) < 10:
+    expanded_items.append([0] * 30)
+my_items = expanded_items
+
+# Expandir rotaciones a 30x10 rellenando con 0s
+expanded_rotations = []
+for row in my_rotations:
+    new_row = row + [0] * (30 - len(row))
+    expanded_rotations.append(new_row)
+while len(expanded_rotations) < 10:
+    expanded_rotations.append([0] * 30)
+my_rotations = expanded_rotations
 
 # Estado del juego
 game_over = False
@@ -85,12 +88,12 @@ def verificar_colision_horizontal(x, y):
     y_centro = y + TILE_SIZE
     
     puntos_colision = [
-        (x_centro - HITBOX_WIDTH, y_centro - HITBOX_HEIGHT/2),
-        (x_centro, y_centro - HITBOX_HEIGHT/2),
-        (x_centro - HITBOX_WIDTH, y_centro - HITBOX_HEIGHT),
-        (x_centro, y_centro - HITBOX_HEIGHT),
-        (x_centro - HITBOX_WIDTH, y_centro),
-        (x_centro, y_centro)
+        (x_centro - HITBOX_WIDTH, y_centro - HITBOX_HEIGHT/2),    # Punto superior izquierdo medio
+        (x_centro, y_centro - HITBOX_HEIGHT/2),                   # Punto superior derecho medio
+        (x_centro - HITBOX_WIDTH, y_centro - HITBOX_HEIGHT),      # Punto superior izquierdo
+        (x_centro, y_centro - HITBOX_HEIGHT),                     # Punto superior derecho
+        (x_centro - HITBOX_WIDTH, y_centro),                      # Punto inferior izquierdo
+        (x_centro, y_centro)                                      # Punto inferior derecho
     ]
     
     for punto_x, punto_y in puntos_colision:

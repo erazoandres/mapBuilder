@@ -495,7 +495,7 @@ function exportarMatriz() {
     finalRotations = Array.from({ length: rows }, () => Array(cols).fill(0));
   }
 
-  // Generar contenido del archivo
+  // Generar contenido del archivo con el formato deseado
   let fileContentString = 'my_map = [\n';
   for (let i = 0; i < matrizNumerica.length; i++) {
     fileContentString += '  [' + matrizNumerica[i].join(',') + ']';
@@ -505,34 +505,41 @@ function exportarMatriz() {
 
   fileContentString += 'my_rotations = [\n';
   for (let i = 0; i < finalRotations.length; i++) {
-    const rowString = finalRotations[i] ? finalRotations[i].join(',') : '';
-    fileContentString += '  [' + rowString + ']';
+    fileContentString += '  [' + finalRotations[i].join(',') + ']';
     if (i < finalRotations.length - 1) fileContentString += ',\n';
   }
   fileContentString += '\n];\n\n';
 
   fileContentString += 'my_items = [\n';
   for (let i = 0; i < itemsNumerica.length; i++) {
-    const rowString = itemsNumerica[i] ? itemsNumerica[i].join(',') : '';
-    fileContentString += '  [' + rowString + ']';
+    fileContentString += '  [' + itemsNumerica[i].join(',') + ']';
     if (i < itemsNumerica.length - 1) fileContentString += ',\n';
   }
   fileContentString += '\n];\n\n';
 
   // Agregar el mapeo de IDs como comentarios
-  fileContentString += '// ID Mapping (Numeric ID: Original ID)\n';
+  fileContentString += '# ID Mapping (Numeric ID: Original ID)\n';
   idMap.forEach((numId, stringId) => {
     const safeStringId = stringId.replace(/\n/g, '\\n').replace(/\r/g, '');
-    fileContentString += `// ${numId}: ${safeStringId}\n`;
+    const sourceImg = document.querySelector(`.tiles img[data-id='${stringId}']`);
+    if (sourceImg) {
+      const fullPath = sourceImg.src;
+      const pathParts = fullPath.split('/');
+      const fileName = pathParts.pop();
+      const folderName = pathParts.pop();
+      fileContentString += `# ${numId}: ${safeStringId} (${folderName}/${fileName})\n`;
+    } else {
+      fileContentString += `# ${numId}: ${safeStringId} (unknown)\n`;
+    }
   });
-  fileContentString += '// End ID Mapping\n';
+  fileContentString += '# End ID Mapping\n';
 
   // Crear y descargar el archivo
   const blob = new Blob([fileContentString], { type: 'text/plain;charset=utf-8' });
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'mapa_exportado.txt';
+  a.download = 'mapa.txt';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
