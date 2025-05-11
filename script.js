@@ -6,6 +6,9 @@ let cursorImg = null;
 let selectedContainer = null;
 let isPainting = false; // Flag for painting mode
 
+// Constantes
+const TILE_SIZE = 32; // Tamaño de cada tile en píxeles
+
 // Matriz para almacenar las rotaciones de cada celda
 let rotaciones = [];
 
@@ -532,7 +535,11 @@ function exportarMatriz() {
       fileContentString += `# ${numId}: ${safeStringId} (unknown)\n`;
     }
   });
-  fileContentString += '# End ID Mapping\n';
+  fileContentString += '# End ID Mapping\n\n';
+  
+  // Agregar información del tamaño de la matriz
+  fileContentString += `# Matrix Size: ${rows}x${cols}\n`;
+  fileContentString += `# Tile Size: ${TILE_SIZE}px\n`;
 
   // Crear y descargar el archivo
   const blob = new Blob([fileContentString], { type: 'text/plain;charset=utf-8' });
