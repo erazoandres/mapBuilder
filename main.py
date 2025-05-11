@@ -39,9 +39,35 @@ personaje.velocidad_y = 0
 personaje.en_suelo = False
 personaje.objetos_cerca = []
 
+# Diccionario para mapear IDs numéricos a rutas de imágenes
+id_to_image = {}
+
 # Cargar mapas desde archivo
 with open('mapa.txt', 'r') as f:
-    exec(f.read())
+    content = f.read()
+    # Ejecutar el contenido del archivo para cargar las matrices
+    exec(content)
+    
+    # Procesar el mapeo de IDs
+    in_mapping = False
+    for line in content.split('\n'):
+        line = line.strip()
+        if line.startswith('# ID Mapping'):
+            in_mapping = True
+            continue
+        elif line.startswith('# End ID Mapping'):
+            in_mapping = False
+            continue
+        elif in_mapping and line.startswith('#'):
+            # Extraer el ID numérico y la ruta de la imagen
+            parts = line[1:].strip().split(':')
+            if len(parts) == 2:
+                num_id = int(parts[0].strip())
+                # Extraer la ruta de la imagen del paréntesis
+                image_path = parts[1].strip()
+                if '(' in image_path and ')' in image_path:
+                    image_path = image_path[image_path.find('(')+1:image_path.find(')')]
+                    id_to_image[num_id] = image_path
 
 # Expandir el mapa base a 30x10 rellenando con 0s
 expanded_map = []
@@ -306,15 +332,16 @@ def draw():
             x = columna * TILE_SIZE
             y = fila * TILE_SIZE
 
+            # Dibujar tile del mapa base
             tile_id = my_map[fila][columna]
-            tile_name = "tile" + str(tile_id)
-            tile_actor = Actor(tile_name, topleft=(x, y))
-            tile_actor.draw()
+            if tile_id != 0 and tile_id in id_to_image:
+                tile_actor = Actor(id_to_image[tile_id], topleft=(x, y))
+                tile_actor.draw()
 
+            # Dibujar item
             item_id = my_items[fila][columna]
-            if item_id != 0:
-                item_name = "tile" + str(item_id)
-                item_actor = Actor(item_name, topleft=(x, y))
+            if item_id != 0 and item_id in id_to_image:
+                item_actor = Actor(id_to_image[item_id], topleft=(x, y))
                 item_actor.draw()
                 
                 if item_id in OBJETOS_INTERACTIVOS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):

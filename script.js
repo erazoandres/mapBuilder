@@ -541,16 +541,30 @@ function exportarMatriz() {
   fileContentString += `# Matrix Size: ${rows}x${cols}\n`;
   fileContentString += `# Tile Size: ${TILE_SIZE}px\n`;
 
-  // Crear y descargar el archivo
+  // Crear y guardar el archivo
   const blob = new Blob([fileContentString], { type: 'text/plain;charset=utf-8' });
-  const url = window.URL.createObjectURL(blob);
+  
+  // Crear un elemento de entrada de archivo oculto
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.style.display = 'none';
+  fileInput.nwsaveas = 'mapa.txt';
+  document.body.appendChild(fileInput);
+
+  // Crear un elemento de enlace para la descarga
   const a = document.createElement('a');
-  a.href = url;
+  a.href = URL.createObjectURL(blob);
   a.download = 'mapa.txt';
+  a.style.display = 'none';
   document.body.appendChild(a);
+
+  // Simular clic en el enlace para iniciar la descarga
   a.click();
+
+  // Limpiar
   document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
+  document.body.removeChild(fileInput);
+  URL.revokeObjectURL(a.href);
 
   // Guardar en localStorage
   try {

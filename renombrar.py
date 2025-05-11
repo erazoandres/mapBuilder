@@ -1,36 +1,22 @@
 import os
 
-# Directorio donde están las imágenes
-directorio = "images"
+carpeta = 'assets/fondos'  # Carpeta actual
 
-# Obtener lista de archivos y ordenarlos
-archivos = os.listdir(directorio)
-archivos_png = [f for f in archivos if f.endswith(".png")]
-archivos_png.sort()  # Ordenar los archivos alfabéticamente
-print("Archivos a procesar:", archivos_png)
+# Obtener la lista de archivos en esa carpeta (solo archivos)
+archivos = [f for f in os.listdir(carpeta) if os.path.isfile(os.path.join(carpeta, f))]
+archivos.sort()
 
-# Primero, eliminar los archivos tile existentes
-for archivo in archivos_png:
-    if archivo.startswith("tile"):
-        try:
-            os.remove(os.path.join(directorio, archivo))
-            print(f"Eliminado: {archivo}")
-        except Exception as e:
-            print(f"Error al eliminar {archivo}: {str(e)}")
+# Renombrar temporalmente para evitar conflictos
+for i, archivo in enumerate(archivos):
+    extension = os.path.splitext(archivo)[1]
+    os.rename(os.path.join(carpeta, archivo), os.path.join(carpeta, f"temp_rename_{i}{extension}"))
 
-# Ahora renombrar los archivos
-contador = 1
-for archivo in archivos_png:
-    if not archivo.startswith("tile"):  # Solo renombrar archivos que no sean tiles
-        ruta_vieja = os.path.join(directorio, archivo)
-        nuevo_nombre = f"tile{contador}.png"
-        ruta_nueva = os.path.join(directorio, nuevo_nombre)
-        
-        try:
-            os.rename(ruta_vieja, ruta_nueva)
-            print(f"Renombrado: {archivo} -> {nuevo_nombre}")
-            contador += 1
-        except Exception as e:
-            print(f"Error al renombrar {archivo}: {str(e)}")
+# Renombrar definitivamente
+temporales = [f for f in os.listdir(carpeta) if f.startswith("temp_rename_")]
+temporales.sort()
 
-print("\nProceso completado!")
+for i, archivo in enumerate(temporales):
+    extension = os.path.splitext(archivo)[1]
+    nuevo_nombre = f"tile{i}{extension}"
+    os.rename(os.path.join(carpeta, archivo), os.path.join(carpeta, nuevo_nombre))
+    print(f"{archivo} → {nuevo_nombre}")
