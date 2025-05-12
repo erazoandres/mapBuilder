@@ -27,9 +27,57 @@ HITBOX_WIDTH = TILE_SIZE * 0.6
 HITBOX_HEIGHT = TILE_SIZE * 0.6
 
 # Lista de elementos colisionables
-ELEMENTOS_COLISIONABLES = [1]
-ITEMS_COLISIONABLES = [5]
-OBJETOS_INTERACTIVOS = [4]
+ELEMENTOS_COLISIONABLES = []  # Se llenará con los IDs de terrenos del mapping
+with open('mapa.txt', 'r') as f:
+    content = f.read()
+    in_mapping = False
+    for line in content.split('\n'):
+        line = line.strip()
+        if line.startswith('# ID Mapping'):
+            in_mapping = True
+            continue
+        elif line.startswith('# End ID Mapping'):
+            break
+        elif in_mapping and line.startswith('#'):
+            parts = line[1:].strip().split(':')
+            if len(parts) == 2 and 'terreno' in parts[1].lower():
+                ELEMENTOS_COLISIONABLES.append(int(parts[0].strip()))
+
+# Lista de items colisionables
+ITEMS_COLISIONABLES = []
+with open('mapa.txt', 'r') as f:
+    content = f.read()
+    in_mapping = False
+    for line in content.split('\n'):
+        line = line.strip()
+        if line.startswith('# ID Mapping'):
+            in_mapping = True
+            continue
+        elif line.startswith('# End ID Mapping'):
+            break
+        elif in_mapping and line.startswith('#'):
+            parts = line[1:].strip().split(':')
+            if len(parts) == 2 and 'items' in parts[1].lower():
+                ITEMS_COLISIONABLES.append(int(parts[0].strip()))
+
+# Lista de objetos interactivos
+OBJETOS_INTERACTIVOS = []
+with open('mapa.txt', 'r') as f:
+    content = f.read()
+    in_mapping = False
+    for line in content.split('\n'):
+        line = line.strip()
+        if line.startswith('# ID Mapping'):
+            in_mapping = True
+            continue
+        elif line.startswith('# End ID Mapping'):
+            break
+        elif in_mapping and line.startswith('#'):
+            parts = line[1:].strip().split(':')
+            if len(parts) == 2 and 'objeto' in parts[1].lower():
+                OBJETOS_INTERACTIVOS.append(int(parts[0].strip()))
+
+
 
 personaje = Actor("personajes/tile0")
 personaje.velocidad_y = 0
@@ -38,6 +86,7 @@ personaje.objetos_cerca = []
 
 # Diccionario para mapear IDs numéricos a rutas de imágenes
 id_to_image = {}
+
 
 # Cargar mapas desde archivo
 with open('mapa.txt', 'r') as f:
