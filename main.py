@@ -1,7 +1,7 @@
 import pgzrun
 import re
 import random
-from pgzero.builtins import keys
+
 
 # Constantes
 TILE_SIZE = 32
