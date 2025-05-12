@@ -355,6 +355,7 @@ def draw():
     # Dibujar los enemigos activos
     for enemigo in enemigos_activos:
         enemigo_actor = Actor(enemigo.imagen, topleft=(enemigo.x, enemigo.y))
+        enemigo_actor.scale = 0.4  # Reducir el tamaño al 40%
         enemigo_actor.draw()
         
         if modo_desarrollador:
