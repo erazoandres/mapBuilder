@@ -1,6 +1,6 @@
 import os
 
-carpeta = 'assets/fondos'  # Carpeta actual
+carpeta = 'images/personajes'  # Carpeta actual
 
 # Obtener la lista de archivos en esa carpeta (solo archivos)
 archivos = [f for f in os.listdir(carpeta) if os.path.isfile(os.path.join(carpeta, f))]

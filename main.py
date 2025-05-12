@@ -1,40 +1,37 @@
 import pgzrun
+import re
 
 # Constantes
 TILE_SIZE = 32
 
 # Dimensiones de la matriz
-MATRIZ_ANCHO = 30
-MATRIZ_ALTO = 10
+# Obtener dimensiones del archivo mapa.txt
+with open('mapa.txt', 'r') as f:
+    content = f.read()
+    # Obtener dimensiones del string "Matrix Size: 10x15"
+    for line in content.split('\n'):
+        if "Matrix Size:" in line:
+            dimensions = line.split(':')[1].strip().split('x')
+            MATRIZ_ALTO = int(dimensions[0])
+            MATRIZ_ANCHO = int(dimensions[1])
+            break
 
 # Dimensiones de la ventana
 WIDTH = MATRIZ_ANCHO * TILE_SIZE
 HEIGHT = MATRIZ_ALTO * TILE_SIZE
 GRAVEDAD = 0.8
 VELOCIDAD_SALTO = -15
-VELOCIDAD_ENEMIGO = 2
 
 # Tamaño de la hitbox del personaje
 HITBOX_WIDTH = TILE_SIZE * 0.6
 HITBOX_HEIGHT = TILE_SIZE * 0.6
-
-# Tamaño de la hitbox de los enemigos
-ENEMY_HITBOX_WIDTH = TILE_SIZE * 0.6
-ENEMY_HITBOX_HEIGHT = TILE_SIZE * 0.6
 
 # Lista de elementos colisionables
 ELEMENTOS_COLISIONABLES = [1]
 ITEMS_COLISIONABLES = [5]
 OBJETOS_INTERACTIVOS = [4]
 
-# Lista de enemigos [x, y, velocidad_x, velocidad_y, dirección, en_suelo]
-enemigos = [
-    [200, 0, 0, 0, 1, False],
-    [200, 190, 0, 0, 1, False],
-    [250, 100, 0, 0, 1, False]
-]
-
-personaje = Actor("creature")
+personaje = Actor("personajes/tile0")
 personaje.velocidad_y = 0
 personaje.en_suelo = False
 personaje.objetos_cerca = []
@@ -67,6 +64,8 @@ with open('mapa.txt', 'r') as f:
                 image_path = parts[1].strip()
                 if '(' in image_path and ')' in image_path:
                     image_path = image_path[image_path.find('(')+1:image_path.find(')')]
+                    # Quitar ceros a la izquierda en el nombre del archivo
+                    image_path = re.sub(r'tile0*([0-9]+)\.png', r'tile\1.png', image_path)
                     id_to_image[num_id] = image_path
 
 # Expandir el mapa base a 30x10 rellenando con 0s
@@ -168,69 +167,6 @@ def verificar_interaccion():
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
 
-def verificar_colision_horizontal_enemigo(x, y):
-    x_centro = x + TILE_SIZE
-    y_centro = y + TILE_SIZE
-
-    puntos_colision = [
-        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro),
-        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro),
-        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro - ENEMY_HITBOX_HEIGHT/3),
-        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro - ENEMY_HITBOX_HEIGHT/3),
-        (x_centro - ENEMY_HITBOX_WIDTH/2, y_centro + ENEMY_HITBOX_HEIGHT/3),
-        (x_centro + ENEMY_HITBOX_WIDTH/2, y_centro + ENEMY_HITBOX_HEIGHT/3)
-    ]
-
-    for punto_x, punto_y in puntos_colision:
-        tile_id, item_id = obtener_tile_en_posicion(punto_x, punto_y)
-        if tile_id in ELEMENTOS_COLISIONABLES or item_id in ITEMS_COLISIONABLES:
-            return True
-    return False
-
-def verificar_colision_vertical_enemigo(x, y):
-    x_centro = x + TILE_SIZE
-    y_centro = y + TILE_SIZE
-    
-    puntos_colision = [
-        (x_centro, y_centro - ENEMY_HITBOX_HEIGHT/2),
-        (x_centro, y_centro + ENEMY_HITBOX_HEIGHT/2),
-        (x_centro - ENEMY_HITBOX_WIDTH/3, y_centro - ENEMY_HITBOX_HEIGHT/2),
-        (x_centro + ENEMY_HITBOX_WIDTH/3, y_centro - ENEMY_HITBOX_HEIGHT/2),
-        (x_centro - ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2),
-        (x_centro + ENEMY_HITBOX_WIDTH/3, y_centro + ENEMY_HITBOX_HEIGHT/2)
-    ]
-    
-    for punto_x, punto_y in puntos_colision:
-        tile_id, item_id = obtener_tile_en_posicion(punto_x, punto_y)
-        if tile_id in ELEMENTOS_COLISIONABLES or item_id in ITEMS_COLISIONABLES:
-            return True
-    return False
-
-def verificar_colision_con_enemigo():
-    personaje_centro_x = personaje.x + TILE_SIZE/2
-    personaje_centro_y = personaje.y + TILE_SIZE/2
-    
-    personaje_izq = personaje_centro_x - HITBOX_WIDTH/2
-    personaje_der = personaje_centro_x + HITBOX_WIDTH/2
-    personaje_arriba = personaje_centro_y - HITBOX_HEIGHT/2
-    personaje_abajo = personaje_centro_y + HITBOX_HEIGHT/2
-    
-    for enemigo in enemigos:
-        enemigo_centro_x = enemigo[0] + TILE_SIZE/2
-        enemigo_centro_y = enemigo[1] + TILE_SIZE/2
-        
-        enemigo_izq = enemigo_centro_x - ENEMY_HITBOX_WIDTH/2
-        enemigo_der = enemigo_centro_x + ENEMY_HITBOX_WIDTH/2
-        enemigo_arriba = enemigo_centro_y - ENEMY_HITBOX_HEIGHT/2
-        enemigo_abajo = enemigo_centro_y + ENEMY_HITBOX_HEIGHT/2
-        
-        if (personaje_der > enemigo_izq and 
-            personaje_izq < enemigo_der and 
-            personaje_abajo > enemigo_arriba and 
-            personaje_arriba < enemigo_abajo):
-            return True
-    return False
-
 def update():
     global game_over
     
@@ -257,36 +193,6 @@ def update():
     
     verificar_interaccion()
 
-    for enemigo in enemigos:
-        enemigo[3] += GRAVEDAD
-        enemigo[2] = VELOCIDAD_ENEMIGO * enemigo[4]
-        
-        nueva_x = enemigo[0] + enemigo[2]
-        
-        if nueva_x <= 0 or nueva_x >= WIDTH - TILE_SIZE:
-            enemigo[4] *= -1
-        elif not verificar_colision_horizontal_enemigo(nueva_x, enemigo[1]):
-            enemigo[0] = nueva_x
-        else:
-            enemigo[4] *= -1
-        
-        nueva_y = enemigo[1] + enemigo[3]
-        if not verificar_colision_vertical_enemigo(enemigo[0], nueva_y):
-            enemigo[1] = nueva_y
-            enemigo[5] = False
-        else:
-            if enemigo[3] > 0:
-                enemigo[5] = True
-            enemigo[3] = 0
-        
-        if enemigo[1] >= HEIGHT - TILE_SIZE:
-            enemigo[1] = HEIGHT - TILE_SIZE
-            enemigo[3] = 0
-            enemigo[5] = True
-
-    if verificar_colision_con_enemigo():
-        game_over = True
-
 def on_key_down(key):
     global game_over, modo_desarrollador, personaje_direccion
     
@@ -310,13 +216,13 @@ def on_key_down(key):
         nueva_x = personaje.x - TILE_SIZE
         if nueva_x >= 0 and not verificar_colision_horizontal(nueva_x, personaje.y):
             personaje.x = nueva_x
-        personaje.image = "creature_left"
+        personaje.image = "personajes/tile1"
         personaje_direccion = -1
     if key == keys.RIGHT:
         nueva_x = personaje.x + TILE_SIZE
         if nueva_x <= WIDTH - TILE_SIZE and not verificar_colision_horizontal(nueva_x, personaje.y):
             personaje.x = nueva_x
-        personaje.image = "creature"
+        personaje.image = "personajes/tile0"
         personaje_direccion = 1
     
     if key == keys.E and personaje.objetos_cerca:
@@ -356,10 +262,6 @@ def draw():
     
     if personaje.objetos_cerca:
         screen.draw.text("Presiona E para interactuar", (10, 10), color="white")
-
-    for enemigo in enemigos:
-        enemy_actor = Actor("enemy1", bottomright=(enemigo[0] + TILE_SIZE, enemigo[1] + TILE_SIZE))
-        enemy_actor.draw()
         
     if game_over:
         screen.draw.text("¡Has perdido!", center=(WIDTH//2, HEIGHT//2), fontsize=60, color="red")
@@ -375,17 +277,6 @@ def draw():
             ),
             (255, 0, 0)
         )
-
-        for enemigo in enemigos:
-            screen.draw.rect(
-                Rect(
-                    enemigo[0],
-                    enemigo[1],
-                    TILE_SIZE,
-                    TILE_SIZE
-                ),
-                (0, 255, 0)
-            )
 
         screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow")
 
