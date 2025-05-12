@@ -22,9 +22,16 @@ VELOCIDAD_SALTO = -15
 HITBOX_WIDTH = TILE_SIZE
 HITBOX_HEIGHT = TILE_SIZE
 
-ELEMENTOS_COLISIONABLES = []
-ITEMS_COLISIONABLES = []
-OBJETOS_INTERACTIVOS = []
+TERRENOS = []
+ITEMS = []
+OBJETOS = []
+ENEMIGOS = []
+
+
+personaje = Actor("personajes/tile0")
+personaje.velocidad_y = 0
+personaje.en_suelo = False
+personaje.objetos_cerca = []
 
 with open('mapa.txt', 'r') as f:
     content = f.read()
@@ -42,16 +49,11 @@ with open('mapa.txt', 'r') as f:
                 descripcion = parts[1].lower()
                 id_val = int(parts[0].strip())
                 if 'terreno' in descripcion:
-                    ELEMENTOS_COLISIONABLES.append(id_val)
+                    TERRENOS.append(id_val)
                 if 'items' in descripcion:
-                    ITEMS_COLISIONABLES.append(id_val)
+                    ITEMS.append(id_val)
                 if 'objeto' in descripcion:
-                    OBJETOS_INTERACTIVOS.append(id_val)
-
-personaje = Actor("personajes/tile0")
-personaje.velocidad_y = 0
-personaje.en_suelo = False
-personaje.objetos_cerca = []
+                    OBJETOS.append(id_val)
 
 id_to_image = {}
 
@@ -117,7 +119,7 @@ def verificar_colision_horizontal(x, y):
     for offset_y in [1, TILE_SIZE - 2]:
         for offset_x in [0, TILE_SIZE - 1]:
             tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
-            if (tile_id in ELEMENTOS_COLISIONABLES) or (item_id in ITEMS_COLISIONABLES):
+            if (tile_id in TERRENOS) or (item_id in ITEMS):
                 return True
     return False
 
@@ -125,7 +127,7 @@ def verificar_colision_vertical(x, y):
     for offset_x in [1, TILE_SIZE - 2]:
         for offset_y in [0, TILE_SIZE - 1]:
             tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
-            if (tile_id in ELEMENTOS_COLISIONABLES) or (item_id in ITEMS_COLISIONABLES):
+            if (tile_id in TERRENOS) or (item_id in ITEMS):
                 return True
     return False
 
@@ -140,7 +142,7 @@ def verificar_interaccion():
     for y in range(inicio_y, fin_y):
         for x in range(inicio_x, fin_x):
             tile_id, item_id = my_map[y][x], my_items[y][x]
-            if item_id in OBJETOS_INTERACTIVOS:
+            if item_id in OBJETOS:
                 dist_x = (x * TILE_SIZE + TILE_SIZE/2) - (personaje.x + TILE_SIZE/2)
                 dist_y = (y * TILE_SIZE + TILE_SIZE/2) - (personaje.y + TILE_SIZE/2)
                 distancia = (dist_x**2 + dist_y**2)**0.5
@@ -225,7 +227,7 @@ def draw():
                 item_actor = Actor(id_to_image[item_id], topleft=(x, y))
                 item_actor.draw()
 
-                if item_id in OBJETOS_INTERACTIVOS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
+                if item_id in OBJETOS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
                     for i in range(4):
                         screen.draw.line((x + i, y + i), (x + TILE_SIZE - i, y + i), (255, 255, 0))
                         screen.draw.line((x + i, y + i), (x + i, y + TILE_SIZE - i), (255, 255, 0))

@@ -632,24 +632,40 @@ function importarMatriz(event) {
         const reverseIdMap = new Map();
         const lines = content.split(/[\r\n]+/);
         let inMappingSection = false;
-        const mappingRegex = /^\/\/\s*(\d+):\s*(.*)$/;
 
         for (const line of lines) {
           const trimmedLine = line.trim();
-          if (trimmedLine.startsWith('// ID Mapping')) {
+          if (trimmedLine.startsWith('# ID Mapping')) {
             inMappingSection = true;
             continue;
           }
-          if (trimmedLine.startsWith('// End ID Mapping')) {
+          if (trimmedLine.startsWith('# End ID Mapping')) {
             inMappingSection = false;
             break;
           }
-          if (inMappingSection) {
-            const match = trimmedLine.match(mappingRegex);
+          if (inMappingSection && trimmedLine.startsWith('#')) {
+            const mappingLine = trimmedLine.substring(1).trim();
+            const [numIdStr, rest] = mappingLine.split(':').map(s => s.trim());
+            const numId = parseInt(numIdStr);
+            
+            // Extraer el ID original y la ruta de la imagen
+            const match = rest.match(/(.*?)\s*\((.*?)\)/);
             if (match) {
-              const [, numId, stringId] = match;
-              reverseIdMap.set(parseInt(numId, 10), stringId.trim());
+              const [, originalId, imagePath] = match;
+              reverseIdMap.set(numId, originalId.trim());
             }
+          }
+        }
+
+        // Verificar que todos los IDs numéricos en las matrices tengan un mapeo
+        const allNumericIds = new Set([
+          ...numericMatrix.flat(),
+          ...importedItems.flat()
+        ].filter(id => id !== 0));
+
+        for (const numId of allNumericIds) {
+          if (!reverseIdMap.has(numId)) {
+            console.warn(`ID numérico ${numId} no tiene un mapeo en el archivo.`);
           }
         }
 
