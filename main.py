@@ -18,6 +18,7 @@ WIDTH = MATRIZ_ANCHO * TILE_SIZE
 HEIGHT = MATRIZ_ALTO * TILE_SIZE
 GRAVEDAD = 0.8
 VELOCIDAD_SALTO = -15
+VELOCIDAD_MOVIMIENTO = 3  # Nueva constante para la velocidad de movimiento
 
 HITBOX_WIDTH = TILE_SIZE
 HITBOX_HEIGHT = TILE_SIZE
@@ -30,6 +31,7 @@ ENEMIGOS = []
 
 personaje = Actor("personajes/tile0")
 personaje.velocidad_y = 0
+personaje.velocidad_x = 0  # Nueva variable para velocidad horizontal
 personaje.en_suelo = False
 personaje.objetos_cerca = []
 
@@ -154,7 +156,10 @@ def update():
     if game_over:
         return
 
+    # Aplicar gravedad
     personaje.velocidad_y += GRAVEDAD
+    
+    # Actualizar posición vertical
     nueva_y = personaje.y + personaje.velocidad_y
     if not verificar_colision_vertical(personaje.x, nueva_y):
         personaje.y = nueva_y
@@ -164,16 +169,30 @@ def update():
             personaje.en_suelo = True
         personaje.velocidad_y = 0
 
+    # Actualizar posición horizontal
+    nueva_x = personaje.x + personaje.velocidad_x
+    if not verificar_colision_horizontal(nueva_x, personaje.y):
+        personaje.x = nueva_x
+    else:
+        personaje.velocidad_x = 0
+
+    # Mantener al personaje dentro de los límites
+    personaje.x = max(0, min(WIDTH - TILE_SIZE, personaje.x))
     if personaje.y >= HEIGHT - TILE_SIZE:
         personaje.y = HEIGHT - TILE_SIZE
         personaje.velocidad_y = 0
         personaje.en_suelo = True
 
-    personaje.x = max(0, min(WIDTH - TILE_SIZE, personaje.x))
+    # Actualizar dirección del personaje
+    if personaje.velocidad_x > 0:
+        personaje.image = "personajes/tile0"
+    elif personaje.velocidad_x < 0:
+        personaje.image = "personajes/tile1"
+
     verificar_interaccion()
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, personaje_direccion
+    global game_over, modo_desarrollador
 
     if game_over:
         if key == keys.R:
@@ -181,6 +200,7 @@ def on_key_down(key):
             personaje.x = 0
             personaje.y = 0
             personaje.velocidad_y = 0
+            personaje.velocidad_x = 0
             return
 
     if key == keys.F:
@@ -190,24 +210,20 @@ def on_key_down(key):
         personaje.velocidad_y = VELOCIDAD_SALTO
         personaje.en_suelo = False
 
-    if key == keys.LEFT:
-        nueva_x = personaje.x - TILE_SIZE
-        if nueva_x >= 0 and not verificar_colision_horizontal(nueva_x, personaje.y):
-            personaje.x = nueva_x
-        personaje.image = "personajes/tile1"
-        personaje_direccion = -1
-
-    if key == keys.RIGHT:
-        nueva_x = personaje.x + TILE_SIZE
-        if nueva_x <= WIDTH - TILE_SIZE and not verificar_colision_horizontal(nueva_x, personaje.y):
-            personaje.x = nueva_x
-        personaje.image = "personajes/tile0"
-        personaje_direccion = 1
-
     if key == keys.E and personaje.objetos_cerca:
         x, y, item_id = personaje.objetos_cerca[0]
         my_items[y][x] = 0
         personaje.objetos_cerca.remove((x, y, item_id))
+
+    # Movimiento horizontal
+    if key == keys.LEFT:
+        personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
+    elif key == keys.RIGHT:
+        personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+
+def on_key_up(key):
+    if key == keys.LEFT or key == keys.RIGHT:
+        personaje.velocidad_x = 0
 
 def draw():
     screen.clear()

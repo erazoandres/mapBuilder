@@ -26,10 +26,10 @@ my_rotations = [
 
 my_items = [
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,4,0,0,5,0,0,0,0,0,0,6,0,0,4],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,4,0,0,0,0,0,4,0,0,0,0],
+  [0,0,0,0,4,0,0,0,5,5,0,6,0,0,0],
+  [0,0,0,0,0,0,0,0,5,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,0,5,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,5,5,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,7,0,0,0],
   [0,8,0,0,0,0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -41,8 +41,8 @@ my_items = [
 # 1: fondo3 (fondos/tile2.png)
 # 2: terreno47 (terrenos/tile46.png)
 # 3: terreno2 (terrenos/tile1.png)
-# 4: objeto15 (items/tile4.png)
-# 5: enemigo1 (enemigos/tile0.png)
+# 4: enemigo1 (enemigos/tile0.png)
+# 5: item0 (items/tile0.png)
 # 6: enemigo3 (enemigos/tile2.png)
 # 7: enemigo2 (enemigos/tile1.png)
 # 8: enemigo4 (enemigos/tile3.png)

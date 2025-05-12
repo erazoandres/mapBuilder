@@ -606,6 +606,16 @@ function importarMatriz(event) {
           }
         }
 
+        // Función auxiliar para validar que una imagen existe
+        function validateImageExists(imageId) {
+          const imgElement = document.querySelector(`.tiles img[data-id='${imageId}']`);
+          if (!imgElement) {
+            console.warn(`No se encontró la imagen con ID: ${imageId}`);
+            return false;
+          }
+          return true;
+        }
+
         // Extraer las matrices numéricas
         const numericMatrix = extractMatrix(content, 'my_map');
         const importedRotations = extractMatrix(content, 'my_rotations');
@@ -632,6 +642,7 @@ function importarMatriz(event) {
         const reverseIdMap = new Map();
         const lines = content.split(/[\r\n]+/);
         let inMappingSection = false;
+        const missingImages = new Set();
 
         for (const line of lines) {
           const trimmedLine = line.trim();
@@ -652,7 +663,15 @@ function importarMatriz(event) {
             const match = rest.match(/(.*?)\s*\((.*?)\)/);
             if (match) {
               const [, originalId, imagePath] = match;
-              reverseIdMap.set(numId, originalId.trim());
+              const stringId = originalId.trim();
+              
+              // Validar que la imagen existe antes de agregarla al mapa
+              if (validateImageExists(stringId)) {
+                reverseIdMap.set(numId, stringId);
+              } else {
+                missingImages.add(stringId);
+                console.warn(`Imagen no encontrada para ID: ${stringId} (${imagePath})`);
+              }
             }
           }
         }
@@ -665,8 +684,14 @@ function importarMatriz(event) {
 
         for (const numId of allNumericIds) {
           if (!reverseIdMap.has(numId)) {
-            console.warn(`ID numérico ${numId} no tiene un mapeo en el archivo.`);
+            console.warn(`ID numérico ${numId} no tiene un mapeo válido en el archivo.`);
           }
+        }
+
+        // Si hay imágenes faltantes, mostrar advertencia
+        if (missingImages.size > 0) {
+          const missingList = Array.from(missingImages).join(', ');
+          console.warn(`Las siguientes imágenes no se encontraron en el sidebar: ${missingList}`);
         }
 
         // Convertir matrices numéricas a IDs de string
