@@ -1,5 +1,7 @@
 import pgzrun
 import re
+import random
+from pgzero.builtins import keys
 
 # Constantes
 TILE_SIZE = 32
@@ -34,6 +36,83 @@ personaje.velocidad_y = 0
 personaje.velocidad_x = 0  # Nueva variable para velocidad horizontal
 personaje.en_suelo = False
 personaje.objetos_cerca = []
+
+# Lista para almacenar los enemigos activos
+enemigos_activos = []
+
+# Clase para representar a los enemigos
+class Enemigo:
+    def __init__(self, x, y, tipo_id):
+        self.x = x
+        self.y = y
+        self.tipo_id = tipo_id
+        self.velocidad_y = 0
+        self.velocidad_x = 0
+        self.en_suelo = False
+        self.direccion = random.choice([-1, 1])  # -1 izquierda, 1 derecha
+        self.tiempo_cambio_direccion = random.randint(60, 180)  # frames hasta cambiar dirección
+        self.contador = 0
+        self.imagen = id_to_image.get(tipo_id, "enemigos/default")
+    
+    def actualizar(self):
+        # Aplicar gravedad
+        self.velocidad_y += GRAVEDAD
+        
+        # Actualizar posición vertical
+        nueva_y = self.y + self.velocidad_y
+        if not verificar_colision_vertical(self.x, nueva_y):
+            self.y = nueva_y
+            self.en_suelo = False
+        else:
+            if self.velocidad_y > 0:
+                self.en_suelo = True
+            self.velocidad_y = 0
+        
+        # Lógica de movimiento
+        self.contador += 1
+        if self.contador >= self.tiempo_cambio_direccion:
+            self.direccion *= -1  # Cambiar dirección
+            self.contador = 0
+            self.tiempo_cambio_direccion = random.randint(60, 180)
+        
+        # Establecer velocidad según dirección
+        self.velocidad_x = self.direccion * (VELOCIDAD_MOVIMIENTO * 0.6)  # Más lento que el personaje
+        
+        # Actualizar posición horizontal
+        nueva_x = self.x + self.velocidad_x
+        if not verificar_colision_horizontal(nueva_x, self.y):
+            self.x = nueva_x
+        else:
+            # Si hay colisión, cambiar dirección
+            self.direccion *= -1
+            self.velocidad_x = 0
+        
+        # Mantener al enemigo dentro de los límites
+        self.x = max(0, min(WIDTH - TILE_SIZE, self.x))
+        if self.y >= HEIGHT - TILE_SIZE:
+            self.y = HEIGHT - TILE_SIZE
+            self.velocidad_y = 0
+            self.en_suelo = True
+
+with open('mapa.txt', 'r') as f:
+    content = f.read()
+    in_mapping = False
+    for line in content.split('\n'):
+        line = line.strip()
+        if line.startswith('# ID Mapping'):
+            in_mapping = True
+            continue
+        elif line.startswith('# End ID Mapping'):
+            break
+        elif in_mapping and line.startswith('#'):
+            parts = line[1:].strip().split(':')
+            if len(parts) == 2:
+                descripcion = parts[1].lower()
+                id_val = int(parts[0].strip())
+                if 'enemigo' in descripcion:
+                    ENEMIGOS.append(id_val)
+
+print(ENEMIGOS)
 
 with open('mapa.txt', 'r') as f:
     content = f.read()
@@ -151,6 +230,19 @@ def verificar_interaccion():
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
 
+# Función para inicializar enemigos desde el mapa
+def inicializar_enemigos():
+    enemigos_activos.clear()
+    for fila in range(len(my_items)):
+        for columna in range(len(my_items[0])):
+            item_id = my_items[fila][columna]
+            if item_id in ENEMIGOS:
+                # Crear un nuevo enemigo y agregarlo a la lista
+                nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
+                enemigos_activos.append(nuevo_enemigo)
+                # Eliminar el enemigo de la matriz para que no se dibuje estático
+                my_items[fila][columna] = 0
+
 def update():
     global game_over
     if game_over:
@@ -190,6 +282,16 @@ def update():
         personaje.image = "personajes/tile1"
 
     verificar_interaccion()
+    
+    # Actualizar enemigos
+    for enemigo in enemigos_activos:
+        enemigo.actualizar()
+        
+        # Comprobar colisión con el personaje
+        if (abs(personaje.x - enemigo.x) < TILE_SIZE * 0.8 and 
+            abs(personaje.y - enemigo.y) < TILE_SIZE * 0.8):
+            # Implementar lógica de daño o juego terminado
+            pass
 
 def on_key_down(key):
     global game_over, modo_desarrollador
@@ -249,6 +351,14 @@ def draw():
                         screen.draw.line((x + i, y + i), (x + i, y + TILE_SIZE - i), (255, 255, 0))
                         screen.draw.line((x + TILE_SIZE - i, y + i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
                         screen.draw.line((x + i, y + TILE_SIZE - i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
+    
+    # Dibujar los enemigos activos
+    for enemigo in enemigos_activos:
+        enemigo_actor = Actor(enemigo.imagen, topleft=(enemigo.x, enemigo.y))
+        enemigo_actor.draw()
+        
+        if modo_desarrollador:
+            screen.draw.rect(Rect(enemigo.x, enemigo.y, TILE_SIZE, TILE_SIZE), (0, 255, 0))
 
     personaje_actor = Actor(personaje.image, bottomright=(personaje.x + TILE_SIZE, personaje.y + TILE_SIZE))
     personaje_actor.draw()
@@ -263,5 +373,8 @@ def draw():
     if modo_desarrollador:
         screen.draw.rect(Rect(personaje.x, personaje.y, TILE_SIZE, TILE_SIZE), (255, 0, 0))
         screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow")
+
+# Inicializar enemigos al cargar el juego
+inicializar_enemigos()
 
 pgzrun.go()
