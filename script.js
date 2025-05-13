@@ -160,20 +160,20 @@ function generarMatriz(useExisting = false) {
     );
     rotaciones = nuevasRotaciones; // Actualizar rotaciones global
 
-    // Redimensionar también la segunda capa
+    // Redimensionar también la segunda capa, asegurando tamaño exacto
     matriz2 = Array.from({ length: rows }, (_, r) =>
       Array.from({ length: cols }, (_, c) =>
-        (matriz2 && matriz2.length > r && matriz2[0]?.length > c) ? matriz2[r][c] : 0
+        (matriz2 && matriz2.length > r && matriz2[r].length > c) ? matriz2[r][c] : 0
       )
     );
     rotaciones2 = Array.from({ length: rows }, (_, r) =>
       Array.from({ length: cols }, (_, c) =>
-        (rotaciones2 && rotaciones2.length > r && rotaciones2[0]?.length > c) ? rotaciones2[r][c] : 0
+        (rotaciones2 && rotaciones2.length > r && rotaciones2[r].length > c) ? rotaciones2[r][c] : 0
       )
     );
     items = Array.from({ length: rows }, (_, r) =>
       Array.from({ length: cols }, (_, c) =>
-        (items && items.length > r && items[0]?.length > c) ? items[r][c] : 0
+        (items && items.length > r && items[r].length > c) ? items[r][c] : 0
       )
     );
   }
@@ -920,117 +920,140 @@ function createSecondLayer() {
 
   // Obtener el botón y el contenedor de la capa 2
   const button = document.getElementById('generate-new-btn');
-  const layer2Container = document.getElementById("grid-layer2");
+  let layer2Container = document.getElementById("grid-layer2");
   const isVisible = button.checked;
-  
-  // Si no existe el contenedor de la capa 2, crearlo
-  if (!layer2Container) {
-    const newLayer2Container = document.createElement("div");
-    newLayer2Container.id = "grid-layer2";
-    newLayer2Container.className = "grid grid-layer2";
-    newLayer2Container.style.position = "absolute";
-    newLayer2Container.style.opacity = isVisible ? "1" : "0";
-    newLayer2Container.style.transition = "opacity 0.3s ease, transform 0.3s ease";
-    newLayer2Container.style.top = "0";
-    newLayer2Container.style.left = "0";
-    newLayer2Container.style.paddingLeft = "10px";
-    newLayer2Container.style.paddingRight = "10px";
-    newLayer2Container.style.pointerEvents = isVisible ? "auto" : "none";
-    newLayer2Container.style.height = "auto";
 
-    if (isVisible) {
-      newLayer2Container.classList.add('visible');
-    }
+  // --- AJUSTE: asegurar tamaño de matrices de la segunda capa ---
+  const rows = matriz.length;
+  const cols = matriz[0]?.length || 0;
+  matriz2 = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) =>
+      (matriz2 && matriz2.length > r && matriz2[r].length > c) ? matriz2[r][c] : 0
+    )
+  );
+  rotaciones2 = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) =>
+      (rotaciones2 && rotaciones2.length > r && rotaciones2[r].length > c) ? rotaciones2[r][c] : 0
+    )
+  );
+  items = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) =>
+      (items && items.length > r && items[r].length > c) ? items[r][c] : 0
+    )
+  );
+  // --- FIN AJUSTE ---
 
-    const gridContainer = document.getElementById("grid").parentElement;
-    gridContainer.style.position = "relative";
-    gridContainer.appendChild(newLayer2Container);
+  // --- NUEVO: eliminar y recrear el contenedor de la capa 2 ---
+  if (layer2Container) {
+    layer2Container.parentElement.removeChild(layer2Container);
+  }
+  layer2Container = document.createElement("div");
+  layer2Container.id = "grid-layer2";
+  layer2Container.className = "grid grid-layer2";
+  layer2Container.style.position = "absolute";
+  layer2Container.style.opacity = isVisible ? "1" : "0";
+  layer2Container.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+  layer2Container.style.top = "0";
+  layer2Container.style.left = "0";
+  layer2Container.style.paddingLeft = "10px";
+  layer2Container.style.paddingRight = "10px";
+  layer2Container.style.pointerEvents = isVisible ? "auto" : "none";
+  layer2Container.style.height = "auto";
+  if (isVisible) {
+    layer2Container.classList.add('visible');
+  }
+  const gridContainer = document.getElementById("grid").parentElement;
+  gridContainer.style.position = "relative";
+  gridContainer.appendChild(layer2Container);
+  // --- FIN NUEVO ---
 
-    // Obtener las dimensiones de manera segura
-    let rows = 10;
-    let cols = 15;
+  // El resto del código sigue igual, usando layer2Container recién creado
 
-    // Intentar obtener las dimensiones de la matriz existente
-    if (matriz && matriz.length > 0) {
-      rows = matriz.length;
-      cols = matriz[0].length;
-    } else {
-      // Si no hay matriz, intentar obtener los valores de los inputs
-      const rowsInput = document.getElementById("rows");
-      const colsInput = document.getElementById("cols");
-      if (rowsInput) rows = parseInt(rowsInput.value) || rows;
-      if (colsInput) cols = parseInt(colsInput.value) || cols;
-    }
+  const firstGrid = document.getElementById("grid");
+  layer2Container.style.gridTemplateColumns = firstGrid.style.gridTemplateColumns;
+  layer2Container.style.gap = firstGrid.style.gap || "0";
+  layer2Container.style.padding = firstGrid.style.padding || "10px";
+  layer2Container.innerHTML = '';
 
-    // Inicializar las matrices si no existen o si sus dimensiones no coinciden
-    if (!matriz2 || matriz2.length !== rows || matriz2[0]?.length !== cols) {
-      matriz2 = Array.from({ length: rows }, () => Array(cols).fill(0));
-      rotaciones2 = Array.from({ length: rows }, () => Array(cols).fill(0));
-    }
+  // Redibujar las celdas con los datos guardados
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell layer2-cell";
+      cell.dataset.row = r;
+      cell.dataset.col = c;
+      cell.style.backgroundColor = "transparent";
 
-    // Asegurar que cada fila esté inicializada
-    for (let i = 0; i < rows; i++) {
-      if (!matriz2[i]) matriz2[i] = Array(cols).fill(0);
-      if (!rotaciones2[i]) rotaciones2[i] = Array(cols).fill(0);
-      if (!items[i]) items[i] = Array(cols).fill(0);
-    }
+      const firstLayerCell = firstGrid.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      if (firstLayerCell) {
+        cell.style.width = getComputedStyle(firstLayerCell).width;
+        cell.style.height = getComputedStyle(firstLayerCell).height;
+      } else {
+        cell.style.width = "32px";
+        cell.style.height = "32px";
+      }
 
-    // Copiar los datos de items a matriz2
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        if (items[r][c] !== 0) {
-          matriz2[r][c] = items[r][c];
+      // Mostrar los tiles ya colocados en la segunda capa (usando items)
+      const tileId = items[r][c];
+      const rotation = rotaciones2[r][c];
+
+      if (tileId && tileId !== 0) {
+        const sourceImg = document.querySelector(`.tiles img[data-id='${tileId}']`);
+        if (sourceImg) {
+          cell.style.backgroundImage = `url('${sourceImg.src}')`;
+          cell.style.backgroundSize = 'cover';
+          cell.dataset.id = tileId;
+          cell.style.transform = `rotate(${rotation}deg)`;
+          matriz2[r][c] = tileId;
         }
       }
-    }
 
-    activeLayer = 2;
-
-    const firstGrid = document.getElementById("grid");
-    newLayer2Container.style.gridTemplateColumns = firstGrid.style.gridTemplateColumns;
-    newLayer2Container.style.gap = firstGrid.style.gap || "0";
-    newLayer2Container.style.padding = firstGrid.style.padding || "10px";
-    newLayer2Container.innerHTML = '';
-
-    // Redibujar las celdas con los datos guardados
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const cell = document.createElement("div");
-        cell.className = "cell layer2-cell";
-        cell.dataset.row = r;
-        cell.dataset.col = c;
-        cell.style.backgroundColor = "transparent";
-
-        const firstLayerCell = firstGrid.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-        if (firstLayerCell) {
-          cell.style.width = getComputedStyle(firstLayerCell).width;
-          cell.style.height = getComputedStyle(firstLayerCell).height;
-        } else {
-          cell.style.width = "32px";
-          cell.style.height = "32px";
-        }
-
-        // Mostrar los tiles ya colocados en la segunda capa (usando items)
-        const tileId = items[r][c];
-        const rotation = rotaciones2[r][c];
-
-        if (tileId && tileId !== 0) {
-          const sourceImg = document.querySelector(`.tiles img[data-id='${tileId}']`);
+      // Eventos de mouse para la segunda capa
+      cell.addEventListener('mousedown', (e) => {
+        if (e.button === 0 && selectedTileId) {
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+          
+          matriz2[row][col] = selectedTileId;
+          items[row][col] = selectedTileId;
+          
+          const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
           if (sourceImg) {
             cell.style.backgroundImage = `url('${sourceImg.src}')`;
             cell.style.backgroundSize = 'cover';
-            cell.dataset.id = tileId;
-            cell.style.transform = `rotate(${rotation}deg)`;
-            matriz2[r][c] = tileId;
+            cell.dataset.id = selectedTileId;
           }
+          
+          localStorage.setItem('matriz2', JSON.stringify(matriz2));
+          localStorage.setItem('items', JSON.stringify(items));
+          
+          isPainting = true;
+          e.preventDefault();
+        } else if (e.button === 1) {
+          e.preventDefault();
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+          
+          matriz2[row][col] = 0;
+          items[row][col] = 0;
+          rotaciones2[row][col] = 0;
+          
+          cell.style.backgroundImage = '';
+          cell.style.transform = '';
+          cell.dataset.id = 0;
+          
+          localStorage.setItem('matriz2', JSON.stringify(matriz2));
+          localStorage.setItem('items', JSON.stringify(items));
+          localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
         }
+      });
 
-        // Eventos de mouse para la segunda capa
-        cell.addEventListener('mousedown', (e) => {
-          if (e.button === 0 && selectedTileId) {
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            
+      cell.addEventListener('mouseenter', (e) => {
+        if (isPainting && selectedTileId) {
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+          
+          if (matriz2[row][col] !== selectedTileId) {
             matriz2[row][col] = selectedTileId;
             items[row][col] = selectedTileId;
             
@@ -1043,99 +1066,60 @@ function createSecondLayer() {
             
             localStorage.setItem('matriz2', JSON.stringify(matriz2));
             localStorage.setItem('items', JSON.stringify(items));
+          }
+        }
+      });
+
+      cell.addEventListener('dblclick', (e) => {
+        if (e.button === 0) {
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+          
+          if (matriz2[row][col] !== 0) {
+            rotaciones2[row][col] = (rotaciones2[row][col] + 90) % 360;
+            cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
             
-            isPainting = true;
-            e.preventDefault();
-          } else if (e.button === 1) {
-            e.preventDefault();
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            
-            matriz2[row][col] = 0;
-            items[row][col] = 0;
-            rotaciones2[row][col] = 0;
-            
-            cell.style.backgroundImage = '';
-            cell.style.transform = '';
-            cell.dataset.id = 0;
-            
-            localStorage.setItem('matriz2', JSON.stringify(matriz2));
-            localStorage.setItem('items', JSON.stringify(items));
             localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
           }
-        });
+        }
+      });
 
-        cell.addEventListener('mouseenter', (e) => {
-          if (isPainting && selectedTileId) {
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            
-            if (matriz2[row][col] !== selectedTileId) {
-              matriz2[row][col] = selectedTileId;
-              items[row][col] = selectedTileId;
-              
-              const sourceImg = document.querySelector(`.tiles img[data-id='${selectedTileId}']`);
-              if (sourceImg) {
-                cell.style.backgroundImage = `url('${sourceImg.src}')`;
-                cell.style.backgroundSize = 'cover';
-                cell.dataset.id = selectedTileId;
-              }
-              
-              localStorage.setItem('matriz2', JSON.stringify(matriz2));
-              localStorage.setItem('items', JSON.stringify(items));
-            }
-          }
-        });
+      cell.addEventListener('dragstart', (e) => {
+        if (isPainting) e.preventDefault();
+      });
 
-        cell.addEventListener('dblclick', (e) => {
-          if (e.button === 0) {
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            
-            if (matriz2[row][col] !== 0) {
-              rotaciones2[row][col] = (rotaciones2[row][col] + 90) % 360;
-              cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
-              
-              localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
-            }
-          }
-        });
-
-        cell.addEventListener('dragstart', (e) => {
-          if (isPainting) e.preventDefault();
-        });
-
-        newLayer2Container.appendChild(cell);
-      }
-    }
-
-    const firstGridRect = firstGrid.getBoundingClientRect();
-    newLayer2Container.style.width = `${firstGridRect.width}px`;
-
-    console.log("Second layer created with dimensions:", rows, "x", cols);
-    return newLayer2Container;
-  } else {
-    // Si el contenedor ya existe, actualizar su visibilidad
-    if (isVisible) {
-      layer2Container.classList.add('visible');
-      layer2Container.style.opacity = "1";
-      layer2Container.style.pointerEvents = "auto";
-      layer2Container.style.transform = "translateY(0)";
-      redrawSecondLayerTiles(layer2Container);
-    } else {
-      layer2Container.classList.remove('visible');
-      layer2Container.style.opacity = "0";
-      layer2Container.style.pointerEvents = "none";
-      layer2Container.style.transform = "translateY(-10px)";
+      layer2Container.appendChild(cell);
     }
   }
+
+  const firstGridRect = firstGrid.getBoundingClientRect();
+  layer2Container.style.width = `${firstGridRect.width}px`;
+
+  console.log("Second layer created with dimensions:", rows, "x", cols);
+  return layer2Container;
 }
 
 function redrawSecondLayerTiles(container) {
   if (!container) return;
 
-  const rows = items.length;
-  const cols = items[0]?.length || 0;
+  // Asegurar que items, matriz2 y rotaciones2 tengan el tamaño correcto
+  const rows = matriz.length;
+  const cols = matriz[0]?.length || 0;
+  items = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) =>
+      (items && items.length > r && items[r].length > c) ? items[r][c] : 0
+    )
+  );
+  matriz2 = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) =>
+      (matriz2 && matriz2.length > r && matriz2[r].length > c) ? matriz2[r][c] : 0
+    )
+  );
+  rotaciones2 = Array.from({ length: rows }, (_, r) =>
+    Array.from({ length: cols }, (_, c) =>
+      (rotaciones2 && rotaciones2.length > r && rotaciones2[r].length > c) ? rotaciones2[r][c] : 0
+    )
+  );
 
   container.innerHTML = '';
 
@@ -1163,7 +1147,7 @@ function redrawSecondLayerTiles(container) {
           cell.style.backgroundSize = 'cover';
           cell.dataset.id = tileId;
           cell.style.transform = `rotate(${rotation}deg)`;
-          matriz2[r][c] = tileId; // Asegurar que matriz2 también se actualice
+          matriz2[r][c] = tileId;
         }
       }
 
