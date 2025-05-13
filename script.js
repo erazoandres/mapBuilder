@@ -159,6 +159,23 @@ function generarMatriz(useExisting = false) {
       )
     );
     rotaciones = nuevasRotaciones; // Actualizar rotaciones global
+
+    // Redimensionar también la segunda capa
+    matriz2 = Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, c) =>
+        (matriz2 && matriz2.length > r && matriz2[0]?.length > c) ? matriz2[r][c] : 0
+      )
+    );
+    rotaciones2 = Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, c) =>
+        (rotaciones2 && rotaciones2.length > r && rotaciones2[0]?.length > c) ? rotaciones2[r][c] : 0
+      )
+    );
+    items = Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, c) =>
+        (items && items.length > r && items[0]?.length > c) ? items[r][c] : 0
+      )
+    );
   }
   // Si useExisting es true, la matriz global y rotaciones ya fueron
   // cargadas en window.onload
@@ -337,6 +354,13 @@ function generarMatriz(useExisting = false) {
 
       grid.appendChild(cell);
     }
+  }
+
+  // Actualizar la segunda capa si existe
+  const layer2Container = document.getElementById("grid-layer2");
+  if (layer2Container) {
+    layer2Container.style.gridTemplateColumns = `repeat(${cols}, 32px)`;
+    redrawSecondLayerTiles(layer2Container);
   }
 }
 
