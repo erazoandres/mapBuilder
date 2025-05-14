@@ -4,7 +4,8 @@ import random
 
 
 # Constantes
-TILE_SIZE = 32
+TILE_SIZE = 36
+PROBABILIDAD_SALTO_ENEMIGO = 0.02  # Puedes ajustar este valor a tu gusto
 
 # Dimensiones de la matriz
 with open('mapa.txt', 'r') as f:
@@ -22,9 +23,6 @@ GRAVEDAD = 0.8
 VELOCIDAD_SALTO = -15
 VELOCIDAD_MOVIMIENTO = 3  # Nueva constante para la velocidad de movimiento
 
-HITBOX_WIDTH = TILE_SIZE
-HITBOX_HEIGHT = TILE_SIZE
-
 TERRENOS = []
 ITEMS = []
 OBJETOS = []
@@ -36,6 +34,9 @@ personaje.velocidad_y = 0
 personaje.velocidad_x = 0  # Nueva variable para velocidad horizontal
 personaje.en_suelo = False
 personaje.objetos_cerca = []
+# Obtener el tamaño real de la imagen del personaje
+personaje.hitbox_width = personaje.width
+personaje.hitbox_height = personaje.height
 
 # Lista para almacenar los enemigos activos
 enemigos_activos = []
@@ -57,6 +58,11 @@ class Enemigo:
     def actualizar(self):
         # Aplicar gravedad
         self.velocidad_y += GRAVEDAD
+        
+        # Lógica de salto aleatorio
+        if self.en_suelo and random.random() < PROBABILIDAD_SALTO_ENEMIGO:
+            self.velocidad_y = VELOCIDAD_SALTO
+            self.en_suelo = False
         
         # Actualizar posición vertical
         nueva_y = self.y + self.velocidad_y
@@ -197,35 +203,66 @@ def obtener_tile_en_posicion(x, y):
     return None, None
 
 def verificar_colision_horizontal(x, y):
-    for offset_y in [1, TILE_SIZE - 2]:
-        for offset_x in [0, TILE_SIZE - 1]:
-            tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
+    # Para el personaje, usamos su hitbox específico
+    if x == personaje.x:  # Si es el personaje
+        for offset_y in range(0, personaje.hitbox_height, 5):  # Verificar varios puntos a lo largo del borde
+            # Borde izquierdo
+            tile_id, item_id = obtener_tile_en_posicion(x, y + offset_y)
             if (tile_id in TERRENOS) or (item_id in ITEMS):
                 return True
-    return False
+            # Borde derecho
+            tile_id, item_id = obtener_tile_en_posicion(x + personaje.hitbox_width, y + offset_y)
+            if (tile_id in TERRENOS) or (item_id in ITEMS):
+                return True
+        return False
+    else:  # Para enemigos u otros objetos, mantener la lógica original
+        for offset_y in [1, TILE_SIZE - 2]:
+            for offset_x in [0, TILE_SIZE - 1]:
+                tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
+                if (tile_id in TERRENOS) or (item_id in ITEMS):
+                    return True
+        return False
 
 def verificar_colision_vertical(x, y):
-    for offset_x in [1, TILE_SIZE - 2]:
-        for offset_y in [0, TILE_SIZE - 1]:
-            tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
+    # Para el personaje, usamos su hitbox específico
+    if x == personaje.x:  # Si es el personaje
+        for offset_x in range(0, personaje.hitbox_width, 5):  # Verificar varios puntos a lo largo del borde
+            # Borde superior
+            tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
             if (tile_id in TERRENOS) or (item_id in ITEMS):
                 return True
-    return False
+            # Borde inferior
+            tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
+            if (tile_id in TERRENOS) or (item_id in ITEMS):
+                return True
+        return False
+    else:  # Para enemigos u otros objetos, mantener la lógica original
+        for offset_x in [1, TILE_SIZE - 2]:
+            for offset_y in [0, TILE_SIZE - 1]:
+                tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
+                if (tile_id in TERRENOS) or (item_id in ITEMS):
+                    return True
+        return False
 
 def verificar_interaccion():
     personaje.objetos_cerca = []
     radio_interaccion = TILE_SIZE * 1.5
-    inicio_x = max(0, int((personaje.x - radio_interaccion) // TILE_SIZE))
-    fin_x = min(len(my_map[0]), int((personaje.x + radio_interaccion) // TILE_SIZE) + 1)
-    inicio_y = max(0, int((personaje.y - radio_interaccion) // TILE_SIZE))
-    fin_y = min(len(my_map), int((personaje.y + radio_interaccion) // TILE_SIZE) + 1)
+    
+    # Calcular el centro del personaje basado en su hitbox real
+    centro_x = personaje.x + personaje.hitbox_width / 2
+    centro_y = personaje.y + personaje.hitbox_height / 2
+    
+    inicio_x = max(0, int((centro_x - radio_interaccion) // TILE_SIZE))
+    fin_x = min(len(my_map[0]), int((centro_x + radio_interaccion) // TILE_SIZE) + 1)
+    inicio_y = max(0, int((centro_y - radio_interaccion) // TILE_SIZE))
+    fin_y = min(len(my_map), int((centro_y + radio_interaccion) // TILE_SIZE) + 1)
 
     for y in range(inicio_y, fin_y):
         for x in range(inicio_x, fin_x):
             tile_id, item_id = my_map[y][x], my_items[y][x]
             if item_id in OBJETOS:
-                dist_x = (x * TILE_SIZE + TILE_SIZE/2) - (personaje.x + TILE_SIZE/2)
-                dist_y = (y * TILE_SIZE + TILE_SIZE/2) - (personaje.y + TILE_SIZE/2)
+                dist_x = (x * TILE_SIZE + TILE_SIZE/2) - centro_x
+                dist_y = (y * TILE_SIZE + TILE_SIZE/2) - centro_y
                 distancia = (dist_x**2 + dist_y**2)**0.5
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
@@ -269,9 +306,9 @@ def update():
         personaje.velocidad_x = 0
 
     # Mantener al personaje dentro de los límites
-    personaje.x = max(0, min(WIDTH - TILE_SIZE, personaje.x))
-    if personaje.y >= HEIGHT - TILE_SIZE:
-        personaje.y = HEIGHT - TILE_SIZE
+    personaje.x = max(0, min(WIDTH - personaje.hitbox_width, personaje.x))
+    if personaje.y >= HEIGHT - personaje.hitbox_height:
+        personaje.y = HEIGHT - personaje.hitbox_height
         personaje.velocidad_y = 0
         personaje.en_suelo = True
 
@@ -287,9 +324,11 @@ def update():
     for enemigo in enemigos_activos:
         enemigo.actualizar()
         
-        # Comprobar colisión con el personaje
-        if (abs(personaje.x - enemigo.x) < TILE_SIZE * 0.8 and 
-            abs(personaje.y - enemigo.y) < TILE_SIZE * 0.8):
+        # Comprobar colisión con el personaje usando el hitbox real
+        if (personaje.x < enemigo.x + TILE_SIZE and
+            personaje.x + personaje.hitbox_width > enemigo.x and
+            personaje.y < enemigo.y + TILE_SIZE and
+            personaje.y + personaje.hitbox_height > enemigo.y):
             # Implementar lógica de daño o juego terminado
             pass
 
@@ -361,7 +400,8 @@ def draw():
         if modo_desarrollador:
             screen.draw.rect(Rect(enemigo.x, enemigo.y, TILE_SIZE, TILE_SIZE), (0, 255, 0))
 
-    personaje_actor = Actor(personaje.image, bottomright=(personaje.x + TILE_SIZE, personaje.y + TILE_SIZE))
+    # Dibujar personaje usando su posición real
+    personaje_actor = Actor(personaje.image, topleft=(personaje.x, personaje.y))
     personaje_actor.draw()
 
     if personaje.objetos_cerca:
@@ -372,7 +412,8 @@ def draw():
         screen.draw.text("Presiona R para reiniciar", center=(WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
 
     if modo_desarrollador:
-        screen.draw.rect(Rect(personaje.x, personaje.y, TILE_SIZE, TILE_SIZE), (255, 0, 0))
+        # Mostrar hitbox real del personaje
+        screen.draw.rect(Rect(personaje.x, personaje.y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
         screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow")
 
 # Inicializar enemigos al cargar el juego
