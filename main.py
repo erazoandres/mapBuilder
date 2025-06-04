@@ -17,11 +17,24 @@ with open('mapa.txt', 'r') as f:
             MATRIZ_ANCHO = int(dimensions[1])
             break
 
-WIDTH = MATRIZ_ANCHO * TILE_SIZE
-HEIGHT = MATRIZ_ALTO * TILE_SIZE
+# Tamaño de la ventana del juego
+WINDOW_WIDTH = 800  # Ancho estándar para juegos
+WINDOW_HEIGHT = MATRIZ_ALTO * TILE_SIZE  # Mantenemos el alto original
+
+# Ajustar el tamaño de la ventana
+WIDTH = WINDOW_WIDTH
+HEIGHT = WINDOW_HEIGHT
 GRAVEDAD = 0.8
 VELOCIDAD_SALTO = -15
-VELOCIDAD_MOVIMIENTO = 3  # Nueva constante para la velocidad de movimiento
+VELOCIDAD_MOVIMIENTO = 3
+
+# Constantes para la cámara
+CAMERA_MARGIN = WINDOW_WIDTH // 4  # Margen más pequeño para mejor respuesta
+CAMERA_SPEED = 8  # Velocidad más rápida para mejor seguimiento
+
+# Variables de la cámara
+camera_x = 0
+camera_y = 0
 
 TERRENOS = []
 ITEMS = []
@@ -396,8 +409,8 @@ def update():
     if not colision_horizontal:
         personaje.x = nueva_x
 
-    # Mantener al personaje dentro de los límites
-    personaje.x = max(0, min(WIDTH - personaje.hitbox_width, personaje.x))
+    # Mantener al personaje dentro de los límites del mapa
+    personaje.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - personaje.hitbox_width, personaje.x))
     if personaje.y >= HEIGHT - personaje.hitbox_height:
         personaje.y = HEIGHT - personaje.hitbox_height
         personaje.velocidad_y = 0
@@ -457,12 +470,40 @@ def on_key_up(key):
     if key == keys.LEFT or key == keys.RIGHT:
         personaje.velocidad_x = 0
 
+def update_camera():
+    global camera_x, camera_y
+    
+    # Calcular el centro de la pantalla
+    center_x = WINDOW_WIDTH // 2
+    
+    # Calcular la distancia del personaje al centro de la pantalla
+    dist_x = personaje.x - (center_x + camera_x)
+    
+    # Mover la cámara horizontalmente
+    if abs(dist_x) > CAMERA_MARGIN:
+        if dist_x > 0:
+            camera_x += CAMERA_SPEED
+        else:
+            camera_x -= CAMERA_SPEED
+    
+    # Limitar la cámara a los bordes del mapa
+    max_camera_x = MATRIZ_ANCHO * TILE_SIZE - WINDOW_WIDTH
+    camera_x = max(0, min(camera_x, max_camera_x))
+
 def draw():
     screen.clear()
+    
+    # Actualizar la posición de la cámara
+    update_camera()
 
+    # Calcular el rango de tiles visibles
+    start_col = max(0, int(camera_x // TILE_SIZE))
+    end_col = min(MATRIZ_ANCHO, int((camera_x + WINDOW_WIDTH) // TILE_SIZE) + 1)
+
+    # Dibujar solo los tiles visibles
     for fila in range(len(my_map)):
-        for columna in range(len(my_map[0])):
-            x = columna * TILE_SIZE
+        for columna in range(start_col, end_col):
+            x = columna * TILE_SIZE - camera_x
             y = fila * TILE_SIZE
 
             tile_id = my_map[fila][columna]
@@ -482,29 +523,32 @@ def draw():
                         screen.draw.line((x + TILE_SIZE - i, y + i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
                         screen.draw.line((x + i, y + TILE_SIZE - i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
     
-    # Dibujar los enemigos activos
+    # Dibujar los enemigos activos que están en pantalla
     for enemigo in enemigos_activos:
-        enemigo_actor = Actor(enemigo.imagen, topleft=(enemigo.x, enemigo.y))
-        enemigo_actor.scale = 0.4  # Reducir el tamaño al 40%
-        enemigo_actor.draw()
-        
-        if modo_desarrollador:
-            screen.draw.rect(Rect(enemigo.x, enemigo.y, TILE_SIZE, TILE_SIZE), (0, 255, 0))
+        x = enemigo.x - camera_x
+        if 0 <= x <= WINDOW_WIDTH:
+            enemigo_actor = Actor(enemigo.imagen, topleft=(x, enemigo.y))
+            enemigo_actor.scale = 0.4
+            enemigo_actor.draw()
+            
+            if modo_desarrollador:
+                screen.draw.rect(Rect(x, enemigo.y, TILE_SIZE, TILE_SIZE), (0, 255, 0))
 
-    # Dibujar personaje usando su posición real
-    personaje_actor = Actor(personaje.image, topleft=(personaje.x, personaje.y))
+    # Dibujar personaje
+    x = personaje.x - camera_x
+    personaje_actor = Actor(personaje.image, topleft=(x, personaje.y))
     personaje_actor.draw()
 
     if personaje.objetos_cerca:
         screen.draw.text("Presiona E para interactuar", (10, 10), color="white")
 
     if game_over:
-        screen.draw.text("¡Has perdido!", center=(WIDTH//2, HEIGHT//2), fontsize=60, color="red")
-        screen.draw.text("Presiona R para reiniciar", center=(WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
+        screen.draw.text("¡Has perdido!", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
+        screen.draw.text("Presiona R para reiniciar", center=(WINDOW_WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
 
     if modo_desarrollador:
         # Mostrar hitbox real del personaje
-        screen.draw.rect(Rect(personaje.x, personaje.y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
+        screen.draw.rect(Rect(x, personaje.y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
         screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow")
 
 # Inicializar enemigos al cargar el juego
