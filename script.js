@@ -18,6 +18,9 @@ let rotaciones2 = [];
 let items = []; // Nueva matriz para almacenar los items de la segunda capa
 let activeLayer = 1; // 1 = primera capa, 2 = segunda capa
 
+// Diccionario para almacenar los tilesets y sus rutas
+let tilesetDictionary = {};
+
 // Cargar mapa al inicio si existe
 window.onload = () => {
   // Crear el elemento del cursor personalizado
@@ -359,7 +362,7 @@ function generarMatriz(useExisting = false) {
   // Actualizar la segunda capa si existe
   const layer2Container = document.getElementById("grid-layer2");
   if (layer2Container) {
-    layer2Container.style.gridTemplateColumns = `repeat(${cols}, 32px)`;
+    layer2Container.style.gridTemplateColumns = firstGrid.style.gridTemplateColumns;
     redrawSecondLayerTiles(layer2Container);
   }
 }
@@ -458,20 +461,33 @@ function drop(ev) {
 }
       
 function exportarMatriz() {
+  // Verificar que el mapa esté completamente lleno
+  const rows = matriz.length;
+  const cols = (rows > 0 && matriz[0]) ? matriz[0].length : 0;
+  
+  if (rows === 0 || cols === 0) {
+    alert("El mapa está vacío. Por favor, crea un mapa antes de exportar.");
+    return;
+  }
+
+  // Verificar que todas las celdas tengan un valor
+  let celdasVacias = 0;
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      if (matriz[i][j] === 0) {
+        celdasVacias++;
+      }
+    }
+  }
+
+  if (celdasVacias > 0) {
+    alert(`No se puede exportar el mapa. Hay ${celdasVacias} celdas vacías. Por favor, completa todo el mapa antes de exportar.`);
+    return;
+  }
+
   // Crear un mapa de conversión de IDs (string ID -> numerical ID)
   const idMap = new Map();
   let nextId = 1;
-
-  // Asegurarse que matriz[0] exista antes de acceder a su longitud
-  const rows = matriz.length;
-  const cols = (rows > 0 && matriz[0]) ? matriz[0].length : 0;
-  if (rows === 0 || cols === 0) {
-    console.warn("Exportando matriz vacía.");
-    localStorage.setItem('savedMap', JSON.stringify([]));
-    localStorage.setItem('idMap', JSON.stringify([]));
-    localStorage.setItem('rotaciones', JSON.stringify([]));
-    return;
-  }
 
   // Crear matrices numéricas para ambas capas
   const matrizNumerica = Array.from({ length: rows }, () => Array(cols).fill(0));
@@ -544,10 +560,23 @@ function exportarMatriz() {
   }
   fileContentString += '\n];\n\n';
 
+  // Agregar el diccionario de tilesets después de my_items
+  fileContentString += 'tileset_dict = {\n';
+  const sortedKeys = Object.keys(tilesetDictionary).sort((a, b) => parseInt(a) - parseInt(b));
+  sortedKeys.forEach((key, index) => {
+    const tile = tilesetDictionary[key];
+    fileContentString += `    ${key}: {"path": "${tile.path}", "id": "${tile.originalId}"}`;
+    if (index < sortedKeys.length - 1) {
+      fileContentString += ',';
+    }
+    fileContentString += '\n';
+  });
+  fileContentString += '}\n\n';
+
   // Agregar el mapeo de IDs como comentarios
   fileContentString += '# ID Mapping (Numeric ID: Original ID)\n';
   idMap.forEach((numId, stringId) => {
-    const safeStringId = stringId.replace(/\n/g, '\\n').replace(/\r/g, '');
+    const safeStringId = String(stringId).replace(/\n/g, '\\n').replace(/\r/g, '');
     const sourceImg = document.querySelector(`.tiles img[data-id='${stringId}']`);
     if (sourceImg) {
       const fullPath = sourceImg.src;
@@ -1235,3 +1264,73 @@ function redrawSecondLayerTiles(container) {
     }
   }
 }
+
+// Función para generar el diccionario de tilesets
+function generarTilesetDictionary() {
+  // Obtener todas las imágenes dentro de los contenedores tiles
+  const tileImages = document.querySelectorAll('.tiles img');
+  
+  // Limpiar el diccionario existente
+  tilesetDictionary = {};
+  
+  // Contador para asignar IDs únicos, empezando desde 0
+  let idCounter = 0;
+  
+  // Iterar sobre cada imagen
+  tileImages.forEach(img => {
+    const src = img.getAttribute('src');
+    const originalId = img.getAttribute('data-id');
+    
+    // Solo agregar si tiene src y data-id
+    if (src && originalId) {
+      // Asignar un ID numérico único
+      tilesetDictionary[idCounter] = {
+        path: src,
+        originalId: originalId
+      };
+      
+      // Actualizar el data-id de la imagen con el nuevo ID numérico
+      img.setAttribute('data-id', idCounter.toString());
+      
+      idCounter++;
+    }
+  });
+  
+  console.log('Diccionario de Tilesets generado:', tilesetDictionary);
+  return tilesetDictionary;
+}
+
+// Función para obtener el diccionario en formato Python
+function getTilesetDictionaryPython() {
+  let pythonDict = 'tileset_dict = {\n';
+  
+  // Ordenar las claves numéricamente
+  const sortedKeys = Object.keys(tilesetDictionary).sort((a, b) => parseInt(a) - parseInt(b));
+  
+  sortedKeys.forEach((key, index) => {
+    const tile = tilesetDictionary[key];
+    pythonDict += `    ${key}: {"path": "${tile.path}", "id": "${tile.originalId}"}`;
+    if (index < sortedKeys.length - 1) {
+      pythonDict += ',';
+    }
+    pythonDict += '\n';
+  });
+  
+  pythonDict += '}\n';
+  return pythonDict;
+}
+
+// Función para obtener el ID original a partir del ID numérico
+function getOriginalId(numericId) {
+  return tilesetDictionary[numericId]?.originalId || null;
+}
+
+// Función para obtener la ruta de la imagen a partir del ID numérico
+function getImagePath(numericId) {
+  return tilesetDictionary[numericId]?.path || null;
+}
+
+// Llamar a la función cuando se carga la página
+window.addEventListener('load', () => {
+  generarTilesetDictionary();
+});
