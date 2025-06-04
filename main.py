@@ -203,16 +203,16 @@ def obtener_tile_en_posicion(x, y):
     return None, None
 
 def verificar_colision_horizontal(x, y):
-    # Para el personaje, usamos su hitbox específico
+    # Para el personaje, solo verificamos colisiones con items, no con terrenos
     if x == personaje.x:  # Si es el personaje
-        for offset_y in range(0, personaje.hitbox_height, 5):  # Verificar varios puntos a lo largo del borde
+        for offset_y in range(0, personaje.hitbox_height, 5):
             # Borde izquierdo
             tile_id, item_id = obtener_tile_en_posicion(x, y + offset_y)
-            if (tile_id in TERRENOS) or (item_id in ITEMS):
+            if item_id in ITEMS:  # Solo verificamos items
                 return True
             # Borde derecho
             tile_id, item_id = obtener_tile_en_posicion(x + personaje.hitbox_width, y + offset_y)
-            if (tile_id in TERRENOS) or (item_id in ITEMS):
+            if item_id in ITEMS:  # Solo verificamos items
                 return True
         return False
     else:  # Para enemigos u otros objetos, mantener la lógica original
@@ -224,17 +224,21 @@ def verificar_colision_horizontal(x, y):
         return False
 
 def verificar_colision_vertical(x, y):
-    # Para el personaje, usamos su hitbox específico
+    # Para el personaje, solo verificamos colisiones con items y terrenos en la parte inferior
     if x == personaje.x:  # Si es el personaje
-        for offset_x in range(0, personaje.hitbox_width, 5):  # Verificar varios puntos a lo largo del borde
-            # Borde superior
-            tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
-            if (tile_id in TERRENOS) or (item_id in ITEMS):
-                return True
-            # Borde inferior
-            tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
-            if (tile_id in TERRENOS) or (item_id in ITEMS):
-                return True
+        # Solo verificamos colisión en la parte inferior cuando está cayendo
+        if personaje.velocidad_y > 0:  # Si está cayendo
+            for offset_x in range(0, personaje.hitbox_width, 5):
+                tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
+                if (tile_id in TERRENOS) or (item_id in ITEMS):  # Verificamos terrenos para detectar suelo
+                    personaje.en_suelo = True
+                    return True
+        # Verificamos colisión en la parte superior solo cuando está saltando
+        elif personaje.velocidad_y < 0:  # Si está saltando
+            for offset_x in range(0, personaje.hitbox_width, 5):
+                tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
+                if (tile_id in TERRENOS) or (item_id in ITEMS):  # Mantenemos colisión con terrenos al saltar
+                    return True
         return False
     else:  # Para enemigos u otros objetos, mantener la lógica original
         for offset_x in [1, TILE_SIZE - 2]:
@@ -280,30 +284,117 @@ def inicializar_enemigos():
                 # Eliminar el enemigo de la matriz para que no se dibuje estático
                 my_items[fila][columna] = 0
 
-def update():
-    global game_over
-    if game_over:
-        return
+def verificar_colision(x, y, es_personaje=False):
+    """
+    Función unificada para verificar colisiones.
+    Retorna: (colision_vertical, colision_horizontal, es_suelo)
+    """
+    colision_vertical = False
+    colision_horizontal = False
+    es_suelo = False
 
-    # Aplicar gravedad
-    personaje.velocidad_y += GRAVEDAD
-    
-    # Actualizar posición vertical
+    # Obtener las coordenadas de los tiles que podrían colisionar
+    tile_x_izq = int(x // TILE_SIZE)
+    tile_x_der = int((x + personaje.hitbox_width) // TILE_SIZE)
+    tile_y_arriba = int(y // TILE_SIZE)
+    tile_y_abajo = int((y + personaje.hitbox_height) // TILE_SIZE)
+
+    # Verificar colisiones verticales
+    if es_personaje:
+        # Verificar suelo solo cuando está cayendo
+        if personaje.velocidad_y > 0:
+            for tile_x in range(tile_x_izq, tile_x_der + 1):
+                if 0 <= tile_x < len(my_map[0]) and 0 <= tile_y_abajo < len(my_map):
+                    tile_id = my_map[tile_y_abajo][tile_x]
+                    if tile_id in TERRENOS:
+                        colision_vertical = True
+                        es_suelo = True
+                        break
+        # Verificar techo solo cuando está saltando
+        elif personaje.velocidad_y < 0:
+            for tile_x in range(tile_x_izq, tile_x_der + 1):
+                if 0 <= tile_x < len(my_map[0]) and 0 <= tile_y_arriba < len(my_map):
+                    tile_id = my_map[tile_y_arriba][tile_x]
+                    if tile_id in TERRENOS:
+                        colision_vertical = True
+                        break
+
+    # Verificar colisiones horizontales
+    if es_personaje:
+        # Solo verificar items para el personaje
+        for tile_y in range(tile_y_arriba, tile_y_abajo + 1):
+            if 0 <= tile_y < len(my_map):
+                # Verificar borde izquierdo
+                if 0 <= tile_x_izq < len(my_map[0]):
+                    item_id = my_items[tile_y][tile_x_izq]
+                    if item_id in ITEMS:
+                        colision_horizontal = True
+                        break
+                # Verificar borde derecho
+                if 0 <= tile_x_der < len(my_map[0]):
+                    item_id = my_items[tile_y][tile_x_der]
+                    if item_id in ITEMS:
+                        colision_horizontal = True
+                        break
+
+    return colision_vertical, colision_horizontal, es_suelo
+
+def update():
+    global game_over, modo_desarrollador
+    if game_over:
+        if keyboard.R:
+            game_over = False
+            personaje.x = 0
+            personaje.y = 0
+            personaje.velocidad_y = 0
+            personaje.velocidad_x = 0
+            return
+
+    if keyboard.F:
+        modo_desarrollador = not modo_desarrollador
+
+    if (keyboard.SPACE or keyboard.UP) and personaje.en_suelo:
+        personaje.velocidad_y = VELOCIDAD_SALTO
+        personaje.en_suelo = False
+
+    if keyboard.E and personaje.objetos_cerca:
+        x, y, item_id = personaje.objetos_cerca[0]
+        my_items[y][x] = 0
+        personaje.objetos_cerca.remove((x, y, item_id))
+
+    # Movimiento horizontal
+    if keyboard.LEFT:
+        personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
+    elif keyboard.RIGHT:
+        personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+    else:
+        personaje.velocidad_x = 0
+
+    # Aplicar gravedad solo si no está en el suelo
+    if not personaje.en_suelo:
+        personaje.velocidad_y += GRAVEDAD
+
+    # Calcular nuevas posiciones
+    nueva_x = personaje.x + personaje.velocidad_x
     nueva_y = personaje.y + personaje.velocidad_y
-    if not verificar_colision_vertical(personaje.x, nueva_y):
+
+    # Verificar colisiones
+    colision_vertical, colision_horizontal, es_suelo = verificar_colision(nueva_x, nueva_y, True)
+
+    # Actualizar posición vertical
+    if not colision_vertical:
         personaje.y = nueva_y
         personaje.en_suelo = False
     else:
         if personaje.velocidad_y > 0:
-            personaje.en_suelo = True
-        personaje.velocidad_y = 0
+            personaje.velocidad_y = 0
+            personaje.en_suelo = es_suelo
+        else:
+            personaje.velocidad_y = 0
 
     # Actualizar posición horizontal
-    nueva_x = personaje.x + personaje.velocidad_x
-    if not verificar_colision_horizontal(nueva_x, personaje.y):
+    if not colision_horizontal:
         personaje.x = nueva_x
-    else:
-        personaje.velocidad_x = 0
 
     # Mantener al personaje dentro de los límites
     personaje.x = max(0, min(WIDTH - personaje.hitbox_width, personaje.x))
