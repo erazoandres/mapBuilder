@@ -488,19 +488,26 @@ function exportarMatriz() {
   // Crear un mapa de conversión de IDs (string ID -> numerical ID)
   const idMap = new Map();
   let nextId = 1;
+  const usedIds = new Set();
+
+  // Función auxiliar para asignar IDs numéricos únicos de hasta 3 dígitos
+  function asignarIdNumerico(stringId) {
+    if (stringId === 0) return 0;
+    if (!idMap.has(stringId)) {
+      // Buscar el siguiente ID disponible de 3 dígitos
+      while (usedIds.has(nextId) || nextId > 999) {
+        nextId++;
+      }
+      idMap.set(stringId, nextId);
+      usedIds.add(nextId);
+      nextId++;
+    }
+    return idMap.get(stringId);
+  }
 
   // Crear matrices numéricas para ambas capas
   const matrizNumerica = Array.from({ length: rows }, () => Array(cols).fill(0));
   const itemsNumerica = Array.from({ length: rows }, () => Array(cols).fill(0));
-
-  // Función auxiliar para asignar IDs numéricos
-  function asignarIdNumerico(stringId) {
-    if (stringId === 0) return 0;
-    if (!idMap.has(stringId)) {
-      idMap.set(stringId, nextId++);
-    }
-    return idMap.get(stringId);
-  }
 
   // Procesar la primera matriz (my_map)
   for (let i = 0; i < rows; i++) {
@@ -929,17 +936,35 @@ function clearGrid() {
         return; // Nothing to clear
     }
 
-    // Reset the data arrays
+    // Reset the data arrays for both layers
     matriz = Array.from({ length: rows }, () => Array(cols).fill(0));
     rotaciones = Array.from({ length: rows }, () => Array(cols).fill(0));
+    matriz2 = Array.from({ length: rows }, () => Array(cols).fill(0));
+    rotaciones2 = Array.from({ length: rows }, () => Array(cols).fill(0));
+    items = Array.from({ length: rows }, () => Array(cols).fill(0));
 
     // Regenerate the grid using the now empty data
     console.log("Regenerating grid to clear visuals...");
     generarMatriz(false); // Call generarMatriz to redraw with empty data
 
+    // Clear second layer if it exists
+    const layer2Container = document.getElementById("grid-layer2");
+    if (layer2Container) {
+        redrawSecondLayerTiles(layer2Container);
+    }
+
     console.log("Grid cleared by regenerating.");
-    // Optional: Save the cleared state to localStorage immediately? 
-    // exportarMatriz(); // Uncomment if you want clearing to persist on refresh
+    
+    // Save the cleared state to localStorage
+    try {
+        localStorage.setItem('savedMap', JSON.stringify(matriz));
+        localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
+        localStorage.setItem('matriz2', JSON.stringify(matriz2));
+        localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
+        localStorage.setItem('items', JSON.stringify(items));
+    } catch (e) {
+        console.error("Error saving cleared state to localStorage:", e);
+    }
 }
 // --- End Clear Grid Function ---
 
