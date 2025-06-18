@@ -40,6 +40,10 @@ camera_y = 0
 # Variable para mostrar panel detallado de items
 mostrar_panel_detallado = False
 
+# Variables para el sistema de menú
+estado_juego = "menu"  # "menu", "jugando", "configuracion", "extras"
+boton_seleccionado = 0  # 0: Jugar, 1: Configuración, 2: Extras
+
 TERRENOS = []
 ITEMS = []
 OBJETOS = []
@@ -363,123 +367,160 @@ def verificar_colision(x, y, es_personaje=False):
     return colision_vertical, colision_horizontal, es_suelo
 
 def update():
-    global game_over, modo_desarrollador, mostrar_panel_detallado
-    if game_over:
-        if keyboard.R:
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado
+    
+    # Si estamos en el menú principal
+    if estado_juego == "menu":
+        # Navegación del menú
+        if keyboard.UP:
+            boton_seleccionado = (boton_seleccionado - 1) % 3
+        elif keyboard.DOWN:
+            boton_seleccionado = (boton_seleccionado + 1) % 3
+        elif keyboard.RETURN or keyboard.SPACE:
+            # Seleccionar botón
+            if boton_seleccionado == 0:  # Jugar
+                estado_juego = "jugando"
+            elif boton_seleccionado == 1:  # Configuración
+                estado_juego = "configuracion"
+            elif boton_seleccionado == 2:  # Extras
+                estado_juego = "extras"
+        return
+    
+    # Si estamos en configuración
+    elif estado_juego == "configuracion":
+        if keyboard.ESCAPE or keyboard.BACKSPACE:
+            estado_juego = "menu"
+        return
+    
+    # Si estamos en extras
+    elif estado_juego == "extras":
+        if keyboard.ESCAPE or keyboard.BACKSPACE:
+            estado_juego = "menu"
+        return
+    
+    # Si estamos jugando
+    elif estado_juego == "jugando":
+        # Volver al menú con ESC
+        if keyboard.ESCAPE:
+            estado_juego = "menu"
+            return
+        
+        if game_over:
+            if keyboard.R:
+                game_over = False
+                personaje.x = 0
+                personaje.y = 0
+                personaje.velocidad_y = 0
+                personaje.velocidad_x = 0
+                personaje.puede_doble_salto = False
+                # No reiniciar la colección de items para mantener el progreso
+                return
+
+        if keyboard.F:
+            modo_desarrollador = not modo_desarrollador
+        
+        # Mostrar/ocultar panel detallado de items
+        if keyboard.U:
+            mostrar_panel_detallado = not mostrar_panel_detallado
+        
+        # Reinicio completo del juego (incluyendo colección)
+        if keyboard.F5:
             game_over = False
             personaje.x = 0
             personaje.y = 0
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
-            # No reiniciar la colección de items para mantener el progreso
+            items_recolectados.clear()  # Limpiar la colección
+            # Reinicializar el mapa de items
+            inicializar_enemigos()
             return
 
-    if keyboard.F:
-        modo_desarrollador = not modo_desarrollador
-    
-    # Mostrar/ocultar panel detallado de items
-    if keyboard.U:
-        mostrar_panel_detallado = not mostrar_panel_detallado
-    
-    # Reinicio completo del juego (incluyendo colección)
-    if keyboard.F5:
-        game_over = False
-        personaje.x = 0
-        personaje.y = 0
-        personaje.velocidad_y = 0
-        personaje.velocidad_x = 0
-        personaje.puede_doble_salto = False
-        items_recolectados.clear()  # Limpiar la colección
-        # Reinicializar el mapa de items
-        inicializar_enemigos()
-        return
+        # Lógica de salto mejorada
+        if (keyboard.SPACE or keyboard.UP):
+            if personaje.en_suelo:
+                personaje.velocidad_y = VELOCIDAD_SALTO
+                personaje.en_suelo = False
+                personaje.puede_doble_salto = True
+            elif personaje.puede_doble_salto and personaje.velocidad_y < 0:  # Solo permitir doble salto cuando está cayendo
+                personaje.velocidad_y = VELOCIDAD_SALTO * 0.8  # El segundo salto es ligeramente más débil
+                personaje.puede_doble_salto = False
+                # Nota: El volumen del sonido se puede ajustar editando el archivo de audio directamente
+                # sounds.jump.play()  # Sonido de salto (volumen controlado por el archivo de audio)
 
-    # Lógica de salto mejorada
-    if (keyboard.SPACE or keyboard.UP):
-        if personaje.en_suelo:
-            personaje.velocidad_y = VELOCIDAD_SALTO
+        if keyboard.E and personaje.objetos_cerca:
+            x, y, item_id = personaje.objetos_cerca[0]
+            # Agregar el item a la colección si no está ya recolectado
+            if item_id not in items_recolectados:
+                items_recolectados[item_id] = 1
+            else:
+                items_recolectados[item_id] += 1
+            my_items[y][x] = 0
+            personaje.objetos_cerca.remove((x, y, item_id))
+
+        # Movimiento horizontal
+        if keyboard.LEFT:
+            personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
+        elif keyboard.RIGHT:
+            personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+        else:
+            personaje.velocidad_x = 0
+
+        # Aplicar gravedad solo si no está en el suelo
+        if not personaje.en_suelo:
+            personaje.velocidad_y += GRAVEDAD
+
+        # Calcular nuevas posiciones
+        nueva_x = personaje.x + personaje.velocidad_x
+        nueva_y = personaje.y + personaje.velocidad_y
+
+        # Verificar colisiones
+        colision_vertical, colision_horizontal, es_suelo = verificar_colision(nueva_x, nueva_y, True)
+
+        # Actualizar posición vertical
+        if not colision_vertical:
+            personaje.y = nueva_y
             personaje.en_suelo = False
-            personaje.puede_doble_salto = True
-        elif personaje.puede_doble_salto and personaje.velocidad_y < 0:  # Solo permitir doble salto cuando está cayendo
-            personaje.velocidad_y = VELOCIDAD_SALTO * 0.8  # El segundo salto es ligeramente más débil
-            personaje.puede_doble_salto = False
-            # Nota: El volumen del sonido se puede ajustar editando el archivo de audio directamente
-            # sounds.jump.play()  # Sonido de salto (volumen controlado por el archivo de audio)
-
-    if keyboard.E and personaje.objetos_cerca:
-        x, y, item_id = personaje.objetos_cerca[0]
-        # Agregar el item a la colección si no está ya recolectado
-        if item_id not in items_recolectados:
-            items_recolectados[item_id] = 1
         else:
-            items_recolectados[item_id] += 1
-        my_items[y][x] = 0
-        personaje.objetos_cerca.remove((x, y, item_id))
+            if personaje.velocidad_y > 0:
+                personaje.velocidad_y = 0
+                personaje.en_suelo = es_suelo
+                if es_suelo:
+                    personaje.puede_doble_salto = False  # Resetear el doble salto al tocar el suelo
+            else:
+                personaje.velocidad_y = 0
 
-    # Movimiento horizontal
-    if keyboard.LEFT:
-        personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
-    elif keyboard.RIGHT:
-        personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
-    else:
-        personaje.velocidad_x = 0
+        # Actualizar posición horizontal
+        if not colision_horizontal:
+            personaje.x = nueva_x
 
-    # Aplicar gravedad solo si no está en el suelo
-    if not personaje.en_suelo:
-        personaje.velocidad_y += GRAVEDAD
-
-    # Calcular nuevas posiciones
-    nueva_x = personaje.x + personaje.velocidad_x
-    nueva_y = personaje.y + personaje.velocidad_y
-
-    # Verificar colisiones
-    colision_vertical, colision_horizontal, es_suelo = verificar_colision(nueva_x, nueva_y, True)
-
-    # Actualizar posición vertical
-    if not colision_vertical:
-        personaje.y = nueva_y
-        personaje.en_suelo = False
-    else:
-        if personaje.velocidad_y > 0:
+        # Mantener al personaje dentro de los límites del mapa
+        personaje.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - personaje.hitbox_width, personaje.x))
+        if personaje.y >= HEIGHT - personaje.hitbox_height:
+            personaje.y = HEIGHT - personaje.hitbox_height
             personaje.velocidad_y = 0
-            personaje.en_suelo = es_suelo
-            if es_suelo:
-                personaje.puede_doble_salto = False  # Resetear el doble salto al tocar el suelo
-        else:
-            personaje.velocidad_y = 0
+            personaje.en_suelo = True
+            personaje.puede_doble_salto = False  # Resetear el doble salto al tocar el suelo
 
-    # Actualizar posición horizontal
-    if not colision_horizontal:
-        personaje.x = nueva_x
+        # Actualizar dirección del personaje
+        if personaje.velocidad_x > 0:
+            personaje.image = "personajes/tile0"
+        elif personaje.velocidad_x < 0:
+            personaje.image = "personajes/tile1"
 
-    # Mantener al personaje dentro de los límites del mapa
-    personaje.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - personaje.hitbox_width, personaje.x))
-    if personaje.y >= HEIGHT - personaje.hitbox_height:
-        personaje.y = HEIGHT - personaje.hitbox_height
-        personaje.velocidad_y = 0
-        personaje.en_suelo = True
-        personaje.puede_doble_salto = False  # Resetear el doble salto al tocar el suelo
-
-    # Actualizar dirección del personaje
-    if personaje.velocidad_x > 0:
-        personaje.image = "personajes/tile0"
-    elif personaje.velocidad_x < 0:
-        personaje.image = "personajes/tile1"
-
-    verificar_interaccion()
-    
-    # Actualizar enemigos
-    for enemigo in enemigos_activos:
-        enemigo.actualizar()
+        verificar_interaccion()
         
-        # Comprobar colisión con el personaje usando el hitbox real
-        if (personaje.x < enemigo.x + TILE_SIZE and
-            personaje.x + personaje.hitbox_width > enemigo.x and
-            personaje.y < enemigo.y + TILE_SIZE and
-            personaje.y + personaje.hitbox_height > enemigo.y):
-            # Implementar lógica de daño o juego terminado
-            pass
+        # Actualizar enemigos
+        for enemigo in enemigos_activos:
+            enemigo.actualizar()
+            
+            # Comprobar colisión con el personaje usando el hitbox real
+            if (personaje.x < enemigo.x + TILE_SIZE and
+                personaje.x + personaje.hitbox_width > enemigo.x and
+                personaje.y < enemigo.y + TILE_SIZE and
+                personaje.y + personaje.hitbox_height > enemigo.y):
+                # Implementar lógica de daño o juego terminado
+                pass
 
 def on_key_down(key):
     global game_over, modo_desarrollador, mostrar_panel_detallado
@@ -598,77 +639,154 @@ def dibujar_panel_detallado_items():
             cantidad_texto = f"x{cantidad}"
             screen.draw.text(cantidad_texto, (panel_x + 110, y_pos - 2), color="yellow", fontsize=12)
 
+def dibujar_menu_principal():
+    """Dibuja el menú principal con los 3 botones"""
+    global boton_seleccionado
+    
+    # Configuración del menú
+    boton_width = 200
+    boton_height = 60
+    espaciado = 20
+    centro_x = WINDOW_WIDTH // 2
+    centro_y = WINDOW_HEIGHT // 2
+    
+    # Posiciones de los botones (en columna)
+    botones = [
+        (centro_x - boton_width // 2, centro_y - boton_height - espaciado),  # Jugar
+        (centro_x - boton_width // 2, centro_y),  # Configuración
+        (centro_x - boton_width // 2, centro_y + boton_height + espaciado)   # Extras
+    ]
+    
+    # Textos de los botones
+    textos = ["JUGAR", "CONFIGURACIÓN", "EXTRAS"]
+    
+    # Dibujar cada botón
+    for i, (x, y) in enumerate(botones):
+        # Color del botón (resaltado si está seleccionado)
+        color_boton = (255, 215, 0) if i == boton_seleccionado else (100, 100, 100)
+        color_texto = (0, 0, 0) if i == boton_seleccionado else (255, 255, 255)
+        
+        # Intentar usar la imagen bonus.png si existe
+        try:
+            boton_actor = Actor("bonus", topleft=(x, y))
+            boton_actor.scale = boton_width / boton_actor.width
+            boton_actor.draw()
+        except:
+            # Si no existe la imagen, dibujar un rectángulo
+            screen.draw.filled_rect(Rect(x, y, boton_width, boton_height), color_boton)
+            screen.draw.rect(Rect(x, y, boton_width, boton_height), (255, 255, 255), 2)
+        
+        # Dibujar el texto del botón
+        texto_x = x + boton_width // 2
+        texto_y = y + boton_height // 2
+        screen.draw.text(textos[i], center=(texto_x, texto_y), color=color_texto, fontsize=20)
+    
+    # Dibujar título del juego
+    screen.draw.text("MAP BUILDER", center=(centro_x, 100), color="white", fontsize=40)
+    
+    # Instrucciones
+    screen.draw.text("Usa ↑↓ para navegar, ENTER para seleccionar", center=(centro_x, WINDOW_HEIGHT - 50), color="white", fontsize=16)
+
 def draw():
     screen.clear()
     
-    # Actualizar la posición de la cámara
-    update_camera()
-
-    # Calcular el rango de tiles visibles
-    start_col = max(0, int(camera_x // TILE_SIZE))
-    end_col = min(MATRIZ_ANCHO, int((camera_x + WINDOW_WIDTH) // TILE_SIZE) + 1)
-
-    # Dibujar solo los tiles visibles
-    for fila in range(len(my_map)):
-        for columna in range(start_col, end_col):
-            x = columna * TILE_SIZE - camera_x
-            y = fila * TILE_SIZE
-
-            tile_id = my_map[fila][columna]
-            if tile_id != 0 and tile_id in id_to_image:
-                tile_actor = Actor(id_to_image[tile_id], topleft=(x, y))
-                tile_actor.draw()
-
-            item_id = my_items[fila][columna]
-            if item_id != 0 and item_id in id_to_image:
-                item_actor = Actor(id_to_image[item_id], topleft=(x, y))
-                item_actor.draw()
-
-                # Dibujar borde amarillo si el item está cerca del personaje
-                if item_id in ITEMS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
-                    # Dibujar borde amarillo
-                    for i in range(4):
-                        screen.draw.line((x + i, y + i), (x + TILE_SIZE - i, y + i), (255, 255, 0))
-                        screen.draw.line((x + i, y + i), (x + i, y + TILE_SIZE - i), (255, 255, 0))
-                        screen.draw.line((x + TILE_SIZE - i, y + i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
-                        screen.draw.line((x + i, y + TILE_SIZE - i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
+    # Si estamos en el menú principal
+    if estado_juego == "menu":
+        dibujar_menu_principal()
+        return
     
-    # Dibujar los enemigos activos que están en pantalla
-    for enemigo in enemigos_activos:
-        x = enemigo.x - camera_x
-        if 0 <= x <= WINDOW_WIDTH:
-            enemigo_actor = Actor(enemigo.imagen, topleft=(x, enemigo.y))
-            enemigo_actor.scale = 0.4
-            enemigo_actor.draw()
-            
-            if modo_desarrollador:
-                screen.draw.rect(Rect(x, enemigo.y, TILE_SIZE, TILE_SIZE), (0, 255, 0))
+    # Si estamos en configuración
+    elif estado_juego == "configuracion":
+        # Fondo
+        screen.draw.filled_rect(Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT), (0, 0, 0))
+        # Título
+        screen.draw.text("CONFIGURACIÓN", center=(WINDOW_WIDTH//2, 100), color="white", fontsize=40)
+        # Contenido (placeholder)
+        screen.draw.text("Opciones de configuración", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2), color="white", fontsize=24)
+        screen.draw.text("Presiona ESC para volver", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT - 50), color="white", fontsize=16)
+        return
+    
+    # Si estamos en extras
+    elif estado_juego == "extras":
+        # Fondo
+        screen.draw.filled_rect(Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT), (0, 0, 0))
+        # Título
+        screen.draw.text("EXTRAS", center=(WINDOW_WIDTH//2, 100), color="white", fontsize=40)
+        # Contenido (placeholder)
+        screen.draw.text("Contenido extra del juego", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2), color="white", fontsize=24)
+        screen.draw.text("Presiona ESC para volver", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT - 50), color="white", fontsize=16)
+        return
+    
+    # Si estamos jugando
+    elif estado_juego == "jugando":
+        # Actualizar la posición de la cámara
+        update_camera()
 
-    # Dibujar personaje
-    x = personaje.x - camera_x
-    personaje_actor = Actor(personaje.image, topleft=(x, personaje.y))
-    personaje_actor.draw()
+        # Calcular el rango de tiles visibles
+        start_col = max(0, int(camera_x // TILE_SIZE))
+        end_col = min(MATRIZ_ANCHO, int((camera_x + WINDOW_WIDTH) // TILE_SIZE) + 1)
 
-    # Dibujar texto de interacción si hay items cerca
-    if personaje.objetos_cerca:
-        texto_x = x + personaje.hitbox_width / 2
-        texto_y = personaje.y - 20
-        screen.draw.text("Presiona R para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
+        # Dibujar solo los tiles visibles
+        for fila in range(len(my_map)):
+            for columna in range(start_col, end_col):
+                x = columna * TILE_SIZE - camera_x
+                y = fila * TILE_SIZE
 
-    if game_over:
-        screen.draw.text("¡Has perdido!", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
-        screen.draw.text("Presiona R para reiniciar", center=(WINDOW_WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
+                tile_id = my_map[fila][columna]
+                if tile_id != 0 and tile_id in id_to_image:
+                    tile_actor = Actor(id_to_image[tile_id], topleft=(x, y))
+                    tile_actor.draw()
 
-    if modo_desarrollador:
-        # Mostrar hitbox real del personaje
-        screen.draw.rect(Rect(x, personaje.y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
-        screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow", fontsize=14)
-        # Mostrar controles adicionales
-        screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
-        screen.draw.text("U: Panel detallado de items", (10, 70), color="yellow", fontsize=14)
+                item_id = my_items[fila][columna]
+                if item_id != 0 and item_id in id_to_image:
+                    item_actor = Actor(id_to_image[item_id], topleft=(x, y))
+                    item_actor.draw()
 
-    # Dibujar el panel detallado de items
-    dibujar_panel_detallado_items()
+                    # Dibujar borde amarillo si el item está cerca del personaje
+                    if item_id in ITEMS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
+                        # Dibujar borde amarillo
+                        for i in range(4):
+                            screen.draw.line((x + i, y + i), (x + TILE_SIZE - i, y + i), (255, 255, 0))
+                            screen.draw.line((x + i, y + i), (x + i, y + TILE_SIZE - i), (255, 255, 0))
+                            screen.draw.line((x + TILE_SIZE - i, y + i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
+                            screen.draw.line((x + i, y + TILE_SIZE - i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
+        
+        # Dibujar los enemigos activos que están en pantalla
+        for enemigo in enemigos_activos:
+            x = enemigo.x - camera_x
+            if 0 <= x <= WINDOW_WIDTH:
+                enemigo_actor = Actor(enemigo.imagen, topleft=(x, enemigo.y))
+                enemigo_actor.scale = 0.4
+                enemigo_actor.draw()
+                
+                if modo_desarrollador:
+                    screen.draw.rect(Rect(x, enemigo.y, TILE_SIZE, TILE_SIZE), (0, 255, 0))
+
+        # Dibujar personaje
+        x = personaje.x - camera_x
+        personaje_actor = Actor(personaje.image, topleft=(x, personaje.y))
+        personaje_actor.draw()
+
+        # Dibujar texto de interacción si hay items cerca
+        if personaje.objetos_cerca:
+            texto_x = x + personaje.hitbox_width / 2
+            texto_y = personaje.y - 20
+            screen.draw.text("Presiona R para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
+
+        if game_over:
+            screen.draw.text("¡Has perdido!", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
+            screen.draw.text("Presiona R para reiniciar", center=(WINDOW_WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
+
+        if modo_desarrollador:
+            # Mostrar hitbox real del personaje
+            screen.draw.rect(Rect(x, personaje.y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
+            screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow", fontsize=14)
+            # Mostrar controles adicionales
+            screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
+            screen.draw.text("U: Panel detallado de items", (10, 70), color="yellow", fontsize=14)
+
+        # Dibujar el panel detallado de items
+        dibujar_panel_detallado_items()
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
