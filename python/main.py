@@ -3,9 +3,9 @@ import re
 import random
 
 # Constantes
-TILE_SIZE = 36
+TILE_SIZE = 32
 ENEMIGO_SIZE = 32  # Tamaño de los enemigos en píxeles
-PROBABILIDAD_SALTO_ENEMIGO = 0.02  # Puedes ajustar este valor a tu gusto
+PROBABILIDAD_SALTO_ENEMIGO = 0.000000000000002  # Puedes ajustar este valor a tu gusto
 
 # Dimensiones de la matriz
 with open('mapa.txt', 'r', encoding='utf-8') as f:
@@ -180,7 +180,16 @@ class Enemigo:
         self.direccion = random.choice([-1, 1])  # -1 izquierda, 1 derecha
         self.tiempo_cambio_direccion = random.randint(60, 180)  # frames hasta cambiar dirección
         self.contador = 0
-        self.imagen = id_to_image.get(tipo_id, "enemigos/default")
+        self.imagen_base = id_to_image.get(tipo_id, "enemigos/default")
+    
+    def obtener_imagen_actual(self):
+        """Retorna la imagen correcta según la dirección del enemigo"""
+        if self.direccion == -1:  # Moviendo a la izquierda
+            # Usar tile6 para enemigos moviéndose a la izquierda
+            return "enemigos/tile6.png"
+        else:  # Moviendo a la derecha
+            # Usar tile4 para enemigos moviéndose a la derecha
+            return "enemigos/tile4.png"
     
     def actualizar(self):
         # Aplicar gravedad
@@ -889,7 +898,7 @@ def draw():
         for enemigo in enemigos_activos:
             x = enemigo.x - camera_x
             if 0 <= x <= WINDOW_WIDTH:
-                enemigo_actor = Actor(enemigo.imagen, topleft=(x, enemigo.y))
+                enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, enemigo.y))
                 enemigo_actor.scale = ENEMIGO_SIZE / TILE_SIZE  # Calcular escala automáticamente
                 enemigo_actor.draw()
                 
