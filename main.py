@@ -46,7 +46,7 @@ OBJETOS = []
 ENEMIGOS = []
 
 # Lista para almacenar los items recolectados
-items_recolectados = []
+items_recolectados = {}  # Cambiado de lista a diccionario para contar items
 
 print(ITEMS)
 
@@ -411,7 +411,9 @@ def update():
         x, y, item_id = personaje.objetos_cerca[0]
         # Agregar el item a la colección si no está ya recolectado
         if item_id not in items_recolectados:
-            items_recolectados.append(item_id)
+            items_recolectados[item_id] = 1
+        else:
+            items_recolectados[item_id] += 1
         my_items[y][x] = 0
         personaje.objetos_cerca.remove((x, y, item_id))
 
@@ -520,7 +522,9 @@ def on_key_down(key):
         x, y, item_id = personaje.objetos_cerca[0]
         # Agregar el item a la colección si no está ya recolectado
         if item_id not in items_recolectados:
-            items_recolectados.append(item_id)
+            items_recolectados[item_id] = 1
+        else:
+            items_recolectados[item_id] += 1
         my_items[y][x] = 0
         personaje.objetos_cerca.remove((x, y, item_id))
 
@@ -566,7 +570,7 @@ def dibujar_panel_detallado_items():
     line_height = 25
     padding = 10
     
-    # Calcular el alto necesario basado en el número de items
+    # Calcular el alto necesario basado en el número de items únicos
     panel_height = len(items_recolectados) * line_height + padding * 2
     
     # Dibujar fondo del panel
@@ -577,7 +581,7 @@ def dibujar_panel_detallado_items():
     screen.draw.text("Items Recolectados:", (panel_x + 5, panel_y + 5), color="white", fontsize=14)
     
     # Dibujar cada item con su información
-    for i, item_id in enumerate(items_recolectados):
+    for i, (item_id, cantidad) in enumerate(items_recolectados.items()):
         if item_id in id_to_image:
             y_pos = panel_y + padding + 20 + i * line_height
             
@@ -590,9 +594,9 @@ def dibujar_panel_detallado_items():
             item_name = f"Item {item_id}"
             screen.draw.text(item_name, (panel_x + 30, y_pos - 2), color="white", fontsize=12)
             
-            # Dibujar la cantidad (siempre 1 por ahora, pero se puede expandir)
-            cantidad = "x1"
-            screen.draw.text(cantidad, (panel_x + 110, y_pos - 2), color="yellow", fontsize=12)
+            # Dibujar la cantidad real
+            cantidad_texto = f"x{cantidad}"
+            screen.draw.text(cantidad_texto, (panel_x + 110, y_pos - 2), color="yellow", fontsize=12)
 
 def draw():
     screen.clear()
