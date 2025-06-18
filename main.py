@@ -49,6 +49,7 @@ personaje.velocidad_y = 0
 personaje.velocidad_x = 0  # Nueva variable para velocidad horizontal
 personaje.en_suelo = False
 personaje.objetos_cerca = []
+personaje.puede_doble_salto = False  # Nueva variable para el doble salto
 # Obtener el tamaño real de la imagen del personaje
 personaje.hitbox_width = personaje.width
 personaje.hitbox_height = personaje.height
@@ -363,14 +364,22 @@ def update():
             personaje.y = 0
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
+            personaje.puede_doble_salto = False
             return
 
     if keyboard.F:
         modo_desarrollador = not modo_desarrollador
 
-    if (keyboard.SPACE or keyboard.UP) and personaje.en_suelo:
-        personaje.velocidad_y = VELOCIDAD_SALTO
-        personaje.en_suelo = False
+    # Lógica de salto mejorada
+    if (keyboard.SPACE or keyboard.UP):
+        if personaje.en_suelo:
+            personaje.velocidad_y = VELOCIDAD_SALTO
+            personaje.en_suelo = False
+            personaje.puede_doble_salto = True
+        elif personaje.puede_doble_salto and personaje.velocidad_y < 0:  # Solo permitir doble salto cuando está cayendo
+            personaje.velocidad_y = VELOCIDAD_SALTO * 0.8  # El segundo salto es ligeramente más débil
+            personaje.puede_doble_salto = False
+            sounds.jump.play()  # Opcional: reproducir sonido de salto
 
     if keyboard.E and personaje.objetos_cerca:
         x, y, item_id = personaje.objetos_cerca[0]
@@ -404,6 +413,8 @@ def update():
         if personaje.velocidad_y > 0:
             personaje.velocidad_y = 0
             personaje.en_suelo = es_suelo
+            if es_suelo:
+                personaje.puede_doble_salto = False  # Resetear el doble salto al tocar el suelo
         else:
             personaje.velocidad_y = 0
 
@@ -417,6 +428,7 @@ def update():
         personaje.y = HEIGHT - personaje.hitbox_height
         personaje.velocidad_y = 0
         personaje.en_suelo = True
+        personaje.puede_doble_salto = False  # Resetear el doble salto al tocar el suelo
 
     # Actualizar dirección del personaje
     if personaje.velocidad_x > 0:
