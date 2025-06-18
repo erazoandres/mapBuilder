@@ -371,31 +371,17 @@ def update():
     
     # Si estamos en el menú principal
     if estado_juego == "menu":
-        # Navegación del menú
-        if keyboard.UP:
-            boton_seleccionado = (boton_seleccionado - 1) % 3
-        elif keyboard.DOWN:
-            boton_seleccionado = (boton_seleccionado + 1) % 3
-        elif keyboard.RETURN or keyboard.SPACE:
-            # Seleccionar botón
-            if boton_seleccionado == 0:  # Jugar
-                estado_juego = "jugando"
-            elif boton_seleccionado == 1:  # Configuración
-                estado_juego = "configuracion"
-            elif boton_seleccionado == 2:  # Extras
-                estado_juego = "extras"
+        # Los controles del menú se manejan en on_key_down()
         return
     
     # Si estamos en configuración
     elif estado_juego == "configuracion":
-        if keyboard.ESCAPE or keyboard.BACKSPACE:
-            estado_juego = "menu"
+        # Los controles de configuración se manejan en on_key_down()
         return
     
     # Si estamos en extras
     elif estado_juego == "extras":
-        if keyboard.ESCAPE or keyboard.BACKSPACE:
-            estado_juego = "menu"
+        # Los controles de extras se manejan en on_key_down()
         return
     
     # Si estamos jugando
@@ -523,57 +509,92 @@ def update():
                 pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado
 
-    if game_over:
-        if key == keys.R:
+    # Si estamos en el menú principal
+    if estado_juego == "menu":
+        if key == keys.UP:
+            boton_seleccionado = (boton_seleccionado - 1) % 3
+        elif key == keys.DOWN:
+            boton_seleccionado = (boton_seleccionado + 1) % 3
+        elif key == keys.RETURN or key == keys.SPACE:
+            # Seleccionar botón
+            if boton_seleccionado == 0:  # Jugar
+                estado_juego = "jugando"
+            elif boton_seleccionado == 1:  # Configuración
+                estado_juego = "configuracion"
+            elif boton_seleccionado == 2:  # Extras
+                estado_juego = "extras"
+        return
+    
+    # Si estamos en configuración
+    elif estado_juego == "configuracion":
+        if key == keys.ESCAPE or key == keys.BACKSPACE:
+            estado_juego = "menu"
+        return
+    
+    # Si estamos en extras
+    elif estado_juego == "extras":
+        if key == keys.ESCAPE or key == keys.BACKSPACE:
+            estado_juego = "menu"
+        return
+    
+    # Si estamos jugando
+    elif estado_juego == "jugando":
+        # Volver al menú con ESC
+        if key == keys.ESCAPE:
+            estado_juego = "menu"
+            return
+
+        if game_over:
+            if key == keys.R:
+                game_over = False
+                personaje.x = 0
+                personaje.y = 0
+                personaje.velocidad_y = 0
+                personaje.velocidad_x = 0
+                # No reiniciar la colección de items para mantener el progreso
+                return
+
+        if key == keys.F:
+            modo_desarrollador = not modo_desarrollador
+        
+        # Mostrar/ocultar panel detallado de items
+        if key == keys.U:
+            mostrar_panel_detallado = not mostrar_panel_detallado
+        
+        # Reinicio completo del juego (incluyendo colección)
+        if key == keys.F5:
             game_over = False
             personaje.x = 0
             personaje.y = 0
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
-            # No reiniciar la colección de items para mantener el progreso
+            personaje.puede_doble_salto = False
+            items_recolectados.clear()  # Limpiar la colección
+            # Reinicializar el mapa de items
+            inicializar_enemigos()
             return
 
-    if key == keys.F:
-        modo_desarrollador = not modo_desarrollador
-    
-    # Mostrar/ocultar panel detallado de items
-    if key == keys.U:
-        mostrar_panel_detallado = not mostrar_panel_detallado
-    
-    # Reinicio completo del juego (incluyendo colección)
-    if key == keys.F5:
-        game_over = False
-        personaje.x = 0
-        personaje.y = 0
-        personaje.velocidad_y = 0
-        personaje.velocidad_x = 0
-        personaje.puede_doble_salto = False
-        items_recolectados.clear()  # Limpiar la colección
-        # Reinicializar el mapa de items
-        inicializar_enemigos()
-        return
+        if key == keys.SPACE and personaje.en_suelo:
+            personaje.velocidad_y = VELOCIDAD_SALTO
+            personaje.en_suelo = False
 
-    if key == keys.SPACE and personaje.en_suelo:
-        personaje.velocidad_y = VELOCIDAD_SALTO
-        personaje.en_suelo = False
+        if key == keys.R and personaje.objetos_cerca:
+            x, y, item_id = personaje.objetos_cerca[0]
+            # Agregar el item a la colección si no está ya recolectado
+            if item_id not in items_recolectados:
+                items_recolectados[item_id] = 1
+            else:
+                items_recolectados[item_id] += 1
+            my_items[y][x] = 0
+            personaje.objetos_cerca.remove((x, y, item_id))
 
-    if key == keys.R and personaje.objetos_cerca:
-        x, y, item_id = personaje.objetos_cerca[0]
-        # Agregar el item a la colección si no está ya recolectado
-        if item_id not in items_recolectados:
-            items_recolectados[item_id] = 1
-        else:
-            items_recolectados[item_id] += 1
-        my_items[y][x] = 0
-        personaje.objetos_cerca.remove((x, y, item_id))
-
-    # Movimiento horizontal
-    if key == keys.LEFT:
-        personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
-    elif key == keys.RIGHT:
-        personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+        # Movimiento horizontal
+        if key == keys.LEFT:
+            personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
+        elif key == keys.RIGHT:
+            personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
 
 def on_key_up(key):
     if key == keys.LEFT or key == keys.RIGHT:
