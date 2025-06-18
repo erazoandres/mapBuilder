@@ -392,62 +392,7 @@ def update():
     
     # Si estamos en configuración
     elif estado_juego == "configuracion":
-        if key == keys.ESCAPE or key == keys.BACKSPACE:
-            estado_juego = "menu"
-            config_seleccionada = 0  # Resetear selección
-            mostrar_controles_config = True  # Resetear visibilidad del panel
-        elif key == keys.SPACE:
-            # Ocultar/mostrar panel de controles
-            mostrar_controles_config = not mostrar_controles_config
-        elif key == keys.UP:
-            config_seleccionada = (config_seleccionada - 1) % 10
-        elif key == keys.DOWN:
-            config_seleccionada = (config_seleccionada + 1) % 10
-        elif key == keys.LEFT or key == keys.RIGHT:
-            # Cambiar valor de la configuración seleccionada
-            opciones = [
-                "velocidad_personaje", "velocidad_salto", "gravedad", "prob_salto_enemigo",
-                "velocidad_camara", "margen_camara", "volumen_sonido", "pantalla_completa",
-                "tamaño_hitbox", "efectos_visuales"
-            ]
-            clave = opciones[config_seleccionada]
-            
-            if clave == "velocidad_personaje":
-                valores = [1, 2, 3, 4, 5]
-            elif clave == "velocidad_salto":
-                valores = [10, 12, 15, 18, 20]
-            elif clave == "gravedad":
-                valores = [0.5, 0.8, 1.0, 1.2, 1.5]
-            elif clave == "prob_salto_enemigo":
-                valores = [0.01, 0.02, 0.05, 0.1]
-            elif clave == "velocidad_camara":
-                valores = [5, 8, 10, 12, 15]
-            elif clave == "margen_camara":
-                valores = [50, 100, 150, 200]
-            elif clave == "volumen_sonido":
-                valores = [0, 25, 50, 75, 100]
-            elif clave == "pantalla_completa":
-                valores = ["No", "Sí"]
-            elif clave == "tamaño_hitbox":
-                valores = ["Pequeño", "Normal", "Grande"]
-            elif clave == "efectos_visuales":
-                valores = ["Básicos", "Mejorados", "Máximos"]
-            
-            # Encontrar el índice actual y cambiarlo
-            valor_actual = configuraciones[clave]
-            try:
-                indice_actual = valores.index(valor_actual)
-                if key == keys.RIGHT:
-                    indice_nuevo = (indice_actual + 1) % len(valores)
-                else:  # LEFT
-                    indice_nuevo = (indice_actual - 1) % len(valores)
-                configuraciones[clave] = valores[indice_nuevo]
-                # Aplicar las configuraciones inmediatamente
-                aplicar_configuraciones()
-            except ValueError:
-                # Si el valor actual no está en la lista, usar el primer valor
-                configuraciones[clave] = valores[0]
-                aplicar_configuraciones()
+        # Los controles de configuración se manejan en on_key_down()
         return
     
     # Si estamos en extras
@@ -580,7 +525,7 @@ def update():
                 pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, config_seleccionada, configuraciones
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, config_seleccionada, configuraciones, mostrar_controles_config
 
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -906,20 +851,20 @@ def dibujar_pantalla_configuracion():
     """Dibuja la pantalla de configuración con 2 columnas y 10 opciones"""
     global config_seleccionada, configuraciones, mostrar_controles_config
     
-    # Configuración de la pantalla - aprovechar el espacio adicional
-    columna_width = 320  # Aumentado para aprovechar más espacio
-    espaciado_x = 150    # Aumentado para mejor separación
-    espaciado_y = 50     # Mantener espaciado vertical
-    item_height = 40     # Mantener altura
+    # Configuración de la pantalla - diseño más compacto y moderno
+    columna_width = 280  # Columnas más compactas
+    espaciado_x = 80     # Menos espacio entre columnas
+    espaciado_y = 45     # Espaciado vertical más compacto
+    item_height = 35     # Altura de items más compacta
     
-    # Calcular márgenes para centrar el contenido
+    # Calcular márgenes para centrar el contenido de manera más eficiente
     margen_horizontal = (WIDTH - (columna_width * 2 + espaciado_x)) // 2
-    margen_vertical = 80  # Margen superior e inferior
+    margen_vertical = 60  # Margen vertical más pequeño
     
-    # Posición de las columnas - centrar mejor en la ventana más ancha
+    # Posición de las columnas - centrado más compacto
     col1_x = margen_horizontal
     col2_x = col1_x + columna_width + espaciado_x
-    inicio_y = 120 + margen_vertical // 2
+    inicio_y = 100 + margen_vertical // 2  # Empezar más arriba
     
     # Opciones de configuración
     opciones = [
@@ -937,19 +882,19 @@ def dibujar_pantalla_configuracion():
         ("Efectos Visuales", "efectos_visuales", ["Básicos", "Mejorados", "Máximos"])
     ]
     
-    # Dibujar fondo de la pantalla con degradado
+    # Dibujar fondo de la pantalla con degradado más sutil
     for y in range(HEIGHT):
-        intensidad = int(15 + (y / HEIGHT) * 30)
-        color = (intensidad, intensidad, intensidad + 10)
+        intensidad = int(20 + (y / HEIGHT) * 25)
+        color = (intensidad, intensidad, intensidad + 15)
         screen.draw.line((0, y), (WIDTH, y), color)
     
-    # Dibujar título con fondo mejorado
-    titulo_bg = Rect(WIDTH//2 - 250, 30, 500, 60)
-    screen.draw.filled_rect(titulo_bg, (0, 0, 0, 180))
+    # Dibujar título con fondo más moderno
+    titulo_bg = Rect(WIDTH//2 - 200, 20, 400, 50)  # Título más compacto
+    screen.draw.filled_rect(titulo_bg, (0, 0, 0, 200))
     screen.draw.rect(titulo_bg, (255, 215, 0))
-    screen.draw.text("CONFIGURACIÓN", center=(WIDTH//2, 60), color="white", fontsize=36)
+    screen.draw.text("CONFIGURACIÓN", center=(WIDTH//2, 45), color="white", fontsize=32)
     
-    # Dibujar las dos columnas
+    # Dibujar las dos columnas con diseño más moderno
     for i, (nombre, clave, valores) in enumerate(opciones):
         # Determinar columna y posición
         if i < 5:  # Primera columna
@@ -959,70 +904,70 @@ def dibujar_pantalla_configuracion():
             x = col2_x
             y = inicio_y + (i - 5) * espaciado_y
         
-        # Dibujar fondo del item con efectos
-        item_bg = Rect(x - 15, y - 8, columna_width + 30, item_height + 16)
+        # Dibujar fondo del item con diseño más moderno
+        item_bg = Rect(x - 10, y - 5, columna_width + 20, item_height + 10)
         if i == config_seleccionada:
-            # Fondo dorado para item seleccionado con efecto de brillo
-            screen.draw.filled_rect(item_bg, (255, 215, 0, 120))
+            # Fondo dorado para item seleccionado con efecto moderno
+            screen.draw.filled_rect(item_bg, (255, 215, 0, 150))
             screen.draw.rect(item_bg, (255, 215, 0))
-            # Efecto de sombra
-            screen.draw.filled_rect(Rect(x - 12, y - 5, columna_width + 30, item_height + 16), (100, 100, 0, 50))
+            # Efecto de sombra más sutil
+            screen.draw.filled_rect(Rect(x - 8, y - 3, columna_width + 20, item_height + 10), (100, 100, 0, 30))
         else:
             # Fondo semi-transparente para items normales
-            screen.draw.filled_rect(item_bg, (0, 0, 0, 120))
-            screen.draw.rect(item_bg, (100, 100, 100))
+            screen.draw.filled_rect(item_bg, (0, 0, 0, 100))
+            screen.draw.rect(item_bg, (80, 80, 80))
         
-        # Dibujar nombre de la opción
+        # Dibujar nombre de la opción con mejor tipografía
         color_texto = (0, 0, 0) if i == config_seleccionada else (255, 255, 255)
-        screen.draw.text(nombre, (x, y), color=color_texto, fontsize=18)
+        screen.draw.text(nombre, (x, y), color=color_texto, fontsize=16)
         
         # Obtener valor actual de la configuración
         valor_actual = configuraciones[clave]
         valor_texto = str(valor_actual)
         
-        # Dibujar valor actual con fondo - ajustado para columnas más anchas
-        valor_bg = Rect(x + columna_width - 100, y - 2, 90, 25)
-        screen.draw.filled_rect(valor_bg, (50, 50, 50, 180))
-        screen.draw.rect(valor_bg, (200, 200, 200))
+        # Dibujar valor actual con diseño más compacto
+        valor_bg = Rect(x + columna_width - 80, y - 2, 70, 22)
+        screen.draw.filled_rect(valor_bg, (60, 60, 60, 200))
+        screen.draw.rect(valor_bg, (180, 180, 180))
         
         # Color del valor
         color_valor = (255, 215, 0) if i == config_seleccionada else (255, 255, 255)
-        screen.draw.text(valor_texto, center=(x + columna_width - 55, y + 10), color=color_valor, fontsize=16)
+        screen.draw.text(valor_texto, center=(x + columna_width - 45, y + 8), color=color_valor, fontsize=14)
         
-        # Dibujar flechas si está seleccionado
+        # Dibujar flechas si está seleccionado con diseño más moderno
         if i == config_seleccionada:
             # Flecha izquierda
-            screen.draw.text("◀", (x + columna_width - 140, y + 5), color=(255, 215, 0), fontsize=20)
+            screen.draw.text("◀", (x + columna_width - 110, y + 3), color=(255, 215, 0), fontsize=18)
             # Flecha derecha
-            screen.draw.text("▶", (x + columna_width - 10, y + 5), color=(255, 215, 0), fontsize=20)
+            screen.draw.text("▶", (x + columna_width - 15, y + 3), color=(255, 215, 0), fontsize=18)
     
-    # Dibujar panel de instrucciones solo si está visible
+    # Dibujar panel de instrucciones solo si está visible - diseño más compacto
     if mostrar_controles_config:
-        instrucciones_bg = Rect(100, HEIGHT - 150, WIDTH - 200, 100)
-        screen.draw.filled_rect(instrucciones_bg, (0, 0, 0, 180))
+        instrucciones_bg = Rect(80, HEIGHT - 120, WIDTH - 160, 80)
+        screen.draw.filled_rect(instrucciones_bg, (0, 0, 0, 200))
         screen.draw.rect(instrucciones_bg, (255, 255, 255))
         
-        # Instrucciones - centradas en la nueva ventana
-        screen.draw.text("CONTROLES:", (120, HEIGHT - 140), color=(255, 215, 0), fontsize=18)
-        screen.draw.text("↑↓ Navegar entre opciones", (120, HEIGHT - 120), color="white", fontsize=14)
-        screen.draw.text("←→ Cambiar valores", (120, HEIGHT - 105), color="white", fontsize=14)
-        screen.draw.text("ESC Volver al menú", (120, HEIGHT - 90), color="white", fontsize=14)
+        # Instrucciones con mejor distribución
+        screen.draw.text("CONTROLES:", (100, HEIGHT - 110), color=(255, 215, 0), fontsize=16)
+        screen.draw.text("↑↓ Navegar entre opciones", (100, HEIGHT - 95), color="white", fontsize=13)
+        screen.draw.text("←→ Cambiar valores", (100, HEIGHT - 82), color="white", fontsize=13)
+        screen.draw.text("ESC Volver al menú", (100, HEIGHT - 69), color="white", fontsize=13)
         
         # Aviso con emoji para ocultar controles
         aviso_texto = "👁️ Presiona SPACE para ocultar controles"
-        screen.draw.text(aviso_texto, (120, HEIGHT - 75), color=(255, 255, 0), fontsize=14)
+        screen.draw.text(aviso_texto, (100, HEIGHT - 56), color=(255, 255, 0), fontsize=13)
         
-        # Información adicional
-        screen.draw.text("Los cambios se aplican automáticamente", center=(WIDTH//2, HEIGHT - 50), color=(200, 200, 200), fontsize=12)
+        # Información adicional más compacta
+        screen.draw.text("Los cambios se aplican automáticamente", center=(WIDTH//2, HEIGHT - 40), color=(200, 200, 200), fontsize=11)
         
-        # Indicador de posición
-        screen.draw.text(f"Opción {config_seleccionada + 1} de {len(opciones)}", center=(WIDTH//2, HEIGHT - 35), color=(150, 150, 150), fontsize=10)
+        # Indicador de posición más discreto
+        screen.draw.text(f"Opción {config_seleccionada + 1} de {len(opciones)}", center=(WIDTH//2, HEIGHT - 25), color=(150, 150, 150), fontsize=9)
     else:
-        # Mostrar solo información básica cuando los controles están ocultos
-        info_bg = Rect(WIDTH//2 - 150, HEIGHT - 60, 300, 40)
-        screen.draw.filled_rect(info_bg, (0, 0, 0, 150))
+        # Mostrar solo información básica cuando los controles están ocultos - más compacto
+        info_bg = Rect(WIDTH//2 - 140, HEIGHT - 50, 280, 30)
+        screen.draw.filled_rect(info_bg, (0, 0, 0, 180))
         screen.draw.rect(info_bg, (255, 215, 0))
-        screen.draw.text("👁️ Presiona SPACE para mostrar controles", center=(WIDTH//2, HEIGHT - 40), color="white", fontsize=14)
+        screen.draw.text("👁️ Presiona SPACE para mostrar controles", center=(WIDTH//2, HEIGHT - 35), color="white", fontsize=12)
 
 def draw():
     screen.clear()
