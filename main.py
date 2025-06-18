@@ -18,7 +18,7 @@ with open('mapa.txt', 'r') as f:
             break
 
 # Tamaño de la ventana del juego
-WINDOW_WIDTH = 800  # Ancho estándar para juegos
+WINDOW_WIDTH = MATRIZ_ALTO * TILE_SIZE  # Ancho estándar para juegos
 WINDOW_HEIGHT = MATRIZ_ALTO * TILE_SIZE  # Mantenemos el alto original
 
 # Ajustar el tamaño de la ventana
