@@ -560,8 +560,8 @@ def dibujar_panel_detallado_items():
         return
     
     # Configuración del panel
-    panel_x = WINDOW_WIDTH - 150  # Ancho fijo del panel
-    panel_y = 20
+    panel_x = WINDOW_WIDTH - 135  # Ancho fijo del panel
+    panel_y = 10
     item_size = 20
     line_height = 25
     padding = 10
@@ -582,17 +582,17 @@ def dibujar_panel_detallado_items():
             y_pos = panel_y + padding + 20 + i * line_height
             
             # Dibujar el item
-            item_actor = Actor(id_to_image[item_id], topleft=(panel_x + 5, y_pos))
-            item_actor.scale = item_size / TILE_SIZE
+            item_actor = Actor(id_to_image[item_id], topleft=(panel_x + 5, y_pos - 7))
+            item_actor.scale = 0.5
             item_actor.draw()
             
             # Dibujar el nombre del item (basado en el ID)
             item_name = f"Item {item_id}"
-            screen.draw.text(item_name, (panel_x + 30, y_pos + 2), color="white", fontsize=12)
+            screen.draw.text(item_name, (panel_x + 30, y_pos - 2), color="white", fontsize=12)
             
             # Dibujar la cantidad (siempre 1 por ahora, pero se puede expandir)
             cantidad = "x1"
-            screen.draw.text(cantidad, (panel_x + 110, y_pos + 2), color="yellow", fontsize=12)
+            screen.draw.text(cantidad, (panel_x + 110, y_pos - 2), color="yellow", fontsize=12)
 
 def draw():
     screen.clear()
