@@ -623,14 +623,14 @@ def on_key_down(key):
     
     # Si estamos en extras
     elif estado_juego == "extras":
-        if key == keys.ESCAPE or key == keys.BACKSPACE:
+        if key == keys.ESCAPE or key == keys.BACKSPACE: # type: ignore
             estado_juego = "menu"
         return
     
     # Si estamos jugando
     elif estado_juego == "jugando":
         # Volver al menú con ESC
-        if key == keys.ESCAPE:
+        if key == keys.ESCAPE: # type: ignore
             estado_juego = "menu"
             return
 
@@ -644,7 +644,7 @@ def on_key_down(key):
                 # No reiniciar la colección de items para mantener el progreso
                 return
 
-        if key == keys.F:
+        if key == keys.F: # type: ignore
             modo_desarrollador = not modo_desarrollador
         
         # Mostrar/ocultar panel detallado de items

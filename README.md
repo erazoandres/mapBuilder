@@ -379,6 +379,7 @@ Editar el diccionario `configuraciones` en `mapa.txt` para ajustar:
 - [ ] Power-ups y habilidades especiales
 - [ ] Editor de mapas integrado
 - [ ] Modo multijugador local
+- [ ] Colisiones por los lados de los tileset
 
 ## Créditos
 
