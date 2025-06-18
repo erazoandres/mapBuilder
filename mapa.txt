@@ -1,14 +1,14 @@
 my_map = [
-  [1,2,2,2,2,2,2,2,2,2],
-  [3,3,1,2,2,2,2,2,2,2],
-  [1,1,1,1,2,2,2,2,2,2],
-  [4,1,1,1,1,2,2,5,5,5],
-  [4,4,1,1,1,1,2,2,2,2],
-  [3,3,1,1,1,1,1,2,2,2],
-  [4,4,4,4,6,6,6,6,2,2],
-  [4,4,4,4,4,1,1,1,2,2],
-  [7,7,7,4,4,4,1,1,1,2],
-  [4,4,4,4,4,4,4,1,1,1]
+  [1,1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1],
+  [2,2,1,1,1,1,1,1,1,3],
+  [2,2,2,2,2,1,1,1,1,3],
+  [4,2,2,2,2,1,1,3,3,3],
+  [4,4,2,2,2,2,5,5,5,5],
+  [4,4,2,2,2,2,2,1,1,3],
+  [6,6,6,4,2,2,2,2,2,1],
+  [4,4,4,4,3,2,2,2,2,1],
+  [4,4,4,4,3,3,3,2,2,1]
 ];
 
 my_rotations = [
@@ -27,11 +27,11 @@ my_rotations = [
 my_items = [
   [0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,8,0],
-  [0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,9,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
+  [0,0,0,0,0,0,0,7,0,0],
+  [0,0,0,0,0,0,0,0,0,0],
+  [7,0,7,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0],
   [0,0,0,0,0,0,0,0,0,0]
@@ -43,11 +43,11 @@ tileset_dict = {
     2: {"path": "images/fondos/tile2.png", "id": "fondo3"},
     3: {"path": "images/fondos/tile3.png", "id": "fondo4"},
     4: {"path": "images/fondos/tile4.png", "id": "fondo5"},
-    5: {"path": "images/items/tile0.png", "id": "item0"},
-    6: {"path": "images/items/tile1.png", "id": "item1"},
-    7: {"path": "images/items/tile2.png", "id": "item2"},
-    8: {"path": "images/items/tile3.png", "id": "item3"},
-    9: {"path": "images/items/tile4.png", "id": "item4"},
+    5: {"path": "images/items/tile1.png", "id": "item1"},
+    6: {"path": "images/items/tile2.png", "id": "item2"},
+    7: {"path": "images/items/tile3.png", "id": "item3"},
+    8: {"path": "images/terrenos/tile118.png", "id": "terreno118"},
+    9: {"path": "images/terrenos/tile119.png", "id": "terreno119"},
     10: {"path": "images/terrenos/tile0.png", "id": "terreno1"},
     11: {"path": "images/terrenos/tile1.png", "id": "terreno2"},
     12: {"path": "images/terrenos/tile2.png", "id": "terreno3"},
@@ -170,24 +170,20 @@ tileset_dict = {
     129: {"path": "images/enemigos/tile2.png", "id": "enemigo3"},
     130: {"path": "images/enemigos/tile3.png", "id": "enemigo4"},
     131: {"path": "images/enemigos/tile0.png", "id": "objeto0"},
-    132: {"path": "images/enemigos/tile1.png", "id": "objeto1"},
-    133: {"path": "images/enemigos/tile2.png", "id": "objeto2"},
-    134: {"path": "images/enemigos/tile3.png", "id": "objeto3"},
-    135: {"path": "images/enemigos/tile4.png", "id": "objeto4"},
-    136: {"path": "images/enemigos/tile5.png", "id": "objeto5"},
-    137: {"path": "images/enemigos/tile6.png", "id": "objeto6"}
+    132: {"path": "images/enemigos/tile3.png", "id": "objeto1"},
+    133: {"path": "images/enemigos/tile4.png", "id": "objeto2"},
+    134: {"path": "images/enemigos/tile5.png", "id": "objeto3"},
+    135: {"path": "images/enemigos/tile6.png", "id": "objeto4"}
 }
 
 # ID Mapping (Numeric ID: Original ID)
-# 1: 2 (fondos/tile2.png)
-# 2: 0 (fondos/tile0.png)
-# 3: 115 (terrenos/tile105.png)
-# 4: 4 (fondos/tile4.png)
-# 5: 95 (terrenos/tile85.png)
-# 6: 10 (terrenos/tile0.png)
-# 7: 15 (terrenos/tile5.png)
-# 8: 9 (items/tile4.png)
-# 9: 5 (items/tile0.png)
+# 1: 0 (fondos/tile0.png)
+# 2: 2 (fondos/tile2.png)
+# 3: 4 (fondos/tile4.png)
+# 4: 3 (fondos/tile3.png)
+# 5: 8 (terrenos/tile118.png)
+# 6: 9 (terrenos/tile119.png)
+# 7: 7 (items/tile3.png)
 # End ID Mapping
 
 # Matrix Size: 10x10

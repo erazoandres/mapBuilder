@@ -41,6 +41,8 @@ ITEMS = []
 OBJETOS = []
 ENEMIGOS = []
 
+print(ITEMS)
+
 
 personaje = Actor("personajes/tile0")
 personaje.velocidad_y = 0
@@ -131,7 +133,7 @@ with open('mapa.txt', 'r') as f:
                 if 'enemigo' in descripcion:
                     ENEMIGOS.append(id_val)
 
-print(ENEMIGOS)
+
 
 with open('mapa.txt', 'r') as f:
     content = f.read()
@@ -277,7 +279,7 @@ def verificar_interaccion():
     for y in range(inicio_y, fin_y):
         for x in range(inicio_x, fin_x):
             tile_id, item_id = my_map[y][x], my_items[y][x]
-            if item_id in OBJETOS:
+            if item_id in ITEMS:
                 dist_x = (x * TILE_SIZE + TILE_SIZE/2) - centro_x
                 dist_y = (y * TILE_SIZE + TILE_SIZE/2) - centro_y
                 distancia = (dist_x**2 + dist_y**2)**0.5
@@ -455,7 +457,7 @@ def on_key_down(key):
         personaje.velocidad_y = VELOCIDAD_SALTO
         personaje.en_suelo = False
 
-    if key == keys.E and personaje.objetos_cerca:
+    if key == keys.R and personaje.objetos_cerca:
         x, y, item_id = personaje.objetos_cerca[0]
         my_items[y][x] = 0
         personaje.objetos_cerca.remove((x, y, item_id))
@@ -516,7 +518,9 @@ def draw():
                 item_actor = Actor(id_to_image[item_id], topleft=(x, y))
                 item_actor.draw()
 
-                if item_id in OBJETOS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
+                # Dibujar borde amarillo si el item está cerca del personaje
+                if item_id in ITEMS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
+                    # Dibujar borde amarillo
                     for i in range(4):
                         screen.draw.line((x + i, y + i), (x + TILE_SIZE - i, y + i), (255, 255, 0))
                         screen.draw.line((x + i, y + i), (x + i, y + TILE_SIZE - i), (255, 255, 0))
@@ -539,8 +543,11 @@ def draw():
     personaje_actor = Actor(personaje.image, topleft=(x, personaje.y))
     personaje_actor.draw()
 
+    # Dibujar texto de interacción si hay items cerca
     if personaje.objetos_cerca:
-        screen.draw.text("Presiona E para interactuar", (10, 10), color="white")
+        texto_x = x + personaje.hitbox_width / 2
+        texto_y = personaje.y - 20
+        screen.draw.text("Presiona R para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
 
     if game_over:
         screen.draw.text("¡Has perdido!", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
