@@ -208,11 +208,3 @@ configuraciones = {
     "tamaño_hitbox": "Normal",
     "efectos_visuales": "Básicos"
 }
-
-# Instrucciones para usar en Python:
-# 1. Copia este diccionario en tu archivo main.py
-# 2. Aplica las configuraciones usando:
-#    VELOCIDAD_MOVIMIENTO = configuraciones["velocidad_personaje"]
-#    VELOCIDAD_SALTO = -configuraciones["velocidad_salto"]
-#    GRAVEDAD = configuraciones["gravedad"]
-#    etc.
