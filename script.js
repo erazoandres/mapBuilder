@@ -21,6 +21,33 @@ let activeLayer = 1; // 1 = primera capa, 2 = segunda capa
 // Diccionario para almacenar los tilesets y sus rutas
 let tilesetDictionary = {};
 
+// Configuración del juego
+const configuraciones = {
+    velocidad_personaje: [1, 2, 3, 4, 5],
+    velocidad_salto: [10, 12, 15, 18, 20],
+    gravedad: [0.5, 0.8, 1.0, 1.2, 1.5],
+    prob_salto_enemigo: [0.01, 0.02, 0.05, 0.1],
+    velocidad_camara: [5, 8, 10, 12, 15],
+    margen_camara: [50, 100, 150, 200],
+    volumen_sonido: [0, 25, 50, 75, 100],
+    pantalla_completa: ["No", "Sí"],
+    tamaño_hitbox: ["Pequeño", "Normal", "Grande"],
+    efectos_visuales: ["Básicos", "Mejorados", "Máximos"]
+};
+
+const valoresActuales = {
+    velocidad_personaje: 3,
+    velocidad_salto: 15,
+    gravedad: 0.8,
+    prob_salto_enemigo: 0.02,
+    velocidad_camara: 8,
+    margen_camara: 100,
+    volumen_sonido: 50,
+    pantalla_completa: "No",
+    tamaño_hitbox: "Normal",
+    efectos_visuales: "Básicos"
+};
+
 // Cargar mapa al inicio si existe
 window.onload = () => {
   // Crear el elemento del cursor personalizado
@@ -1358,4 +1385,95 @@ function getImagePath(numericId) {
 // Llamar a la función cuando se carga la página
 window.addEventListener('load', () => {
   generarTilesetDictionary();
+});
+
+// Funciones del modal de configuración
+function abrirConfiguracion() {
+    document.getElementById('configModal').style.display = 'block';
+    actualizarValoresConfiguracion();
+}
+
+function cerrarConfiguracion() {
+    document.getElementById('configModal').style.display = 'none';
+}
+
+function cambiarValor(configKey, direccion) {
+    const valores = configuraciones[configKey];
+    const valorActual = valoresActuales[configKey];
+    const indiceActual = valores.indexOf(valorActual);
+    
+    let nuevoIndice;
+    if (direccion > 0) {
+        nuevoIndice = (indiceActual + 1) % valores.length;
+    } else {
+        nuevoIndice = (indiceActual - 1 + valores.length) % valores.length;
+    }
+    
+    valoresActuales[configKey] = valores[nuevoIndice];
+    document.getElementById(configKey).textContent = valores[nuevoIndice];
+}
+
+function actualizarValoresConfiguracion() {
+    for (const [key, value] of Object.entries(valoresActuales)) {
+        const element = document.getElementById(key);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+}
+
+function exportarConfiguracion() {
+    const configuracionTexto = `# Configuración del Juego MapBuilder
+# Exportado el: ${new Date().toLocaleString()}
+
+# Diccionario de configuraciones
+configuraciones = {
+    "velocidad_personaje": ${valoresActuales.velocidad_personaje},
+    "velocidad_salto": ${valoresActuales.velocidad_salto},
+    "gravedad": ${valoresActuales.gravedad},
+    "prob_salto_enemigo": ${valoresActuales.prob_salto_enemigo},
+    "velocidad_camara": ${valoresActuales.velocidad_camara},
+    "margen_camara": ${valoresActuales.margen_camara},
+    "volumen_sonido": ${valoresActuales.volumen_sonido},
+    "pantalla_completa": "${valoresActuales.pantalla_completa}",
+    "tamaño_hitbox": "${valoresActuales.tamaño_hitbox}",
+    "efectos_visuales": "${valoresActuales.efectos_visuales}"
+}
+
+# Instrucciones para usar en Python:
+# 1. Copia este diccionario en tu archivo main.py
+# 2. Aplica las configuraciones usando:
+#    VELOCIDAD_MOVIMIENTO = configuraciones["velocidad_personaje"]
+#    VELOCIDAD_SALTO = -configuraciones["velocidad_salto"]
+#    GRAVEDAD = configuraciones["gravedad"]
+#    etc.
+`;
+
+    const blob = new Blob([configuracionTexto], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'configuracion_juego.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Mostrar mensaje de confirmación
+    alert('✅ Configuración exportada exitosamente como "configuracion_juego.txt"');
+}
+
+// Cerrar modal al hacer clic fuera de él
+window.onclick = function(event) {
+    const modal = document.getElementById('configModal');
+    if (event.target === modal) {
+        cerrarConfiguracion();
+    }
+}
+
+// Cerrar modal con ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        cerrarConfiguracion();
+    }
 });

@@ -17,10 +17,111 @@
       <button onclick="document.getElementById('importFile').click()">Importar</button>
       <input type="file" id="importFile" style="display: none" accept=".txt" onchange="importarMatriz(event)" />
       <button id="clear-grid-btn">Clear Grid</button>
+      <button onclick="abrirConfiguracion()" class="config-btn">⚙️ Configuración</button>
       <label class="switch">
         <input type="checkbox" id="generate-new-btn" onchange="createSecondLayer()">
         <span class="slider round"></span>
       </label>
+    </div>
+    
+    <!-- Modal de Configuración -->
+    <div id="configModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>⚙️ CONFIGURACIÓN DEL JUEGO</h2>
+          <span class="close" onclick="cerrarConfiguracion()">&times;</span>
+        </div>
+        <div class="config-container">
+          <div class="config-column">
+            <div class="config-item">
+              <label>Velocidad del Personaje:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('velocidad_personaje', -1)">◀</button>
+                <span id="velocidad_personaje">3</span>
+                <button onclick="cambiarValor('velocidad_personaje', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Velocidad de Salto:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('velocidad_salto', -1)">◀</button>
+                <span id="velocidad_salto">15</span>
+                <button onclick="cambiarValor('velocidad_salto', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Gravedad:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('gravedad', -1)">◀</button>
+                <span id="gravedad">0.8</span>
+                <button onclick="cambiarValor('gravedad', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Probabilidad Salto Enemigo:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('prob_salto_enemigo', -1)">◀</button>
+                <span id="prob_salto_enemigo">0.02</span>
+                <button onclick="cambiarValor('prob_salto_enemigo', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Velocidad de Cámara:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('velocidad_camara', -1)">◀</button>
+                <span id="velocidad_camara">8</span>
+                <button onclick="cambiarValor('velocidad_camara', 1)">▶</button>
+              </div>
+            </div>
+          </div>
+          <div class="config-column">
+            <div class="config-item">
+              <label>Margen de Cámara:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('margen_camara', -1)">◀</button>
+                <span id="margen_camara">100</span>
+                <button onclick="cambiarValor('margen_camara', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Volumen de Sonido:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('volumen_sonido', -1)">◀</button>
+                <span id="volumen_sonido">50</span>
+                <button onclick="cambiarValor('volumen_sonido', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Modo Pantalla Completa:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('pantalla_completa', -1)">◀</button>
+                <span id="pantalla_completa">No</span>
+                <button onclick="cambiarValor('pantalla_completa', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Tamaño de Hitbox:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('tamaño_hitbox', -1)">◀</button>
+                <span id="tamaño_hitbox">Normal</span>
+                <button onclick="cambiarValor('tamaño_hitbox', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Efectos Visuales:</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('efectos_visuales', -1)">◀</button>
+                <span id="efectos_visuales">Básicos</span>
+                <button onclick="cambiarValor('efectos_visuales', 1)">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button onclick="exportarConfiguracion()" class="export-btn">💾 Exportar Configuración</button>
+          <button onclick="cerrarConfiguracion()" class="close-btn">Cerrar</button>
+        </div>
+      </div>
     </div>
     
     <div class="editor">
