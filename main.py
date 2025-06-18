@@ -44,6 +44,21 @@ mostrar_panel_detallado = False
 estado_juego = "menu"  # "menu", "jugando", "configuracion", "extras"
 boton_seleccionado = 0  # 0: Jugar, 1: Configuración, 2: Extras
 
+# Variables para la pantalla de configuración
+config_seleccionada = 0  # Opción seleccionada en configuración
+configuraciones = {
+    "velocidad_personaje": 3,
+    "velocidad_salto": 15,
+    "gravedad": 0.8,
+    "prob_salto_enemigo": 0.02,
+    "velocidad_camara": 8,
+    "margen_camara": 100,
+    "volumen_sonido": 50,
+    "pantalla_completa": "No",
+    "tamaño_hitbox": "Normal",
+    "efectos_visuales": "Básicos"
+}
+
 TERRENOS = []
 ITEMS = []
 OBJETOS = []
@@ -367,7 +382,7 @@ def verificar_colision(x, y, es_personaje=False):
     return colision_vertical, colision_horizontal, es_suelo
 
 def update():
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, config_seleccionada, configuraciones
     
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -509,7 +524,7 @@ def update():
                 pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, config_seleccionada, configuraciones
 
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -531,6 +546,56 @@ def on_key_down(key):
     elif estado_juego == "configuracion":
         if key == keys.ESCAPE or key == keys.BACKSPACE:
             estado_juego = "menu"
+            config_seleccionada = 0  # Resetear selección
+        elif key == keys.UP:
+            config_seleccionada = (config_seleccionada - 1) % 10
+        elif key == keys.DOWN:
+            config_seleccionada = (config_seleccionada + 1) % 10
+        elif key == keys.LEFT or key == keys.RIGHT:
+            # Cambiar valor de la configuración seleccionada
+            opciones = [
+                "velocidad_personaje", "velocidad_salto", "gravedad", "prob_salto_enemigo",
+                "velocidad_camara", "margen_camara", "volumen_sonido", "pantalla_completa",
+                "tamaño_hitbox", "efectos_visuales"
+            ]
+            clave = opciones[config_seleccionada]
+            
+            if clave == "velocidad_personaje":
+                valores = [1, 2, 3, 4, 5]
+            elif clave == "velocidad_salto":
+                valores = [10, 12, 15, 18, 20]
+            elif clave == "gravedad":
+                valores = [0.5, 0.8, 1.0, 1.2, 1.5]
+            elif clave == "prob_salto_enemigo":
+                valores = [0.01, 0.02, 0.05, 0.1]
+            elif clave == "velocidad_camara":
+                valores = [5, 8, 10, 12, 15]
+            elif clave == "margen_camara":
+                valores = [50, 100, 150, 200]
+            elif clave == "volumen_sonido":
+                valores = [0, 25, 50, 75, 100]
+            elif clave == "pantalla_completa":
+                valores = ["No", "Sí"]
+            elif clave == "tamaño_hitbox":
+                valores = ["Pequeño", "Normal", "Grande"]
+            elif clave == "efectos_visuales":
+                valores = ["Básicos", "Mejorados", "Máximos"]
+            
+            # Encontrar el índice actual y cambiarlo
+            valor_actual = configuraciones[clave]
+            try:
+                indice_actual = valores.index(valor_actual)
+                if key == keys.RIGHT:
+                    indice_nuevo = (indice_actual + 1) % len(valores)
+                else:  # LEFT
+                    indice_nuevo = (indice_actual - 1) % len(valores)
+                configuraciones[clave] = valores[indice_nuevo]
+                # Aplicar las configuraciones inmediatamente
+                aplicar_configuraciones()
+            except ValueError:
+                # Si el valor actual no está en la lista, usar el primer valor
+                configuraciones[clave] = valores[0]
+                aplicar_configuraciones()
         return
     
     # Si estamos en extras
@@ -708,6 +773,140 @@ def dibujar_menu_principal():
     # Instrucciones
     screen.draw.text("Usa ↑↓ para navegar, ENTER para seleccionar", center=(centro_x, WINDOW_HEIGHT - 50), color="white", fontsize=16)
 
+def aplicar_configuraciones():
+    """Aplica las configuraciones al juego"""
+    global VELOCIDAD_MOVIMIENTO, VELOCIDAD_SALTO, GRAVEDAD, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN
+    
+    # Aplicar configuraciones
+    VELOCIDAD_MOVIMIENTO = configuraciones["velocidad_personaje"]
+    VELOCIDAD_SALTO = -configuraciones["velocidad_salto"]  # Negativo para que sea hacia arriba
+    GRAVEDAD = configuraciones["gravedad"]
+    PROBABILIDAD_SALTO_ENEMIGO = configuraciones["prob_salto_enemigo"]
+    CAMERA_SPEED = configuraciones["velocidad_camara"]
+    CAMERA_MARGIN = configuraciones["margen_camara"]
+    
+    # Aplicar configuración de pantalla completa si es necesario
+    if configuraciones["pantalla_completa"] == "Sí":
+        # Aquí se podría implementar la pantalla completa
+        pass
+    
+    # Aplicar configuración de tamaño de hitbox
+    if configuraciones["tamaño_hitbox"] == "Pequeño":
+        personaje.hitbox_width = personaje.width * 0.7
+        personaje.hitbox_height = personaje.height * 0.7
+    elif configuraciones["tamaño_hitbox"] == "Grande":
+        personaje.hitbox_width = personaje.width * 1.3
+        personaje.hitbox_height = personaje.height * 1.3
+    else:  # Normal
+        personaje.hitbox_width = personaje.width
+        personaje.hitbox_height = personaje.height
+    
+    # Aplicar configuración de efectos visuales
+    # Esta configuración se puede usar para futuras mejoras visuales
+    pass
+
+def dibujar_pantalla_configuracion():
+    """Dibuja la pantalla de configuración con 2 columnas y 10 opciones"""
+    global config_seleccionada, configuraciones
+    
+    # Configuración de la pantalla
+    columna_width = 260
+    espaciado_x = 100
+    espaciado_y = 50  # Aumentado para mejor distribución
+    item_height = 40  # Aumentado para mejor legibilidad
+    
+    # Posición de las columnas
+    col1_x = (WINDOW_WIDTH - columna_width * 2 - espaciado_x) // 2
+    col2_x = col1_x + columna_width + espaciado_x
+    inicio_y = 120  # Ajustado para mejor distribución
+    
+    # Opciones de configuración
+    opciones = [
+        # Columna 1
+        ("Velocidad del Personaje", "velocidad_personaje", [1, 2, 3, 4, 5]),
+        ("Velocidad de Salto", "velocidad_salto", [10, 12, 15, 18, 20]),
+        ("Gravedad", "gravedad", [0.5, 0.8, 1.0, 1.2, 1.5]),
+        ("Probabilidad Salto Enemigo", "prob_salto_enemigo", [0.01, 0.02, 0.05, 0.1]),
+        ("Velocidad de Cámara", "velocidad_camara", [5, 8, 10, 12, 15]),
+        # Columna 2
+        ("Margen de Cámara", "margen_camara", [50, 100, 150, 200]),
+        ("Volumen de Sonido", "volumen_sonido", [0, 25, 50, 75, 100]),
+        ("Modo Pantalla Completa", "pantalla_completa", ["No", "Sí"]),
+        ("Tamaño de Hitbox", "tamaño_hitbox", ["Pequeño", "Normal", "Grande"]),
+        ("Efectos Visuales", "efectos_visuales", ["Básicos", "Mejorados", "Máximos"])
+    ]
+    
+    # Dibujar fondo de la pantalla
+    screen.draw.filled_rect(Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT), (20, 20, 40))
+    
+    # Dibujar título con fondo
+    titulo_bg = Rect(WINDOW_WIDTH//2 - 200, 30, 400, 60)
+    screen.draw.filled_rect(titulo_bg, (0, 0, 0, 150))
+    screen.draw.rect(titulo_bg, (255, 215, 0))  # Corregido: sin parámetro de grosor
+    screen.draw.text("CONFIGURACIÓN", center=(WINDOW_WIDTH//2, 60), color="white", fontsize=36)
+    
+    # Dibujar las dos columnas
+    for i, (nombre, clave, valores) in enumerate(opciones):
+        # Determinar columna y posición
+        if i < 5:  # Primera columna
+            x = col1_x
+            y = inicio_y + i * espaciado_y
+        else:  # Segunda columna
+            x = col2_x
+            y = inicio_y + (i - 5) * espaciado_y
+        
+        # Dibujar fondo del item
+        item_bg = Rect(x - 15, y - 8, columna_width + 30, item_height + 16)
+        if i == config_seleccionada:
+            # Fondo dorado para item seleccionado
+            screen.draw.filled_rect(item_bg, (255, 215, 0, 80))
+            screen.draw.rect(item_bg, (255, 215, 0))  # Corregido: sin parámetro de grosor
+        else:
+            # Fondo semi-transparente para items normales
+            screen.draw.filled_rect(item_bg, (0, 0, 0, 100))
+            screen.draw.rect(item_bg, (100, 100, 100))  # Corregido: sin parámetro de grosor
+        
+        # Dibujar nombre de la opción
+        color_texto = (0, 0, 0) if i == config_seleccionada else (255, 255, 255)
+        screen.draw.text(nombre, (x, y), color=color_texto, fontsize=18)
+        
+        # Obtener valor actual de la configuración
+        valor_actual = configuraciones[clave]
+        valor_texto = str(valor_actual)
+        
+        # Dibujar valor actual con fondo
+        valor_bg = Rect(x + columna_width - 80, y - 2, 70, 25)
+        screen.draw.filled_rect(valor_bg, (50, 50, 50, 150))
+        screen.draw.rect(valor_bg, (200, 200, 200))  # Corregido: sin parámetro de grosor
+        
+        # Color del valor
+        color_valor = (255, 215, 0) if i == config_seleccionada else (255, 255, 255)
+        screen.draw.text(valor_texto, center=(x + columna_width - 45, y + 10), color=color_valor, fontsize=16)
+        
+        # Dibujar flechas si está seleccionado
+        if i == config_seleccionada:
+            # Flecha izquierda
+            screen.draw.text("◀", (x + columna_width - 120, y + 5), color=(255, 215, 0), fontsize=20)
+            # Flecha derecha
+            screen.draw.text("▶", (x + columna_width - 10, y + 5), color=(255, 215, 0), fontsize=20)
+    
+    # Dibujar panel de instrucciones
+    instrucciones_bg = Rect(50, WINDOW_HEIGHT - 130, WINDOW_WIDTH - 100, 80)
+    screen.draw.filled_rect(instrucciones_bg, (0, 0, 0, 150))
+    screen.draw.rect(instrucciones_bg, (255, 255, 255))  # Corregido: sin parámetro de grosor
+    
+    # Instrucciones
+    screen.draw.text("CONTROLES:", (70, WINDOW_HEIGHT - 120), color=(255, 215, 0), fontsize=18)
+    screen.draw.text("↑↓ Navegar entre opciones", (70, WINDOW_HEIGHT - 100), color="white", fontsize=14)
+    screen.draw.text("←→ Cambiar valores", (70, WINDOW_HEIGHT - 85), color="white", fontsize=14)
+    screen.draw.text("ESC Volver al menú", (70, WINDOW_HEIGHT - 70), color="white", fontsize=14)
+    
+    # Información adicional
+    screen.draw.text("Los cambios se aplican automáticamente", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT - 40), color=(200, 200, 200), fontsize=12)
+    
+    # Indicador de posición
+    screen.draw.text(f"Opción {config_seleccionada + 1} de {len(opciones)}", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT - 20), color=(150, 150, 150), fontsize=10)
+
 def draw():
     screen.clear()
     
@@ -718,13 +917,7 @@ def draw():
     
     # Si estamos en configuración
     elif estado_juego == "configuracion":
-        # Fondo
-        screen.draw.filled_rect(Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT), (0, 0, 0))
-        # Título
-        screen.draw.text("CONFIGURACIÓN", center=(WINDOW_WIDTH//2, 100), color="white", fontsize=40)
-        # Contenido (placeholder)
-        screen.draw.text("Opciones de configuración", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2), color="white", fontsize=24)
-        screen.draw.text("Presiona ESC para volver", center=(WINDOW_WIDTH//2, WINDOW_HEIGHT - 50), color="white", fontsize=16)
+        dibujar_pantalla_configuracion()
         return
     
     # Si estamos en extras
@@ -811,5 +1004,8 @@ def draw():
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
+
+# Aplicar configuraciones iniciales
+aplicar_configuraciones()
 
 pgzrun.go()
