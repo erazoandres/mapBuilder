@@ -1,6 +1,7 @@
 import pgzrun
 import re
 import random
+import time
 
 # Constantes
 TILE_SIZE = 32
@@ -48,9 +49,15 @@ boton_seleccionado = 0  # 0: Jugar, 1: Extras
 # Variable para mostrar panel detallado de items
 mostrar_panel_detallado = False
 
+# Variables para el modo de colocación de terreno
+modo_colocacion_terreno = False
+posicion_terreno_x = 0
+posicion_terreno_y = 0
+tipo_terreno_actual = 1  # ID del terreno a colocar (por defecto 1)
+TAMANO_CUADRO_COLOCACION = 24  # Tamaño más pequeño para el cuadro de colocación
+
 TERRENOS = []
 ITEMS = []
-OBJETOS = []
 ENEMIGOS = []
 
 # Lista para almacenar los items recolectados
@@ -275,8 +282,7 @@ with open('mapa.txt', 'r') as f:
                     TERRENOS.append(id_val)
                 if 'items' in descripcion:
                     ITEMS.append(id_val)
-                if 'objeto' in descripcion:
-                    OBJETOS.append(id_val)
+
 
 id_to_image = {}
 
@@ -364,14 +370,14 @@ def verificar_colision_vertical(x, y):
     if x == personaje.x:  # Si es el personaje
         # Solo verificamos colisión en la parte inferior cuando está cayendo
         if personaje.velocidad_y > 0:
-            for offset_x in range(0, personaje.hitbox_width, 5):
+            for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
                 if (tile_id in TERRENOS) or (item_id in ITEMS):  # Verificamos terrenos para detectar suelo
                     personaje.en_suelo = True
                     return True
         # Verificamos colisión en la parte superior solo cuando está saltando
         elif personaje.velocidad_y < 0:  # Si está saltando
-            for offset_x in range(0, personaje.hitbox_width, 5):
+            for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
                 if (tile_id in TERRENOS) or (item_id in ITEMS):  # Mantenemos colisión con terrenos al saltar
                     return True
@@ -476,7 +482,7 @@ def verificar_colision(x, y, es_personaje=False):
     return colision_vertical, colision_horizontal, es_suelo
 
 def update():
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
     
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -512,6 +518,17 @@ def update():
         # Mostrar/ocultar panel detallado de items
         if keyboard.U:
             mostrar_panel_detallado = not mostrar_panel_detallado
+        
+        # Activar/desactivar modo de colocación de terreno
+        if keyboard.Y:
+            modo_colocacion_terreno = not modo_colocacion_terreno
+            if modo_colocacion_terreno:
+                # Inicializar posición del terreno en la posición del personaje
+                posicion_terreno_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
+                posicion_terreno_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
+            else:
+                # Salir del modo de colocación
+                pass
         
         # Reinicio completo del juego (incluyendo colección)
         if keyboard.F5:
@@ -550,11 +567,15 @@ def update():
             personaje.objetos_cerca.remove((x, y, item_id))
 
         # Movimiento horizontal - controles fluidos
-        if keyboard.LEFT:
-            personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
-        elif keyboard.RIGHT:
-            personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+        if not modo_colocacion_terreno:  # Solo permitir movimiento si no está en modo colocación
+            if keyboard.LEFT:
+                personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
+            elif keyboard.RIGHT:
+                personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+            else:
+                personaje.velocidad_x = 0
         else:
+            # En modo colocación, detener el movimiento del personaje
             personaje.velocidad_x = 0
 
         # Aplicar gravedad solo si no está en el suelo
@@ -614,7 +635,7 @@ def update():
                 pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual
 
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -660,6 +681,17 @@ def on_key_down(key):
         if key == keys.U:
             mostrar_panel_detallado = not mostrar_panel_detallado
         
+        # Activar/desactivar modo de colocación de terreno
+        if key == keys.Y:
+            modo_colocacion_terreno = not modo_colocacion_terreno
+            if modo_colocacion_terreno:
+                # Inicializar posición del terreno en la posición del personaje
+                posicion_terreno_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
+                posicion_terreno_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
+            else:
+                # Salir del modo de colocación
+                pass
+        
         # Reinicio completo del juego (incluyendo colección)
         if key == keys.F5:
             game_over = False
@@ -687,11 +719,26 @@ def on_key_down(key):
             my_items[y][x] = 0
             personaje.objetos_cerca.remove((x, y, item_id))
 
-        # Movimiento horizontal
-        if key == keys.LEFT:
-            personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
-        elif key == keys.RIGHT:
-            personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+        # Lógica del modo de colocación de terreno
+        if modo_colocacion_terreno:
+            # Mover el cuadro de colocación con las flechas
+            if key == keys.LEFT:
+                posicion_terreno_x = max(0, posicion_terreno_x - TILE_SIZE)
+            elif key == keys.RIGHT:
+                posicion_terreno_x = min((MATRIZ_ANCHO - 1) * TILE_SIZE, posicion_terreno_x + TILE_SIZE)
+            elif key == keys.UP:
+                posicion_terreno_y = max(0, posicion_terreno_y - TILE_SIZE)
+            elif key == keys.DOWN:
+                posicion_terreno_y = min((MATRIZ_ALTO - 1) * TILE_SIZE, posicion_terreno_y + TILE_SIZE)
+            elif key == keys.COMMA:  # Confirmar colocación con coma
+                # Calcular posición en la matriz
+                columna = int(posicion_terreno_x // TILE_SIZE)
+                fila = int(posicion_terreno_y // TILE_SIZE)
+                # Colocar el terreno en la matriz usando el tipo que está siendo mostrado
+                if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
+                    # Usar el ID 4 que corresponde a "terrenos/tile0.png" según el ID Mapping
+                    my_map[fila][columna] = 4  # ID correspondiente a "terrenos/tile0.png"
+                    print(f"Terreno colocado en posición ({fila}, {columna}) - Tipo: terrenos/tile0.png (ID: 4)")
 
 def on_key_up(key):
     if key == keys.LEFT or key == keys.RIGHT:
@@ -841,6 +888,57 @@ def dibujar_menu_principal():
     screen.draw.rect(instrucciones_bg, (255, 215, 0))
     screen.draw.text("Usa ↑↓ para navegar, ENTER para seleccionar", center=(centro_x, HEIGHT - 60), color="white", fontsize=18)
 
+def dibujar_cuadro_colocacion_terreno():
+    """Dibuja el cuadro de colocación de terreno usando un actor"""
+    if not modo_colocacion_terreno:
+        return
+    
+    # Calcular posición en pantalla (considerando la cámara)
+    x = posicion_terreno_x - camera_x
+    y = posicion_terreno_y
+    
+    # Solo dibujar si está en pantalla
+    if -TILE_SIZE <= x <= WINDOW_WIDTH and 0 <= y <= HEIGHT:
+        try:
+            # Usar un terreno que esté en la lista TERRENOS (ID 4 = terrenos/tile0.png)
+            terreno_actor = Actor("terrenos/tile0", topleft=(x, y))
+            # Usar el tamaño exacto de las casillas
+            terreno_actor.width = TILE_SIZE
+            terreno_actor.height = TILE_SIZE
+            terreno_actor.draw()
+            
+            # Dibujar borde brillante con efecto de parpadeo
+            intensidad = int(200 + 55 * (time.time() % 1))  # Efecto de parpadeo
+            color_borde = (255, 255, 0, intensidad)
+            
+            # Dibujar borde grueso alrededor del actor
+            for i in range(3):
+                screen.draw.rect(Rect(x + i, y + i, TILE_SIZE - 2*i, TILE_SIZE - 2*i), color_borde)
+            
+            # Dibujar texto indicativo
+            texto_x = x + TILE_SIZE // 2
+            texto_y = y - 25
+            screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
+            screen.draw.text("Presiona , para colocar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+            
+        except:
+            # Fallback: dibujar un rectángulo si no existe la imagen
+            screen.draw.filled_rect(Rect(x, y, TILE_SIZE, TILE_SIZE), (255, 255, 0, 50))
+            
+            # Borde brillante con efecto de parpadeo
+            intensidad = int(200 + 55 * (time.time() % 1))
+            color_borde = (255, 255, 0, intensidad)
+            
+            # Dibujar borde grueso
+            for i in range(3):
+                screen.draw.rect(Rect(x + i, y + i, TILE_SIZE - 2*i, TILE_SIZE - 2*i), color_borde)
+            
+            # Dibujar texto indicativo
+            texto_x = x + TILE_SIZE // 2
+            texto_y = y - 25
+            screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
+            screen.draw.text("Presiona , para colocar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+
 def draw():
     screen.clear()
     
@@ -927,9 +1025,19 @@ def draw():
             # Mostrar controles adicionales
             screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
             screen.draw.text("U: Panel detallado de items", (10, 70), color="yellow", fontsize=14)
+            screen.draw.text("Y: Modo colocación terreno", (10, 90), color="yellow", fontsize=14)
+            
+            # Mostrar información del modo de colocación si está activo
+            if modo_colocacion_terreno:
+                screen.draw.text("MODO COLOCACIÓN ACTIVO", (10, 110), color="red", fontsize=16)
+                screen.draw.text("Flechas: Mover cuadro", (10, 130), color="yellow", fontsize=14)
+                screen.draw.text(",: Colocar terreno", (10, 150), color="yellow", fontsize=14)
 
         # Dibujar el panel detallado de items
         dibujar_panel_detallado_items()
+
+        # Dibujar el cuadro de colocación de terreno
+        dibujar_cuadro_colocacion_terreno()
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
