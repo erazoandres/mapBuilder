@@ -1,0 +1,440 @@
+# Guía Completa para Configurar mapa.txt
+
+## Descripción General
+
+El archivo `mapa.txt` es el corazón de la configuración del juego MapBuilder. Contiene toda la información necesaria para definir el nivel, las configuraciones del juego, el mapeo de sprites y las matrices del mapa.
+
+## Estructura del Archivo
+
+El archivo se divide en 4 secciones principales:
+
+1. **Configuración de Dimensiones**
+2. **Configuraciones del Juego**
+3. **Mapeo de IDs a Imágenes**
+4. **Matrices del Mapa**
+
+---
+
+## 1. Configuración de Dimensiones
+
+### Sintaxis
+```
+Matrix Size: ALTOxANCHO
+```
+
+### Ejemplo
+```
+Matrix Size: 10x30
+```
+
+### Descripción
+- **ALTO**: Número de filas en el mapa (altura)
+- **ANCHO**: Número de columnas en el mapa (ancho)
+- **Separador**: Usar 'x' (minúscula) entre alto y ancho
+- **Formato**: Sin espacios alrededor del separador
+
+### Consideraciones
+- El tamaño máximo recomendado es 20x50 para buen rendimiento
+- El ancho total no debe superar los 750 píxeles (considerando TILE_SIZE = 36)
+- Valores típicos: 10x30, 15x40, 20x50
+
+---
+
+## 2. Configuraciones del Juego
+
+### Sintaxis
+```python
+configuraciones = {
+    'velocidad_personaje': 3,
+    'velocidad_salto': 15,
+    'gravedad': 0.8,
+    'prob_salto_enemigo': 0.02,
+    'velocidad_camara': 8,
+    'margen_camara': 200,
+    'volumen_sonido': 50,
+    'pantalla_completa': "No",
+    'efectos_visuales': "Básicos",
+    'tamaño_hitbox': "Normal"
+}
+```
+
+### Parámetros Detallados
+
+#### Física del Personaje
+| Parámetro | Tipo | Rango | Default | Descripción |
+|-----------|------|-------|---------|-------------|
+| `velocidad_personaje` | float | 1.0 - 10.0 | 3 | Velocidad de movimiento horizontal |
+| `velocidad_salto` | float | 5.0 - 25.0 | 15 | Fuerza del salto (valor positivo) |
+| `gravedad` | float | 0.1 - 2.0 | 0.8 | Aceleración gravitacional |
+
+#### Comportamiento de Enemigos
+| Parámetro | Tipo | Rango | Default | Descripción |
+|-----------|------|-------|---------|-------------|
+| `prob_salto_enemigo` | float | 0.0 - 1.0 | 0.02 | Probabilidad de salto aleatorio |
+
+#### Sistema de Cámara
+| Parámetro | Tipo | Rango | Default | Descripción |
+|-----------|------|-------|---------|-------------|
+| `velocidad_camara` | int | 1 - 20 | 8 | Velocidad de seguimiento |
+| `margen_camara` | int | 50 - 500 | 200 | Margen para activar movimiento |
+
+#### Configuración Visual y Audio
+| Parámetro | Tipo | Valores | Default | Descripción |
+|-----------|------|---------|---------|-------------|
+| `volumen_sonido` | int | 0 - 100 | 50 | Volumen del audio |
+| `pantalla_completa` | string | "Sí"/"No" | "No" | Modo pantalla completa |
+| `efectos_visuales` | string | "Básicos"/"Avanzados" | "Básicos" | Nivel de efectos |
+| `tamaño_hitbox` | string | "Pequeño"/"Normal"/"Grande" | "Normal" | Tamaño de colisión |
+
+### Ejemplos de Configuración
+
+#### Configuración para Principiantes
+```python
+configuraciones = {
+    'velocidad_personaje': 2,
+    'velocidad_salto': 12,
+    'gravedad': 0.6,
+    'prob_salto_enemigo': 0.01,
+    'velocidad_camara': 6,
+    'margen_camara': 250,
+    'volumen_sonido': 70,
+    'pantalla_completa': "No",
+    'efectos_visuales': "Básicos",
+    'tamaño_hitbox': "Grande"
+}
+```
+
+#### Configuración para Expertos
+```python
+configuraciones = {
+    'velocidad_personaje': 5,
+    'velocidad_salto': 20,
+    'gravedad': 1.0,
+    'prob_salto_enemigo': 0.05,
+    'velocidad_camara': 12,
+    'margen_camara': 150,
+    'volumen_sonido': 30,
+    'pantalla_completa': "No",
+    'efectos_visuales': "Avanzados",
+    'tamaño_hitbox': "Pequeño"
+}
+```
+
+---
+
+## 3. Mapeo de IDs a Imágenes
+
+### Sintaxis
+```
+# ID Mapping
+# ID: (ruta/imagen.png) : Descripción
+# End ID Mapping
+```
+
+### Ejemplo Completo
+```
+# ID Mapping
+# 1: (terrenos/tile0.png) : Terreno básico
+# 2: (terrenos/tile1.png) : Terreno elevado
+# 3: (items/tile0.png) : Moneda dorada
+# 4: (items/tile1.png) : Gema azul
+# 5: (enemigos/tile0.png) : Enemigo básico
+# 6: (enemigos/tile1.png) : Enemigo volador
+# 7: (personajes/tile0.png) : Personaje principal
+# End ID Mapping
+```
+
+### Reglas Importantes
+
+1. **Formato de ID**: Números enteros positivos
+2. **Ruta de imagen**: Entre paréntesis, sin espacios
+3. **Descripción**: Después de los dos puntos, opcional
+4. **Categorías**: Usar prefijos para organizar:
+   - `terrenos/` - Plataformas y suelo
+   - `items/` - Objetos coleccionables
+   - `enemigos/` - Enemigos móviles
+   - `personajes/` - Sprites del personaje
+   - `fondos/` - Elementos de fondo
+
+### Convenciones de Nomenclatura
+
+#### Terrenos
+```
+# 1-99: Terrenos básicos
+# 1: (terrenos/tile0.png) : Suelo
+# 2: (terrenos/tile1.png) : Plataforma
+# 3: (terrenos/tile2.png) : Pared
+```
+
+#### Items
+```
+# 100-199: Items coleccionables
+# 100: (items/tile0.png) : Moneda
+# 101: (items/tile1.png) : Gema
+# 102: (items/tile2.png) : Llave
+```
+
+#### Enemigos
+```
+# 200-299: Enemigos
+# 200: (enemigos/tile0.png) : Enemigo básico
+# 201: (enemigos/tile1.png) : Enemigo volador
+# 202: (enemigos/tile2.png) : Enemigo saltador
+```
+
+---
+
+## 4. Matrices del Mapa
+
+### Estructura
+```python
+my_map = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+]
+
+my_items = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+my_rotations = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+```
+
+### Descripción de las Matrices
+
+#### my_map (Terreno)
+- **Contenido**: IDs de tiles de terreno
+- **0**: Espacio vacío
+- **Otros valores**: IDs definidos en el mapeo
+- **Uso**: Plataformas, suelo, paredes
+
+#### my_items (Items)
+- **Contenido**: IDs de items y enemigos
+- **0**: Sin item
+- **Otros valores**: IDs de items/enemigos
+- **Uso**: Objetos coleccionables y enemigos
+
+#### my_rotations (Rotaciones)
+- **Contenido**: Ángulos de rotación (0-359)
+- **0**: Sin rotación
+- **Otros valores**: Ángulo en grados
+- **Uso**: Rotación de sprites (funcionalidad futura)
+
+### Ejemplo de Nivel Completo
+
+```python
+# Nivel con plataformas y items
+my_map = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # Suelo
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Aire
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Aire
+    [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],  # Plataforma
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Aire
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Aire
+    [0, 0, 1, 1, 0, 0, 1, 1, 0, 0],  # Plataformas
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Aire
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Aire
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]   # Suelo
+]
+
+my_items = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sin items
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]   # Sin items
+]
+
+my_rotations = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+```
+
+---
+
+## Ejemplo Completo de mapa.txt
+
+```python
+# Configuración del mapa
+Matrix Size: 10x30
+
+# Configuraciones del juego
+configuraciones = {
+    'velocidad_personaje': 3,
+    'velocidad_salto': 15,
+    'gravedad': 0.8,
+    'prob_salto_enemigo': 0.02,
+    'velocidad_camara': 8,
+    'margen_camara': 200,
+    'volumen_sonido': 50,
+    'pantalla_completa': "No",
+    'efectos_visuales': "Básicos",
+    'tamaño_hitbox': "Normal"
+}
+
+# Mapeo de IDs a imágenes
+# ID Mapping
+# 1: (terrenos/tile0.png) : Terreno básico
+# 2: (terrenos/tile1.png) : Plataforma
+# 3: (items/tile0.png) : Moneda
+# 4: (items/tile1.png) : Gema
+# 5: (enemigos/tile0.png) : Enemigo básico
+# End ID Mapping
+
+# Matrices del mapa
+my_map = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+]
+
+my_items = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
+my_rotations = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+```
+
+---
+
+## Consejos y Mejores Prácticas
+
+### 1. Organización de Archivos
+- Mantener sprites organizados en carpetas por tipo
+- Usar nombres descriptivos para las imágenes
+- Mantener consistencia en el formato (PNG recomendado)
+
+### 2. Diseño de Niveles
+- Comenzar con niveles simples
+- Probar la jugabilidad antes de agregar complejidad
+- Asegurar que el personaje pueda llegar a todos los items
+- Crear rutas alternativas para variedad
+
+### 3. Optimización
+- No usar IDs muy altos (mantener bajo 1000)
+- Limitar el número de enemigos activos
+- Usar matrices del tamaño adecuado
+- Evitar configuraciones extremas
+
+### 4. Debugging
+- Verificar que todas las imágenes existen
+- Comprobar que los IDs están mapeados correctamente
+- Usar el modo desarrollador (F) para debug
+- Revisar la consola para errores
+
+### 5. Compatibilidad
+- Usar imágenes de 36x36 píxeles para mejor compatibilidad
+- Mantener el ancho total bajo 750 píxeles
+- Probar en diferentes configuraciones
+- Documentar dependencias específicas
+
+---
+
+## Solución de Problemas Comunes
+
+### Error: "Archivo mapa.txt no encontrado"
+- Verificar que el archivo existe en el directorio del juego
+- Comprobar el nombre exacto (sin mayúsculas)
+- Asegurar que tiene permisos de lectura
+
+### Error: "No se encontró el diccionario de configuraciones"
+- Verificar la sintaxis del diccionario
+- Comprobar que no hay errores de indentación
+- Asegurar que las comillas son correctas
+
+### Imágenes no se cargan
+- Verificar que las rutas son correctas
+- Comprobar que las imágenes existen
+- Asegurar que el formato es compatible (PNG)
+
+### Rendimiento lento
+- Reducir el tamaño de las matrices
+- Limitar el número de enemigos
+- Optimizar las configuraciones
+- Usar imágenes más pequeñas
+
+### Colisiones incorrectas
+- Verificar el mapeo de IDs
+- Comprobar la configuración de hitbox
+- Asegurar que los terrenos están correctamente definidos
+- Usar el modo desarrollador para debug
+
+---
+
+## Recursos Adicionales
+
+- **README.md**: Documentación general del proyecto
+- **DOCUMENTACION_TECNICA.md**: Documentación técnica detallada
+- **main.py**: Código fuente del juego
+- **images/**: Directorio de recursos gráficos
+
+Para más ayuda, consultar la documentación técnica o crear un issue en el repositorio del proyecto. 

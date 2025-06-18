@@ -19,11 +19,11 @@ with open('mapa.txt', 'r') as f:
             break
 
 # Tamaño de la ventana del juego
-WINDOW_WIDTH = MATRIZ_ANCHO * TILE_SIZE  # Ancho basado en el mapa
+WINDOW_WIDTH = min(MATRIZ_ANCHO * TILE_SIZE, 750)  # Ancho basado en el mapa, máximo 750px
 WINDOW_HEIGHT = MATRIZ_ALTO * TILE_SIZE  # Alto basado en el mapa
 
-# Ajustar el tamaño de la ventana - hacerla más ancha
-WIDTH = WINDOW_WIDTH + 400  # Agregar 400 píxeles extra de ancho
+# Ajustar el tamaño de la ventana - hacerla más ancha pero respetando el límite de 750px
+WIDTH = min(WINDOW_WIDTH + 400, 750)  # Agregar 400 píxeles extra de ancho, máximo 750px
 HEIGHT = WINDOW_HEIGHT
 GRAVEDAD = 0.8
 VELOCIDAD_SALTO = -15
