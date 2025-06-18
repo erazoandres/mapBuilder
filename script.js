@@ -626,7 +626,31 @@ function exportarMatriz() {
   
   // Agregar información del tamaño de la matriz
   fileContentString += `# Matrix Size: ${rows}x${cols}\n`;
-  fileContentString += `# Tile Size: ${TILE_SIZE}px\n`;
+  fileContentString += `# Tile Size: ${TILE_SIZE}px\n\n`;
+
+  // Agregar configuración del juego
+  fileContentString += '# Configuración del Juego\n';
+  fileContentString += '# Exportado el: ' + new Date().toLocaleString() + '\n\n';
+  fileContentString += '# Diccionario de configuraciones\n';
+  fileContentString += 'configuraciones = {\n';
+  fileContentString += `    "velocidad_personaje": ${valoresActuales.velocidad_personaje},\n`;
+  fileContentString += `    "velocidad_salto": ${valoresActuales.velocidad_salto},\n`;
+  fileContentString += `    "gravedad": ${valoresActuales.gravedad},\n`;
+  fileContentString += `    "prob_salto_enemigo": ${valoresActuales.prob_salto_enemigo},\n`;
+  fileContentString += `    "velocidad_camara": ${valoresActuales.velocidad_camara},\n`;
+  fileContentString += `    "margen_camara": ${valoresActuales.margen_camara},\n`;
+  fileContentString += `    "volumen_sonido": ${valoresActuales.volumen_sonido},\n`;
+  fileContentString += `    "pantalla_completa": "${valoresActuales.pantalla_completa}",\n`;
+  fileContentString += `    "tamaño_hitbox": "${valoresActuales.tamaño_hitbox}",\n`;
+  fileContentString += `    "efectos_visuales": "${valoresActuales.efectos_visuales}"\n`;
+  fileContentString += '}\n\n';
+  fileContentString += '# Instrucciones para usar en Python:\n';
+  fileContentString += '# 1. Copia este diccionario en tu archivo main.py\n';
+  fileContentString += '# 2. Aplica las configuraciones usando:\n';
+  fileContentString += '#    VELOCIDAD_MOVIMIENTO = configuraciones["velocidad_personaje"]\n';
+  fileContentString += '#    VELOCIDAD_SALTO = -configuraciones["velocidad_salto"]\n';
+  fileContentString += '#    GRAVEDAD = configuraciones["gravedad"]\n';
+  fileContentString += '#    etc.\n';
 
   // Crear y guardar el archivo
   const blob = new Blob([fileContentString], { type: 'text/plain;charset=utf-8' });
@@ -1420,47 +1444,6 @@ function actualizarValoresConfiguracion() {
             element.textContent = value;
         }
     }
-}
-
-function exportarConfiguracion() {
-    const configuracionTexto = `# Configuración del Juego MapBuilder
-# Exportado el: ${new Date().toLocaleString()}
-
-# Diccionario de configuraciones
-configuraciones = {
-    "velocidad_personaje": ${valoresActuales.velocidad_personaje},
-    "velocidad_salto": ${valoresActuales.velocidad_salto},
-    "gravedad": ${valoresActuales.gravedad},
-    "prob_salto_enemigo": ${valoresActuales.prob_salto_enemigo},
-    "velocidad_camara": ${valoresActuales.velocidad_camara},
-    "margen_camara": ${valoresActuales.margen_camara},
-    "volumen_sonido": ${valoresActuales.volumen_sonido},
-    "pantalla_completa": "${valoresActuales.pantalla_completa}",
-    "tamaño_hitbox": "${valoresActuales.tamaño_hitbox}",
-    "efectos_visuales": "${valoresActuales.efectos_visuales}"
-}
-
-# Instrucciones para usar en Python:
-# 1. Copia este diccionario en tu archivo main.py
-# 2. Aplica las configuraciones usando:
-#    VELOCIDAD_MOVIMIENTO = configuraciones["velocidad_personaje"]
-#    VELOCIDAD_SALTO = -configuraciones["velocidad_salto"]
-#    GRAVEDAD = configuraciones["gravedad"]
-#    etc.
-`;
-
-    const blob = new Blob([configuracionTexto], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'configuracion_juego.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    // Mostrar mensaje de confirmación
-    alert('✅ Configuración exportada exitosamente como "configuracion_juego.txt"');
 }
 
 // Cerrar modal al hacer clic fuera de él
