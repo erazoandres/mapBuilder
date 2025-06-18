@@ -203,7 +203,7 @@ configuraciones = {
     "volumen_sonido": 50,
     "pantalla_completa": "No",
     "tamaño_hitbox": "Normal",
-    "efectos_visuales": "Básicos"
+    "efectos_visuales": "Basicos"
 }
 
 # Instrucciones para usar en Python:

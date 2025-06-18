@@ -33,6 +33,11 @@ VELOCIDAD_MOVIMIENTO = 3
 CAMERA_MARGIN = WINDOW_WIDTH // 4  # Margen más pequeño para mejor respuesta
 CAMERA_SPEED = 8  # Velocidad más rápida para mejor seguimiento
 
+# Variables globales para configuraciones adicionales
+VOLUMEN_SONIDO = 50
+PANTALLA_COMPLETA = False
+EFECTOS_VISUALES = "Básicos"
+
 # Variables de la cámara
 camera_x = 0
 camera_y = 0
@@ -57,7 +62,7 @@ print(ITEMS)
 
 # Leer configuraciones del archivo mapa.txt
 def cargar_configuraciones():
-    global GRAVEDAD, VELOCIDAD_SALTO, VELOCIDAD_MOVIMIENTO, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN
+    global GRAVEDAD, VELOCIDAD_SALTO, VELOCIDAD_MOVIMIENTO, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN, VOLUMEN_SONIDO, PANTALLA_COMPLETA, EFECTOS_VISUALES
     
     try:
         with open('mapa.txt', 'r') as f:
@@ -91,6 +96,12 @@ def cargar_configuraciones():
                         CAMERA_SPEED = config['velocidad_camara']
                     if 'margen_camara' in config:
                         CAMERA_MARGIN = config['margen_camara']
+                    if 'volumen_sonido' in config:
+                        VOLUMEN_SONIDO = config['volumen_sonido']
+                    if 'pantalla_completa' in config:
+                        PANTALLA_COMPLETA = config['pantalla_completa'] == "Sí"
+                    if 'efectos_visuales' in config:
+                        EFECTOS_VISUALES = config['efectos_visuales']
                     
                     print("✅ Configuraciones cargadas desde mapa.txt")
                     print(f"   Velocidad: {VELOCIDAD_MOVIMIENTO}")
@@ -98,6 +109,9 @@ def cargar_configuraciones():
                     print(f"   Gravedad: {GRAVEDAD}")
                     print(f"   Cámara: {CAMERA_SPEED}")
                     print(f"   Margen: {CAMERA_MARGIN}")
+                    print(f"   Volumen de sonido: {VOLUMEN_SONIDO}")
+                    print(f"   Pantalla completa: {PANTALLA_COMPLETA}")
+                    print(f"   Efectos visuales: {EFECTOS_VISUALES}")
                 else:
                     print("⚠️ No se encontró el diccionario de configuraciones en mapa.txt")
             else:
