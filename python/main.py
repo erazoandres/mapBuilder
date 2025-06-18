@@ -1,11 +1,10 @@
 import pgzrun
 import re
 import random
-import math
-
 
 # Constantes
 TILE_SIZE = 36
+ENEMIGO_SIZE = 32  # Tamaño de los enemigos en píxeles
 PROBABILIDAD_SALTO_ENEMIGO = 0.02  # Puedes ajustar este valor a tu gusto
 
 # Dimensiones de la matriz
@@ -598,9 +597,9 @@ def update():
             enemigo.actualizar()
             
             # Comprobar colisión con el personaje usando el hitbox real
-            if (personaje.x < enemigo.x + TILE_SIZE and
+            if (personaje.x < enemigo.x + ENEMIGO_SIZE and
                 personaje.x + personaje.hitbox_width > enemigo.x and
-                personaje.y < enemigo.y + TILE_SIZE and
+                personaje.y < enemigo.y + ENEMIGO_SIZE and
                 personaje.y + personaje.hitbox_height > enemigo.y):
                 # Implementar lógica de daño o juego terminado
                 pass
@@ -891,11 +890,11 @@ def draw():
             x = enemigo.x - camera_x
             if 0 <= x <= WINDOW_WIDTH:
                 enemigo_actor = Actor(enemigo.imagen, topleft=(x, enemigo.y))
-                enemigo_actor.scale = 0.4
+                enemigo_actor.scale = ENEMIGO_SIZE / TILE_SIZE  # Calcular escala automáticamente
                 enemigo_actor.draw()
                 
                 if modo_desarrollador:
-                    screen.draw.rect(Rect(x, enemigo.y, TILE_SIZE, TILE_SIZE), (0, 255, 0))
+                    screen.draw.rect(Rect(x, enemigo.y, ENEMIGO_SIZE, ENEMIGO_SIZE), (0, 255, 0))
 
         # Dibujar personaje
         x = personaje.x - camera_x
