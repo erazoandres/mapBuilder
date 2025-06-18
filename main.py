@@ -41,6 +41,9 @@ ITEMS = []
 OBJETOS = []
 ENEMIGOS = []
 
+# Lista para almacenar los items recolectados
+items_recolectados = []
+
 print(ITEMS)
 
 
@@ -365,10 +368,23 @@ def update():
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
+            # No reiniciar la colección de items para mantener el progreso
             return
 
     if keyboard.F:
         modo_desarrollador = not modo_desarrollador
+    
+    # Reinicio completo del juego (incluyendo colección)
+    if keyboard.F5:
+        game_over = False
+        personaje.x = 0
+        personaje.y = 0
+        personaje.velocidad_y = 0
+        personaje.velocidad_x = 0
+        items_recolectados.clear()  # Limpiar la colección
+        # Reinicializar el mapa de items
+        inicializar_enemigos()
+        return
 
     # Lógica de salto mejorada
     if (keyboard.SPACE or keyboard.UP):
@@ -383,6 +399,9 @@ def update():
 
     if keyboard.E and personaje.objetos_cerca:
         x, y, item_id = personaje.objetos_cerca[0]
+        # Agregar el item a la colección si no está ya recolectado
+        if item_id not in items_recolectados:
+            items_recolectados.append(item_id)
         my_items[y][x] = 0
         personaje.objetos_cerca.remove((x, y, item_id))
 
@@ -460,10 +479,23 @@ def on_key_down(key):
             personaje.y = 0
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
+            # No reiniciar la colección de items para mantener el progreso
             return
 
     if key == keys.F:
         modo_desarrollador = not modo_desarrollador
+    
+    # Reinicio completo del juego (incluyendo colección)
+    if key == keys.F5:
+        game_over = False
+        personaje.x = 0
+        personaje.y = 0
+        personaje.velocidad_y = 0
+        personaje.velocidad_x = 0
+        items_recolectados.clear()  # Limpiar la colección
+        # Reinicializar el mapa de items
+        inicializar_enemigos()
+        return
 
     if key == keys.SPACE and personaje.en_suelo:
         personaje.velocidad_y = VELOCIDAD_SALTO
@@ -471,6 +503,9 @@ def on_key_down(key):
 
     if key == keys.R and personaje.objetos_cerca:
         x, y, item_id = personaje.objetos_cerca[0]
+        # Agregar el item a la colección si no está ya recolectado
+        if item_id not in items_recolectados:
+            items_recolectados.append(item_id)
         my_items[y][x] = 0
         personaje.objetos_cerca.remove((x, y, item_id))
 
@@ -503,6 +538,46 @@ def update_camera():
     # Limitar la cámara a los bordes del mapa
     max_camera_x = MATRIZ_ANCHO * TILE_SIZE - WINDOW_WIDTH
     camera_x = max(0, min(camera_x, max_camera_x))
+
+def dibujar_coleccion_items():
+    """Dibuja la colección de items en la esquina superior derecha"""
+    if not items_recolectados:
+        return
+    
+    # Posición inicial en la esquina superior derecha
+    start_x = WINDOW_WIDTH - 20
+    start_y = 20
+    item_size = 28  # Tamaño ligeramente más grande para mejor visibilidad
+    spacing = 8
+    
+    # Calcular el ancho del panel basado en el número de items
+    panel_width = len(items_recolectados) * (item_size + spacing) + 30
+    panel_height = item_size + 25
+    
+    # Dibujar fondo semi-transparente con borde
+    screen.draw.filled_rect(Rect(start_x - panel_width, start_y - 15, panel_width, panel_height), (0, 0, 0, 180))
+    screen.draw.rect(Rect(start_x - panel_width, start_y - 15, panel_width, panel_height), (255, 255, 255))
+    
+    # Dibujar título con contador
+    titulo = f"Colección: {len(items_recolectados)} items"
+    screen.draw.text(titulo, (start_x - panel_width + 5, start_y - 35), color="white", fontsize=18)
+    
+    # Dibujar cada item recolectado
+    for i, item_id in enumerate(items_recolectados):
+        if item_id in id_to_image:
+            x = start_x - panel_width + 15 + i * (item_size + spacing)
+            y = start_y - 10
+            
+            # Crear un actor temporal para el item
+            item_actor = Actor(id_to_image[item_id], topleft=(x, y))
+            item_actor.scale = item_size / TILE_SIZE  # Escalar el item
+            item_actor.draw()
+            
+            # Dibujar un borde dorado alrededor del item
+            screen.draw.rect(Rect(x, y, item_size, item_size), (255, 215, 0))
+            
+            # Agregar un pequeño número de índice
+            screen.draw.text(str(i + 1), (x + item_size - 8, y - 5), color="white", fontsize=12)
 
 def draw():
     screen.clear()
@@ -569,6 +644,11 @@ def draw():
         # Mostrar hitbox real del personaje
         screen.draw.rect(Rect(x, personaje.y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
         screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow")
+        # Mostrar controles adicionales
+        screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
+
+    # Dibujar la colección de items
+    dibujar_coleccion_items()
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
