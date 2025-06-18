@@ -55,6 +55,62 @@ items_recolectados = {}  # Cambiado de lista a diccionario para contar items
 print(ITEMS)
 
 
+# Leer configuraciones del archivo mapa.txt
+def cargar_configuraciones():
+    global GRAVEDAD, VELOCIDAD_SALTO, VELOCIDAD_MOVIMIENTO, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN
+    
+    try:
+        with open('mapa.txt', 'r') as f:
+            content = f.read()
+            
+            # Buscar el diccionario de configuraciones
+            if 'configuraciones = {' in content:
+                # Extraer la sección de configuraciones
+                start = content.find('configuraciones = {')
+                end = content.find('}', start) + 1
+                config_section = content[start:end]
+                
+                # Ejecutar el diccionario para obtener las configuraciones
+                config_dict = {}
+                exec(config_section, {}, config_dict)
+                
+                # Aplicar las configuraciones
+                if 'configuraciones' in config_dict:
+                    config = config_dict['configuraciones']
+                    
+                    # Aplicar valores numéricos
+                    if 'velocidad_personaje' in config:
+                        VELOCIDAD_MOVIMIENTO = config['velocidad_personaje']
+                    if 'velocidad_salto' in config:
+                        VELOCIDAD_SALTO = -config['velocidad_salto']  # Negativo para que sea hacia arriba
+                    if 'gravedad' in config:
+                        GRAVEDAD = config['gravedad']
+                    if 'prob_salto_enemigo' in config:
+                        PROBABILIDAD_SALTO_ENEMIGO = config['prob_salto_enemigo']
+                    if 'velocidad_camara' in config:
+                        CAMERA_SPEED = config['velocidad_camara']
+                    if 'margen_camara' in config:
+                        CAMERA_MARGIN = config['margen_camara']
+                    
+                    print("✅ Configuraciones cargadas desde mapa.txt")
+                    print(f"   Velocidad: {VELOCIDAD_MOVIMIENTO}")
+                    print(f"   Salto: {abs(VELOCIDAD_SALTO)}")
+                    print(f"   Gravedad: {GRAVEDAD}")
+                    print(f"   Cámara: {CAMERA_SPEED}")
+                    print(f"   Margen: {CAMERA_MARGIN}")
+                else:
+                    print("⚠️ No se encontró el diccionario de configuraciones en mapa.txt")
+            else:
+                print("⚠️ No se encontró la sección de configuraciones en mapa.txt")
+                
+    except FileNotFoundError:
+        print("⚠️ Archivo mapa.txt no encontrado. Usando configuraciones por defecto.")
+    except Exception as e:
+        print(f"⚠️ Error al cargar configuraciones: {e}. Usando configuraciones por defecto.")
+
+# Cargar configuraciones antes de crear el personaje
+cargar_configuraciones()
+
 personaje = Actor("personajes/tile0")
 personaje.velocidad_y = 0
 personaje.velocidad_x = 0  # Nueva variable para velocidad horizontal
@@ -64,6 +120,37 @@ personaje.puede_doble_salto = False  # Nueva variable para el doble salto
 # Obtener el tamaño real de la imagen del personaje
 personaje.hitbox_width = personaje.width
 personaje.hitbox_height = personaje.height
+
+# Aplicar configuración de tamaño de hitbox después de crear el personaje
+def aplicar_configuracion_hitbox():
+    global personaje
+    try:
+        with open('mapa.txt', 'r') as f:
+            content = f.read()
+            if 'configuraciones = {' in content:
+                start = content.find('configuraciones = {')
+                end = content.find('}', start) + 1
+                config_section = content[start:end]
+                config_dict = {}
+                exec(config_section, {}, config_dict)
+                
+                if 'configuraciones' in config_dict:
+                    config = config_dict['configuraciones']
+                    if 'tamaño_hitbox' in config:
+                        if config['tamaño_hitbox'] == "Pequeño":
+                            personaje.hitbox_width = personaje.width * 0.7
+                            personaje.hitbox_height = personaje.height * 0.7
+                        elif config['tamaño_hitbox'] == "Grande":
+                            personaje.hitbox_width = personaje.width * 1.3
+                            personaje.hitbox_height = personaje.height * 1.3
+                        else:  # Normal
+                            personaje.hitbox_width = personaje.width
+                            personaje.hitbox_height = personaje.height
+                        print(f"   Hitbox: {config['tamaño_hitbox']}")
+    except:
+        pass
+
+aplicar_configuracion_hitbox()
 
 # Lista para almacenar los enemigos activos
 enemigos_activos = []

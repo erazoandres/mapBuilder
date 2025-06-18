@@ -188,3 +188,28 @@ tileset_dict = {
 
 # Matrix Size: 10x10
 # Tile Size: 32px
+
+# Configuración del Juego
+# Exportado el: 18/6/2025, 1:31:23
+
+# Diccionario de configuraciones
+configuraciones = {
+    "velocidad_personaje": 3,
+    "velocidad_salto": 15,
+    "gravedad": 0.8,
+    "prob_salto_enemigo": 0.02,
+    "velocidad_camara": 8,
+    "margen_camara": 100,
+    "volumen_sonido": 50,
+    "pantalla_completa": "No",
+    "tamaño_hitbox": "Normal",
+    "efectos_visuales": "Básicos"
+}
+
+# Instrucciones para usar en Python:
+# 1. Copia este diccionario en tu archivo main.py
+# 2. Aplica las configuraciones usando:
+#    VELOCIDAD_MOVIMIENTO = configuraciones["velocidad_personaje"]
+#    VELOCIDAD_SALTO = -configuraciones["velocidad_salto"]
+#    GRAVEDAD = configuraciones["gravedad"]
+#    etc.
