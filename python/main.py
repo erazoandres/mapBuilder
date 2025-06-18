@@ -9,7 +9,7 @@ TILE_SIZE = 36
 PROBABILIDAD_SALTO_ENEMIGO = 0.02  # Puedes ajustar este valor a tu gusto
 
 # Dimensiones de la matriz
-with open('mapa.txt', 'r') as f:
+with open('mapa.txt', 'r', encoding='utf-8') as f:
     content = f.read()
     for line in content.split('\n'):
         if "Matrix Size:" in line:

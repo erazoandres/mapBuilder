@@ -31,10 +31,15 @@ MapBuilder/
 ├── sounds/              # Archivos de audio
 │   ├── jump.wav         # Sonido de salto
 │   └── sonidosalto.wav  # Sonido alternativo de salto
-├── index.html           # Archivo HTML (no utilizado)
-├── script.js            # Archivo JavaScript (no utilizado)
-├── style.css            # Archivo CSS (no utilizado)
-└── README.md            # Este archivo de documentación
+├── web/                 # Archivos web (editor de mapas)
+│   ├── index.html       # Página principal del editor
+│   ├── css/
+│   │   └── style.css    # Estilos del editor
+│   └── js/
+│       └── script.js    # Lógica del editor
+├── README.md            # Este archivo de documentación
+├── DOCUMENTACION_TECNICA.md  # Documentación técnica
+└── GUIA_MAPA.txt        # Guía de configuración
 ```
 
 ## Instalación y Ejecución
