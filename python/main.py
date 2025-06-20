@@ -65,6 +65,8 @@ items_recolectados = {}  # Cambiado de lista a diccionario para contar items
 
 print(ITEMS)
 
+LIMITE_CUADROS_COLOCACION = 10  # Número máximo de cuadros de colocación permitidos
+cuadros_colocados = 0  # Contador de cuadros colocados
 
 # Leer configuraciones del archivo mapa.txt
 def cargar_configuraciones():
@@ -635,7 +637,7 @@ def update():
                 pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual, cuadros_colocados
 
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -731,11 +733,15 @@ def on_key_down(key):
             elif key == keys.DOWN:
                 posicion_terreno_y = min((MATRIZ_ALTO - 1) * TILE_SIZE, posicion_terreno_y + TILE_SIZE)
             elif key == keys.T:  # Confirmar colocación con la tecla T
-                columna = int(posicion_terreno_x // TILE_SIZE)
-                fila = int(posicion_terreno_y // TILE_SIZE)
-                if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
-                    my_map[fila][columna] = 4  # ID correspondiente a "terrenos/tile0.png"
-                    print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Tipo: terrenos/tile0.png (ID: 4)")
+                if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
+                    columna = int(posicion_terreno_x // TILE_SIZE)
+                    fila = int(posicion_terreno_y // TILE_SIZE)
+                    if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
+                        my_map[fila][columna] = 4  # ID correspondiente a "terrenos/tile0.png"
+                        cuadros_colocados += 1
+                        print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
+                else:
+                    print("¡Límite de cuadros de colocación alcanzado!")
 
 def on_key_up(key):
     if key == keys.LEFT or key == keys.RIGHT:
@@ -915,7 +921,10 @@ def dibujar_cuadro_colocacion_terreno():
         texto_x = x + TILE_SIZE // 2
         texto_y = y - 25
         screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
-        screen.draw.text("Presiona T para colocar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+        if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
+            screen.draw.text(f"Presiona T para colocar ({LIMITE_CUADROS_COLOCACION - cuadros_colocados} restantes)", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+        else:
+            screen.draw.text("¡Límite alcanzado!", center=(texto_x, texto_y + 15), color="red", fontsize=12)
 
 def on_mouse_down(pos, button):
     global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
