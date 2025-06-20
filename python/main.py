@@ -886,7 +886,7 @@ def dibujar_menu_principal():
     screen.draw.text("Usa ↑↓ para navegar, ENTER para seleccionar", center=(centro_x, HEIGHT - 60), color="white", fontsize=18)
 
 def dibujar_cuadro_colocacion_terreno():
-    """Dibuja el cuadro de colocación de terreno usando un actor"""
+    """Dibuja solo el borde entrelineado del cuadro de colocación de terreno, sin imagen de tile"""
     if not modo_colocacion_terreno:
         return
     
@@ -896,45 +896,26 @@ def dibujar_cuadro_colocacion_terreno():
     
     # Solo dibujar si está en pantalla
     if -TILE_SIZE <= x <= WINDOW_WIDTH and 0 <= y <= HEIGHT:
-        try:
-            # Usar un terreno que esté en la lista TERRENOS (ID 4 = terrenos/tile0.png)
-            terreno_actor = Actor("terrenos/tile0", topleft=(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2))
-            # Usar el tamaño pequeño para el cuadro de colocación
-            terreno_actor.width = TAMANO_CUADRO_COLOCACION
-            terreno_actor.height = TAMANO_CUADRO_COLOCACION
-            terreno_actor.draw()
-            
-            # Dibujar borde brillante con efecto de parpadeo
-            intensidad = int(200 + 55 * (time.time() % 1))  # Efecto de parpadeo
-            color_borde = (255, 255, 0, intensidad)
-            
-            # Dibujar borde grueso alrededor del actor
-            for i in range(3):
-                screen.draw.rect(Rect(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, TAMANO_CUADRO_COLOCACION - 2*i, TAMANO_CUADRO_COLOCACION - 2*i), color_borde)
-            
-            # Dibujar texto indicativo
-            texto_x = x + TILE_SIZE // 2
-            texto_y = y - 25
-            screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
-            screen.draw.text("Presiona , para colocar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
-            
-        except:
-            # Fallback: dibujar un rectángulo si no existe la imagen
-            screen.draw.filled_rect(Rect(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2, TAMANO_CUADRO_COLOCACION, TAMANO_CUADRO_COLOCACION), (255, 255, 0, 50))
-            
-            # Borde brillante con efecto de parpadeo
-            intensidad = int(200 + 55 * (time.time() % 1))
-            color_borde = (255, 255, 0, intensidad)
-            
-            # Dibujar borde grueso
-            for i in range(3):
-                screen.draw.rect(Rect(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, TAMANO_CUADRO_COLOCACION - 2*i, TAMANO_CUADRO_COLOCACION - 2*i), color_borde)
-            
-            # Dibujar texto indicativo
-            texto_x = x + TILE_SIZE // 2
-            texto_y = y - 25
-            screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
-            screen.draw.text("Presiona , para colocar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+        # Calcular el área del cuadro pequeño
+        cuadro_x = x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
+        cuadro_y = y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
+        # Dibujar borde entrelineado (líneas discontinuas)
+        color_borde = (255, 255, 0)
+        dash = 4
+        length = TAMANO_CUADRO_COLOCACION
+        # Lados horizontales
+        for i in range(0, length, dash*2):
+            screen.draw.line((cuadro_x + i, cuadro_y), (cuadro_x + min(i+dash, length-1), cuadro_y), color_borde)
+            screen.draw.line((cuadro_x + i, cuadro_y + length-1), (cuadro_x + min(i+dash, length-1), cuadro_y + length-1), color_borde)
+        # Lados verticales
+        for i in range(0, length, dash*2):
+            screen.draw.line((cuadro_x, cuadro_y + i), (cuadro_x, cuadro_y + min(i+dash, length-1)), color_borde)
+            screen.draw.line((cuadro_x + length-1, cuadro_y + i), (cuadro_x + length-1, cuadro_y + min(i+dash, length-1)), color_borde)
+        # Dibujar texto indicativo
+        texto_x = x + TILE_SIZE // 2
+        texto_y = y - 25
+        screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
+        screen.draw.text("Presiona T para colocar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
 
 def on_mouse_down(pos, button):
     global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
@@ -1048,7 +1029,7 @@ def draw():
             if modo_colocacion_terreno:
                 screen.draw.text("MODO COLOCACIÓN ACTIVO", (10, 110), color="red", fontsize=16)
                 screen.draw.text("Flechas: Mover cuadro", (10, 130), color="yellow", fontsize=14)
-                screen.draw.text(",: Colocar terreno", (10, 150), color="yellow", fontsize=14)
+                screen.draw.text("T: Colocar terreno", (10, 150), color="yellow", fontsize=14)
 
         # Dibujar el panel detallado de items
         dibujar_panel_detallado_items()
