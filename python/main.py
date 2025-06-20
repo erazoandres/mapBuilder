@@ -730,15 +730,12 @@ def on_key_down(key):
                 posicion_terreno_y = max(0, posicion_terreno_y - TILE_SIZE)
             elif key == keys.DOWN:
                 posicion_terreno_y = min((MATRIZ_ALTO - 1) * TILE_SIZE, posicion_terreno_y + TILE_SIZE)
-            elif key == keys.COMMA:  # Confirmar colocación con coma
-                # Calcular posición en la matriz
+            elif key == keys.T:  # Confirmar colocación con la tecla T
                 columna = int(posicion_terreno_x // TILE_SIZE)
                 fila = int(posicion_terreno_y // TILE_SIZE)
-                # Colocar el terreno en la matriz usando el tipo que está siendo mostrado
                 if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
-                    # Usar el ID 4 que corresponde a "terrenos/tile0.png" según el ID Mapping
                     my_map[fila][columna] = 4  # ID correspondiente a "terrenos/tile0.png"
-                    print(f"Terreno colocado en posición ({fila}, {columna}) - Tipo: terrenos/tile0.png (ID: 4)")
+                    print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Tipo: terrenos/tile0.png (ID: 4)")
 
 def on_key_up(key):
     if key == keys.LEFT or key == keys.RIGHT:
@@ -901,10 +898,10 @@ def dibujar_cuadro_colocacion_terreno():
     if -TILE_SIZE <= x <= WINDOW_WIDTH and 0 <= y <= HEIGHT:
         try:
             # Usar un terreno que esté en la lista TERRENOS (ID 4 = terrenos/tile0.png)
-            terreno_actor = Actor("terrenos/tile0", topleft=(x, y))
-            # Usar el tamaño exacto de las casillas
-            terreno_actor.width = TILE_SIZE
-            terreno_actor.height = TILE_SIZE
+            terreno_actor = Actor("terrenos/tile0", topleft=(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2))
+            # Usar el tamaño pequeño para el cuadro de colocación
+            terreno_actor.width = TAMANO_CUADRO_COLOCACION
+            terreno_actor.height = TAMANO_CUADRO_COLOCACION
             terreno_actor.draw()
             
             # Dibujar borde brillante con efecto de parpadeo
@@ -913,7 +910,7 @@ def dibujar_cuadro_colocacion_terreno():
             
             # Dibujar borde grueso alrededor del actor
             for i in range(3):
-                screen.draw.rect(Rect(x + i, y + i, TILE_SIZE - 2*i, TILE_SIZE - 2*i), color_borde)
+                screen.draw.rect(Rect(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, TAMANO_CUADRO_COLOCACION - 2*i, TAMANO_CUADRO_COLOCACION - 2*i), color_borde)
             
             # Dibujar texto indicativo
             texto_x = x + TILE_SIZE // 2
@@ -923,7 +920,7 @@ def dibujar_cuadro_colocacion_terreno():
             
         except:
             # Fallback: dibujar un rectángulo si no existe la imagen
-            screen.draw.filled_rect(Rect(x, y, TILE_SIZE, TILE_SIZE), (255, 255, 0, 50))
+            screen.draw.filled_rect(Rect(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2, TAMANO_CUADRO_COLOCACION, TAMANO_CUADRO_COLOCACION), (255, 255, 0, 50))
             
             # Borde brillante con efecto de parpadeo
             intensidad = int(200 + 55 * (time.time() % 1))
@@ -931,13 +928,31 @@ def dibujar_cuadro_colocacion_terreno():
             
             # Dibujar borde grueso
             for i in range(3):
-                screen.draw.rect(Rect(x + i, y + i, TILE_SIZE - 2*i, TILE_SIZE - 2*i), color_borde)
+                screen.draw.rect(Rect(x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2 + i, TAMANO_CUADRO_COLOCACION - 2*i, TAMANO_CUADRO_COLOCACION - 2*i), color_borde)
             
             # Dibujar texto indicativo
             texto_x = x + TILE_SIZE // 2
             texto_y = y - 25
             screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
             screen.draw.text("Presiona , para colocar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+
+def on_mouse_down(pos, button):
+    global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
+    if estado_juego == "jugando" and modo_colocacion_terreno and button == mouse.LEFT:
+        # Calcular la posición del cuadro de colocación en pantalla
+        x = posicion_terreno_x - camera_x
+        y = posicion_terreno_y
+        # Calcular el área del cuadro pequeño
+        cuadro_x = x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
+        cuadro_y = y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
+        cuadro_rect = Rect(cuadro_x, cuadro_y, TAMANO_CUADRO_COLOCACION, TAMANO_CUADRO_COLOCACION)
+        # Verificar si el clic está dentro del cuadro
+        if cuadro_rect.collidepoint(pos):
+            columna = int(posicion_terreno_x // TILE_SIZE)
+            fila = int(posicion_terreno_y // TILE_SIZE)
+            if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
+                my_map[fila][columna] = 4  # ID correspondiente a "terrenos/tile0.png"
+                print(f"Terreno colocado con clic en posición ({fila}, {columna}) - Tipo: terrenos/tile0.png (ID: 4)")
 
 def draw():
     screen.clear()
@@ -976,6 +991,8 @@ def draw():
                 tile_id = my_map[fila][columna]
                 if tile_id != 0 and tile_id in id_to_image:
                     tile_actor = Actor(id_to_image[tile_id], topleft=(x, y))
+                    tile_actor.width = TILE_SIZE
+                    tile_actor.height = TILE_SIZE
                     tile_actor.draw()
 
                 item_id = my_items[fila][columna]
