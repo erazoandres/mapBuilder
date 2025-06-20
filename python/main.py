@@ -3,10 +3,48 @@ import re
 import random
 import time
 
-# Constantes
-TILE_SIZE = 32
-ENEMIGO_SIZE = 32  # Tamaño de los enemigos en píxeles
-PROBABILIDAD_SALTO_ENEMIGO = 0.000000000000002  # Puedes ajustar este valor a tu gusto
+# Diccionario global de configuración del juego
+CONFIG_JUEGO = {
+    'TILE_SIZE': 32,
+    'ENEMIGO_SIZE': 32,
+    'PROBABILIDAD_SALTO_ENEMIGO': 0.000000000000002,
+    'GRAVEDAD': 0.8,
+    'VELOCIDAD_SALTO': -15,
+    'VELOCIDAD_MOVIMIENTO': 3,
+    'CAMERA_SPEED': 8,
+    'CAMERA_MARGIN': 100,  # Valor por defecto, se ajusta después
+    'VOLUMEN_SONIDO': 50,
+    'PANTALLA_COMPLETA': False,
+    'EFECTOS_VISUALES': 'Básicos',
+    'TAMANO_CUADRO_COLOCACION': 24,
+    'LIMITE_CUADROS_COLOCACION': 10,
+    'PERSEGUIDOR_RANGO_X': 200,
+    'PERSEGUIDOR_RANGO_Y': 40,
+    'SALTADOR_RANGO_X': 100,
+    'SALTADOR_PROB_SALTO': 0.02,
+    'ALEATORIO_MIN_FRAMES': 60,
+    'ALEATORIO_MAX_FRAMES': 180,
+    'PATRULLA_VELOCIDAD': 0.7,
+    'SALTADOR_VELOCIDAD': 0.5,
+    'PERSEGUIDOR_VELOCIDAD': 0.9,
+    'ALEATORIO_VEL_MIN': 0.3,
+    'ALEATORIO_VEL_MAX': 1.0,
+}
+
+# Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
+TILE_SIZE = CONFIG_JUEGO['TILE_SIZE']
+ENEMIGO_SIZE = CONFIG_JUEGO['ENEMIGO_SIZE']
+PROBABILIDAD_SALTO_ENEMIGO = CONFIG_JUEGO['PROBABILIDAD_SALTO_ENEMIGO']
+GRAVEDAD = CONFIG_JUEGO['GRAVEDAD']
+VELOCIDAD_SALTO = CONFIG_JUEGO['VELOCIDAD_SALTO']
+VELOCIDAD_MOVIMIENTO = CONFIG_JUEGO['VELOCIDAD_MOVIMIENTO']
+CAMERA_SPEED = CONFIG_JUEGO['CAMERA_SPEED']
+CAMERA_MARGIN = CONFIG_JUEGO['CAMERA_MARGIN']
+VOLUMEN_SONIDO = CONFIG_JUEGO['VOLUMEN_SONIDO']
+PANTALLA_COMPLETA = CONFIG_JUEGO['PANTALLA_COMPLETA']
+EFECTOS_VISUALES = CONFIG_JUEGO['EFECTOS_VISUALES']
+TAMANO_CUADRO_COLOCACION = CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION']
+LIMITE_CUADROS_COLOCACION = CONFIG_JUEGO['LIMITE_CUADROS_COLOCACION']
 
 # Dimensiones de la matriz
 with open('mapa.txt', 'r', encoding='utf-8') as f:
@@ -25,13 +63,6 @@ WINDOW_HEIGHT = MATRIZ_ALTO * TILE_SIZE  # Alto basado en el mapa
 # Ajustar el tamaño de la ventana - hacerla más ancha pero respetando el límite de 750px
 WIDTH = min(WINDOW_WIDTH + 400, 750)  # Agregar 400 píxeles extra de ancho, máximo 750px
 HEIGHT = WINDOW_HEIGHT
-GRAVEDAD = 0.8
-VELOCIDAD_SALTO = -15
-VELOCIDAD_MOVIMIENTO = 3
-
-# Constantes para la cámara
-CAMERA_MARGIN = WINDOW_WIDTH // 4  # Margen más pequeño para mejor respuesta
-CAMERA_SPEED = 8  # Velocidad más rápida para mejor seguimiento
 
 # Variables globales para configuraciones adicionales
 VOLUMEN_SONIDO = 50
@@ -54,7 +85,6 @@ modo_colocacion_terreno = False
 posicion_terreno_x = 0
 posicion_terreno_y = 0
 tipo_terreno_actual = 1  # ID del terreno a colocar (por defecto 1)
-TAMANO_CUADRO_COLOCACION = 24  # Tamaño más pequeño para el cuadro de colocación
 
 TERRENOS = []
 ITEMS = []
@@ -65,7 +95,6 @@ items_recolectados = {}  # Cambiado de lista a diccionario para contar items
 
 print(ITEMS)
 
-LIMITE_CUADROS_COLOCACION = 10  # Número máximo de cuadros de colocación permitidos
 cuadros_colocados = 0  # Contador de cuadros colocados
 
 # Diccionario de tipos de comportamiento de enemigos
