@@ -68,6 +68,30 @@ print(ITEMS)
 LIMITE_CUADROS_COLOCACION = 10  # Número máximo de cuadros de colocación permitidos
 cuadros_colocados = 0  # Contador de cuadros colocados
 
+# Diccionario de tipos de comportamiento de enemigos
+TIPOS_COMPORTAMIENTO_ENEMIGO = {
+    'saltador': {
+        'nombre': 'Saltador',
+        'descripcion': 'Enemigo que salta periódicamente o cuando detecta al jugador cerca.'
+    },
+    'patrulla': {
+        'nombre': 'Patrulla',
+        'descripcion': 'Enemigo que se mueve de un lado a otro en una zona fija.'
+    },
+    'perseguidor': {
+        'nombre': 'Perseguidor',
+        'descripcion': 'Enemigo que persigue al jugador si entra en su rango de visión.'
+    },
+    'aleatorio': {
+        'nombre': 'Errático',
+        'descripcion': 'Enemigo que se mueve de forma aleatoria, cambiando de dirección y velocidad.'
+    }
+}
+
+# Ejemplo de cómo asociar un tipo de comportamiento a un enemigo:
+# enemigo.tipo_comportamiento = 'saltador'
+# Luego, en la lógica de actualización del enemigo, se puede usar TIPOS_COMPORTAMIENTO_ENEMIGO[enemigo.tipo_comportamiento]
+
 # Leer configuraciones del archivo mapa.txt
 def cargar_configuraciones():
     global GRAVEDAD, VELOCIDAD_SALTO, VELOCIDAD_MOVIMIENTO, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN, VOLUMEN_SONIDO, PANTALLA_COMPLETA, EFECTOS_VISUALES
@@ -177,7 +201,54 @@ aplicar_configuracion_hitbox()
 # Lista para almacenar los enemigos activos
 enemigos_activos = []
 
-# Clase para representar a los enemigos
+# --- FUNCIONES DE MOVIMIENTO PARA CADA COMPORTAMIENTO ---
+def movimiento_saltador(enemigo, jugador):
+    # Salta periódicamente o si el jugador está cerca, y se mueve horizontalmente
+    if enemigo.en_suelo:
+        if random.random() < 0.02 or abs(enemigo.x - jugador.x) < 100:
+            enemigo.velocidad_y = VELOCIDAD_SALTO
+            enemigo.en_suelo = False
+        # Elegir dirección hacia el jugador si está cerca
+        if abs(enemigo.x - jugador.x) < 100:
+            enemigo.direccion = 1 if jugador.x > enemigo.x else -1
+    # Movimiento horizontal fluido
+    enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.5)
+
+def movimiento_patrulla(enemigo, jugador):
+    # Se mueve de un lado a otro, cambia de dirección solo al llegar a los bordes o colisión
+    enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.7)
+    # Si está cerca del borde, cambia de dirección
+    if enemigo.x <= 0 or enemigo.x >= WIDTH - TILE_SIZE:
+        enemigo.direccion *= -1
+    # Si hay colisión horizontal, cambiar dirección (esto ya se maneja en actualizar)
+
+def movimiento_perseguidor(enemigo, jugador):
+    # Persigue al jugador suavemente si está cerca en X y Y
+    distancia_x = jugador.x - enemigo.x
+    distancia_y = abs(jugador.y - enemigo.y)
+    if abs(distancia_x) < 200 and distancia_y < 40:
+        velocidad_objetivo = VELOCIDAD_MOVIMIENTO * 0.9 if distancia_x > 0 else -VELOCIDAD_MOVIMIENTO * 0.9
+        # Interpolación suave
+        enemigo.velocidad_x += (velocidad_objetivo - enemigo.velocidad_x) * 0.1
+    else:
+        # Detenerse completamente
+        enemigo.velocidad_x = 0
+
+def movimiento_aleatorio(enemigo, jugador):
+    # Mantiene dirección por más tiempo, cambia menos abruptamente
+    if not hasattr(enemigo, 'frames_direccion'):
+        enemigo.frames_direccion = random.randint(60, 180)
+    enemigo.frames_direccion -= 1
+    if enemigo.frames_direccion <= 0:
+        enemigo.direccion = random.choice([-1, 0, 1])
+        enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * random.uniform(0.3, 1.0))
+        enemigo.frames_direccion = random.randint(60, 180)
+    # Si está cerca del borde, cambia de dirección
+    if enemigo.x <= 0 or enemigo.x >= WIDTH - TILE_SIZE:
+        enemigo.direccion *= -1
+        enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * random.uniform(0.3, 1.0))
+
+# --- CLASE ENEMIGO MODIFICADA ---
 class Enemigo:
     def __init__(self, x, y, tipo_id):
         self.x = x
@@ -190,25 +261,27 @@ class Enemigo:
         self.tiempo_cambio_direccion = random.randint(60, 180)  # frames hasta cambiar dirección
         self.contador = 0
         self.imagen_base = id_to_image.get(tipo_id, "enemigos/default")
+        # Asignar comportamiento aleatorio
+        self.tipo_comportamiento = random.choice(list(TIPOS_COMPORTAMIENTO_ENEMIGO.keys()))
     
     def obtener_imagen_actual(self):
-        """Retorna la imagen correcta según la dirección del enemigo"""
-        if self.direccion == -1:  # Moviendo a la izquierda
-            # Usar tile6 para enemigos moviéndose a la izquierda
+        if self.direccion == -1:
             return "enemigos/tile6.png"
-        else:  # Moviendo a la derecha
-            # Usar tile4 para enemigos moviéndose a la derecha
+        else:
             return "enemigos/tile4.png"
     
-    def actualizar(self):
+    def actualizar(self, jugador=None):
         # Aplicar gravedad
         self.velocidad_y += GRAVEDAD
-        
-        # Lógica de salto aleatorio
-        if self.en_suelo and random.random() < PROBABILIDAD_SALTO_ENEMIGO:
-            self.velocidad_y = VELOCIDAD_SALTO
-            self.en_suelo = False
-        
+        # Lógica de movimiento según comportamiento
+        if self.tipo_comportamiento == 'saltador':
+            movimiento_saltador(self, jugador)
+        elif self.tipo_comportamiento == 'patrulla':
+            movimiento_patrulla(self, jugador)
+        elif self.tipo_comportamiento == 'perseguidor':
+            movimiento_perseguidor(self, jugador)
+        elif self.tipo_comportamiento == 'aleatorio':
+            movimiento_aleatorio(self, jugador)
         # Actualizar posición vertical
         nueva_y = self.y + self.velocidad_y
         if not verificar_colision_vertical(self.x, nueva_y):
@@ -218,26 +291,13 @@ class Enemigo:
             if self.velocidad_y > 0:
                 self.en_suelo = True
             self.velocidad_y = 0
-        
-        # Lógica de movimiento
-        self.contador += 1
-        if self.contador >= self.tiempo_cambio_direccion:
-            self.direccion *= -1  # Cambiar dirección
-            self.contador = 0
-            self.tiempo_cambio_direccion = random.randint(60, 180)
-        
-        # Establecer velocidad según dirección
-        self.velocidad_x = self.direccion * (VELOCIDAD_MOVIMIENTO * 0.6)  # Más lento que el personaje
-        
         # Actualizar posición horizontal
         nueva_x = self.x + self.velocidad_x
         if not verificar_colision_horizontal(nueva_x, self.y):
             self.x = nueva_x
         else:
-            # Si hay colisión, cambiar dirección
             self.direccion *= -1
             self.velocidad_x = 0
-        
         # Mantener al enemigo dentro de los límites
         self.x = max(0, min(WIDTH - TILE_SIZE, self.x))
         if self.y >= HEIGHT - TILE_SIZE:
@@ -484,7 +544,7 @@ def verificar_colision(x, y, es_personaje=False):
     return colision_vertical, colision_horizontal, es_suelo
 
 def update():
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual, cuadros_colocados, LIMITE_CUADROS_COLOCACION
     
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -528,6 +588,11 @@ def update():
                 # Inicializar posición del terreno en la posición del personaje
                 posicion_terreno_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
                 posicion_terreno_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
+                # Al inicio, asegúrate de que tipo_terreno_actual esté en TERRENOS si la lista no está vacía
+                if TERRENOS:
+                    tipo_terreno_actual = TERRENOS[0]
+                else:
+                    tipo_terreno_actual = 1
             else:
                 # Salir del modo de colocación
                 pass
@@ -626,7 +691,7 @@ def update():
         
         # Actualizar enemigos
         for enemigo in enemigos_activos:
-            enemigo.actualizar()
+            enemigo.actualizar(personaje)
             
             # Comprobar colisión con el personaje usando el hitbox real
             if (personaje.x < enemigo.x + ENEMIGO_SIZE and
@@ -637,7 +702,7 @@ def update():
                 pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual, cuadros_colocados
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual
 
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -732,12 +797,18 @@ def on_key_down(key):
                 posicion_terreno_y = max(0, posicion_terreno_y - TILE_SIZE)
             elif key == keys.DOWN:
                 posicion_terreno_y = min((MATRIZ_ALTO - 1) * TILE_SIZE, posicion_terreno_y + TILE_SIZE)
+            elif key == keys.TAB:
+                # Cambiar el tipo de terreno a colocar
+                if TERRENOS:
+                    idx = TERRENOS.index(tipo_terreno_actual) if tipo_terreno_actual in TERRENOS else 0
+                    tipo_terreno_actual = TERRENOS[(idx + 1) % len(TERRENOS)]
+
             elif key == keys.T:  # Confirmar colocación con la tecla T
                 if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
                     columna = int(posicion_terreno_x // TILE_SIZE)
                     fila = int(posicion_terreno_y // TILE_SIZE)
                     if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
-                        my_map[fila][columna] = 4  # ID correspondiente a "terrenos/tile0.png"
+                        my_map[fila][columna] = tipo_terreno_actual
                         cuadros_colocados += 1
                         print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
@@ -921,6 +992,8 @@ def dibujar_cuadro_colocacion_terreno():
         texto_x = x + TILE_SIZE // 2
         texto_y = y - 25
         screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
+        # Mostrar el tipo de terreno seleccionado
+        screen.draw.text(f"ID: {tipo_terreno_actual}", center=(texto_x, texto_y - 15), color="orange", fontsize=10)
         if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
             screen.draw.text(f"Presiona T para colocar ({LIMITE_CUADROS_COLOCACION - cuadros_colocados} restantes)", center=(texto_x, texto_y + 15), color="white", fontsize=10)
         else:
@@ -941,8 +1014,8 @@ def on_mouse_down(pos, button):
             columna = int(posicion_terreno_x // TILE_SIZE)
             fila = int(posicion_terreno_y // TILE_SIZE)
             if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
-                my_map[fila][columna] = 4  # ID correspondiente a "terrenos/tile0.png"
-                print(f"Terreno colocado con clic en posición ({fila}, {columna}) - Tipo: terrenos/tile0.png (ID: 4)")
+                my_map[fila][columna] = tipo_terreno_actual
+                print(f"Terreno colocado con clic en posición ({fila}, {columna}) - Tipo: {tipo_terreno_actual}")
 
 def draw():
     screen.clear()
