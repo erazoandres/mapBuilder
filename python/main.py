@@ -5,8 +5,8 @@ import time
 
 # Diccionario global de configuración del juego
 CONFIG_JUEGO = {
-    'TILE_SIZE': 32,
-    'ENEMIGO_SIZE': 32,
+    'TILE_SIZE': 64,
+    'ENEMIGO_SIZE': 64,
     'PROBABILIDAD_SALTO_ENEMIGO': 0.000000000000002,
     'GRAVEDAD': 0.8,
     'VELOCIDAD_SALTO': -15,
@@ -342,10 +342,11 @@ class Enemigo:
 
 # --- CLASE PROYECTIL PARA TILE7 ---
 class Proyectil:
-    def __init__(self, x, y, tipo_id):
+    def __init__(self, x, y, tipo_id, rotacion=0):
         self.x = x
         self.y = y
         self.tipo_id = tipo_id
+        self.rotacion = rotacion
         self.velocidad_x = VELOCIDAD_MOVIMIENTO   # Más rápido que un enemigo normal
         self.imagen = "enemigos/tile7.png"
         self.ancho = ENEMIGO_SIZE
@@ -543,9 +544,10 @@ def inicializar_enemigos():
         for columna in range(len(my_items[0])):
             item_id = my_items[fila][columna]
             if item_id in ENEMIGOS:
+                rotacion_item = my_items_rotations[fila][columna]
                 # Crear un nuevo enemigo y agregarlo a la lista
                 if ENEMIGO_ESPECIAL_ID is not None and item_id == ENEMIGO_ESPECIAL_ID:
-                    nuevo_enemigo = Proyectil(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
+                    nuevo_enemigo = Proyectil(columna * TILE_SIZE, fila * TILE_SIZE, item_id, rotacion_item)
                 else:
                     nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
                 
@@ -1149,6 +1151,8 @@ def draw():
             if 0 <= x <= WINDOW_WIDTH:
                 enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, enemigo.y))
                 enemigo_actor.scale = ENEMIGO_SIZE / TILE_SIZE  # Calcular escala automáticamente
+                if hasattr(enemigo, 'rotacion'):
+                    enemigo_actor.angle = -enemigo.rotacion
                 enemigo_actor.draw()
                 
                 # Efectos especiales para enemigo especial (tile7)
