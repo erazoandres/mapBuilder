@@ -346,7 +346,7 @@ class Proyectil:
         self.x = x
         self.y = y
         self.tipo_id = tipo_id
-        self.velocidad_x = VELOCIDAD_MOVIMIENTO * 2  # Más rápido que un enemigo normal
+        self.velocidad_x = VELOCIDAD_MOVIMIENTO   # Más rápido que un enemigo normal
         self.imagen = "enemigos/tile7.png"
         self.ancho = ENEMIGO_SIZE
         self.alto = ENEMIGO_SIZE
@@ -992,9 +992,13 @@ def dibujar_menu_principal():
     centro_y = HEIGHT // 2
     
     # Posiciones de los botones (en columna)
+    # Calcular la posición vertical inicial para centrar ambos botones en la pantalla
+    total_altura_botones = 2 * boton_height + espaciado
+    inicio_y = centro_y - total_altura_botones // 2
+
     botones = [
-        (centro_x - boton_width // 2, centro_y - boton_height // 2),  # Jugar
-        (centro_x - boton_width // 2, centro_y + boton_height // 2 + espaciado)   # Extras
+        (centro_x - boton_width // 2, inicio_y),  # Jugar
+        (centro_x - boton_width // 2, inicio_y + boton_height + espaciado)  # Extras
     ]
     
     # Textos de los botones
@@ -1016,35 +1020,21 @@ def dibujar_menu_principal():
     
     # Dibujar cada botón
     for i, (x, y) in enumerate(botones):
-        # Color del botón (resaltado si está seleccionado)
+        # Fondo igual para todos
+        color_fondo = (100, 100, 100, 150)
+        screen.draw.filled_rect(Rect(x, y, boton_width, boton_height), color_fondo)
+
+        # Borde según selección
         if i == boton_seleccionado:
-            # Botón seleccionado con efecto de brillo
-            color_boton = (255, 215, 0)
-            color_borde = (255, 255, 255)
-            color_texto = (0, 0, 0)
-            # Efecto de sombra para botón seleccionado
-            screen.draw.filled_rect(Rect(x + 3, y + 3, boton_width, boton_height), (100, 100, 0, 100))
-        else:
-            # Botón normal
-            color_boton = (100, 100, 100, 150)
-            color_borde = (150, 150, 150)
+            color_borde = (255, 215, 0)  # Amarillo
             color_texto = (255, 255, 255)
-        
-        # Intentar usar la imagen bonus.png si existe
-        try:
-            boton_actor = Actor("bonus", topleft=(x, y))
-            boton_actor.scale = boton_width / boton_actor.width
-            boton_actor.draw()
-        except:
-            # Si no existe la imagen, dibujar un rectángulo con efectos
-            screen.draw.filled_rect(Rect(x, y, boton_width, boton_height), color_boton)
-            screen.draw.rect(Rect(x, y, boton_width, boton_height), color_borde, 3)
-            
-            # Efecto de brillo en la parte superior del botón
-            if i == boton_seleccionado:
-                screen.draw.line((x, y), (x + boton_width, y), (255, 255, 255, 100))
-        
-        # Dibujar el texto del botón
+        else:
+            color_borde = (150, 150, 150)  # Gris
+            color_texto = (255, 255, 255)
+
+        screen.draw.rect(Rect(x, y, boton_width, boton_height), color_borde)
+
+        # Texto centrado
         texto_x = x + boton_width // 2
         texto_y = y + boton_height // 2
         screen.draw.text(textos[i], center=(texto_x, texto_y), color=color_texto, fontsize=24)
@@ -1056,13 +1046,7 @@ def dibujar_menu_principal():
     screen.draw.text("MAP BUILDER", center=(centro_x, 32), color=(255, 215, 0), fontsize=48)
     
     # Línea decorativa bajo el título
-    screen.draw.line((centro_x - 150, 50), (centro_x + 150, 50), (255, 215, 0))
-    
-    # Instrucciones con mejor diseño
-    instrucciones_bg = Rect(centro_x - 200, HEIGHT - 80, 400, 40)
-    screen.draw.filled_rect(instrucciones_bg, (0, 0, 0, 100))
-    screen.draw.rect(instrucciones_bg, (255, 215, 0))
-    screen.draw.text("Usa ↑↓ para navegar, ENTER para seleccionar", center=(centro_x, HEIGHT - 60), color="white", fontsize=18)
+    screen.draw.line((centro_x - 150, 50), (centro_x + 150, 50), (255, 215, 0))  
 
 def dibujar_cuadro_colocacion_terreno():
     """Dibuja solo el borde entrelineado del cuadro de colocación de terreno, sin imagen de tile"""
@@ -1100,24 +1084,6 @@ def dibujar_cuadro_colocacion_terreno():
             screen.draw.text(f"Presiona T para colocar ({LIMITE_CUADROS_COLOCACION - cuadros_colocados} restantes)", center=(texto_x, texto_y + 15), color="white", fontsize=10)
         else:
             screen.draw.text("¡Límite alcanzado!", center=(texto_x, texto_y + 15), color="red", fontsize=12)
-
-def on_mouse_down(pos, button):
-    global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
-    if estado_juego == "jugando" and modo_colocacion_terreno and button == mouse.LEFT:
-        # Calcular la posición del cuadro de colocación en pantalla
-        x = posicion_terreno_x - camera_x
-        y = posicion_terreno_y
-        # Calcular el área del cuadro pequeño
-        cuadro_x = x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
-        cuadro_y = y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
-        cuadro_rect = Rect(cuadro_x, cuadro_y, TAMANO_CUADRO_COLOCACION, TAMANO_CUADRO_COLOCACION)
-        # Verificar si el clic está dentro del cuadro
-        if cuadro_rect.collidepoint(pos):
-            columna = int(posicion_terreno_x // TILE_SIZE)
-            fila = int(posicion_terreno_y // TILE_SIZE)
-            if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
-                my_map[fila][columna] = tipo_terreno_actual
-                print(f"Terreno colocado con clic en posición ({fila}, {columna}) - Tipo: {tipo_terreno_actual}")
 
 def draw():
     screen.clear()
