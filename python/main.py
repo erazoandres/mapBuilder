@@ -71,12 +71,10 @@ with open('mapa.txt', 'r', encoding='utf-8') as f:
             break
 
 # Tamaño de la ventana del juego
-WINDOW_WIDTH = min(MATRIZ_ANCHO * TILE_SIZE, 750)  # Ancho basado en el mapa, máximo 750px
-WINDOW_HEIGHT = MATRIZ_ALTO * TILE_SIZE  # Alto basado en el mapa
-
-# Ajustar el tamaño de la ventana - hacerla más ancha pero respetando el límite de 750px
-WIDTH = min(WINDOW_WIDTH + 400, 750)  # Agregar 400 píxeles extra de ancho, máximo 750px
-HEIGHT = WINDOW_HEIGHT
+WIDTH = 800
+HEIGHT = 600
+WINDOW_WIDTH = WIDTH # Usaremos el ancho total para la vista de juego por ahora
+WINDOW_HEIGHT = HEIGHT # Usaremos el alto total
 
 # Variables globales para configuraciones adicionales
 VOLUMEN_SONIDO = 50
@@ -662,8 +660,8 @@ def update():
         if game_over:
             if keyboard.R:
                 game_over = False
-                personaje.x = PERSONAJE_POS_INICIAL_X
-                personaje.y = PERSONAJE_POS_INICIAL_Y
+                personaje.x = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_X']
+                personaje.y = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_Y']
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
                 personaje.puede_doble_salto = False
@@ -696,8 +694,8 @@ def update():
         # Reinicio completo del juego (incluyendo colección)
         if keyboard.F5:
             game_over = False
-            personaje.x = PERSONAJE_POS_INICIAL_X
-            personaje.y = PERSONAJE_POS_INICIAL_Y
+            personaje.x = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_X']
+            personaje.y = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_Y']
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
@@ -709,11 +707,11 @@ def update():
         # Lógica de salto mejorada - controles fluidos
         if (keyboard.SPACE or keyboard.UP):
             if personaje.en_suelo:
-                personaje.velocidad_y = VELOCIDAD_SALTO
+                personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO']
                 personaje.en_suelo = False
                 personaje.puede_doble_salto = True
             elif personaje.puede_doble_salto and personaje.velocidad_y < 0:  # Solo permitir doble salto cuando está cayendo
-                personaje.velocidad_y = VELOCIDAD_SALTO * 0.8  # El segundo salto es ligeramente más débil
+                personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['DOBLE_SALTO_FACTOR']  # El segundo salto es ligeramente más débil
                 personaje.puede_doble_salto = False
                 # Nota: El volumen del sonido se puede ajustar editando el archivo de audio directamente
                 # sounds.jump.play()  # Sonido de salto (volumen controlado por el archivo de audio)
@@ -732,9 +730,9 @@ def update():
         # Movimiento horizontal - controles fluidos
         if not modo_colocacion_terreno:  # Solo permitir movimiento si no está en modo colocación
             if keyboard.LEFT:
-                personaje.velocidad_x = -VELOCIDAD_MOVIMIENTO
+                personaje.velocidad_x = -CONFIG_JUEGO['VELOCIDAD_MOVIMIENTO']
             elif keyboard.RIGHT:
-                personaje.velocidad_x = VELOCIDAD_MOVIMIENTO
+                personaje.velocidad_x = CONFIG_JUEGO['VELOCIDAD_MOVIMIENTO']
             else:
                 personaje.velocidad_x = 0
         else:
@@ -743,7 +741,7 @@ def update():
 
         # Aplicar gravedad solo si no está en el suelo
         if not personaje.en_suelo:
-            personaje.velocidad_y += GRAVEDAD
+            personaje.velocidad_y += CONFIG_JUEGO['GRAVEDAD']
 
         # Calcular nuevas posiciones
         nueva_x = personaje.x + personaje.velocidad_x
@@ -769,13 +767,12 @@ def update():
         if not colision_horizontal:
             personaje.x = nueva_x
 
-        # Mantener al personaje dentro de los límites del mapa
+        # Mantener al personaje dentro de los límites horizontales del mapa
         personaje.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - personaje.hitbox_width, personaje.x))
-        if personaje.y >= HEIGHT - personaje.hitbox_height:
-            personaje.y = HEIGHT - personaje.hitbox_height
-            personaje.velocidad_y = 0
-            personaje.en_suelo = True
-            personaje.puede_doble_salto = False  # Resetear el doble salto al tocar el suelo
+
+        # Comprobar si el personaje se ha caído por debajo del mapa
+        if personaje.y > MATRIZ_ALTO * TILE_SIZE:
+            game_over = True
 
         # Actualizar dirección del personaje
         if personaje.velocidad_x > 0:
@@ -803,10 +800,10 @@ def update():
                             # Enemigo eliminado
                             enemigos_activos.remove(enemigo)
                             # Rebote del personaje
-                            personaje.velocidad_y = VELOCIDAD_SALTO * 0.5
+                            personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO']
                         else:
                             # Enemigo dañado pero no eliminado
-                            personaje.velocidad_y = VELOCIDAD_SALTO * 0.3
+                            personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO_DAÑADO']
                     else:
                         # El personaje recibe daño
                         if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
@@ -849,8 +846,8 @@ def on_key_down(key):
         if game_over:
             if key == keys.R:
                 game_over = False
-                personaje.x = PERSONAJE_POS_INICIAL_X
-                personaje.y = PERSONAJE_POS_INICIAL_Y
+                personaje.x = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_X']
+                personaje.y = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_Y']
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
                 # No reiniciar la colección de items para mantener el progreso
@@ -877,8 +874,8 @@ def on_key_down(key):
         # Reinicio completo del juego (incluyendo colección)
         if key == keys.F5:
             game_over = False
-            personaje.x = PERSONAJE_POS_INICIAL_X
-            personaje.y = PERSONAJE_POS_INICIAL_Y
+            personaje.x = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_X']
+            personaje.y = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_Y']
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
@@ -888,7 +885,7 @@ def on_key_down(key):
             return
 
         if key == keys.SPACE and personaje.en_suelo:
-            personaje.velocidad_y = VELOCIDAD_SALTO
+            personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO']
             personaje.en_suelo = False
 
         if key == keys.R and personaje.objetos_cerca:
@@ -936,22 +933,28 @@ def on_key_up(key):
 def update_camera():
     global camera_x, camera_y
     
-    # Calcular el centro de la pantalla
+    # --- MOVIMIENTO HORIZONTAL ---
     center_x = WINDOW_WIDTH // 2
-    
-    # Calcular la distancia del personaje al centro de la pantalla
     dist_x = personaje.x - (center_x + camera_x)
     
-    # Mover la cámara horizontalmente
-    if abs(dist_x) > CAMERA_MARGIN:
-        if dist_x > 0:
-            camera_x += CAMERA_SPEED
-        else:
-            camera_x -= CAMERA_SPEED
+    if abs(dist_x) > CONFIG_JUEGO['CAMERA_MARGIN']:
+        camera_x += CONFIG_JUEGO['CAMERA_SPEED'] if dist_x > 0 else -CONFIG_JUEGO['CAMERA_SPEED']
     
-    # Limitar la cámara a los bordes del mapa
-    max_camera_x = MATRIZ_ANCHO * TILE_SIZE - WINDOW_WIDTH
-    camera_x = max(0, min(camera_x, max_camera_x))
+    max_camera_x = MATRIZ_ANCHO * CONFIG_JUEGO['TILE_SIZE'] - WINDOW_WIDTH
+    camera_x = max(0, min(camera_x, max_camera_x if max_camera_x > 0 else 0))
+
+    # --- MOVIMIENTO VERTICAL ---
+    center_y = HEIGHT // 2
+    dist_y = personaje.y - (center_y + camera_y)
+    
+    # Un margen vertical más pequeño para que la cámara reaccione antes
+    camera_margin_y = CONFIG_JUEGO['CAMERA_MARGIN'] * 0.8 
+
+    if abs(dist_y) > camera_margin_y:
+        camera_y += CONFIG_JUEGO['CAMERA_SPEED'] if dist_y > 0 else -CONFIG_JUEGO['CAMERA_SPEED']
+
+    max_camera_y = MATRIZ_ALTO * CONFIG_JUEGO['TILE_SIZE'] - HEIGHT
+    camera_y = max(0, min(camera_y, max_camera_y if max_camera_y > 0 else 0))
 
 def dibujar_panel_detallado_items():
     """Dibuja un panel detallado con información de los items recolectados"""
@@ -1068,17 +1071,17 @@ def dibujar_cuadro_colocacion_terreno():
     
     # Calcular posición en pantalla (considerando la cámara)
     x = posicion_terreno_x - camera_x
-    y = posicion_terreno_y
+    y = posicion_terreno_y - camera_y
     
     # Solo dibujar si está en pantalla
-    if -TILE_SIZE <= x <= WINDOW_WIDTH and 0 <= y <= HEIGHT:
+    if -CONFIG_JUEGO['TILE_SIZE'] <= x <= WINDOW_WIDTH and -CONFIG_JUEGO['TILE_SIZE'] <= y <= HEIGHT:
         # Calcular el área del cuadro pequeño
-        cuadro_x = x + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
-        cuadro_y = y + (TILE_SIZE - TAMANO_CUADRO_COLOCACION)//2
+        cuadro_x = x + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
+        cuadro_y = y + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
         # Dibujar borde entrelineado (líneas discontinuas)
         color_borde = (255, 255, 0)
         dash = 4
-        length = TAMANO_CUADRO_COLOCACION
+        length = CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION']
         # Lados horizontales
         for i in range(0, length, dash*2):
             screen.draw.line((cuadro_x + i, cuadro_y), (cuadro_x + min(i+dash, length-1), cuadro_y), color_borde)
@@ -1088,7 +1091,7 @@ def dibujar_cuadro_colocacion_terreno():
             screen.draw.line((cuadro_x, cuadro_y + i), (cuadro_x, cuadro_y + min(i+dash, length-1)), color_borde)
             screen.draw.line((cuadro_x + length-1, cuadro_y + i), (cuadro_x + length-1, cuadro_y + min(i+dash, length-1)), color_borde)
         # Dibujar texto indicativo
-        texto_x = x + TILE_SIZE // 2
+        texto_x = x + CONFIG_JUEGO['TILE_SIZE'] // 2
         texto_y = y - 25
         screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
         # Mostrar el tipo de terreno seleccionado
@@ -1123,23 +1126,25 @@ def draw():
         update_camera()
 
         # Calcular el rango de tiles visibles
-        start_col = max(0, int(camera_x // TILE_SIZE))
-        end_col = min(MATRIZ_ANCHO, int((camera_x + WINDOW_WIDTH) // TILE_SIZE) + 1)
+        start_col = max(0, int(camera_x // CONFIG_JUEGO['TILE_SIZE']))
+        end_col = min(MATRIZ_ANCHO, int((camera_x + WINDOW_WIDTH) // CONFIG_JUEGO['TILE_SIZE']) + 1)
+        start_row = max(0, int(camera_y // CONFIG_JUEGO['TILE_SIZE']))
+        end_row = min(MATRIZ_ALTO, int((camera_y + HEIGHT) // CONFIG_JUEGO['TILE_SIZE']) + 1)
 
         # Dibujar solo los tiles visibles
-        for fila in range(len(my_map)):
+        for fila in range(start_row, end_row):
             for columna in range(start_col, end_col):
-                x = columna * TILE_SIZE - camera_x
-                y = fila * TILE_SIZE
-
+                x = columna * CONFIG_JUEGO['TILE_SIZE'] - camera_x
+                y = fila * CONFIG_JUEGO['TILE_SIZE'] - camera_y
+                
                 # Rotación para la capa de terreno (my_map)
                 rotacion_terreno = my_rotations[fila][columna]
                 
                 tile_id = my_map[fila][columna]
                 if tile_id != 0 and tile_id in id_to_image:
                     tile_actor = Actor(id_to_image[tile_id], topleft=(x, y))
-                    tile_actor.width = TILE_SIZE
-                    tile_actor.height = TILE_SIZE
+                    tile_actor.width = CONFIG_JUEGO['TILE_SIZE']
+                    tile_actor.height = CONFIG_JUEGO['TILE_SIZE']
                     tile_actor.angle = -rotacion_terreno
                     tile_actor.draw()
                     if modo_desarrollador:
@@ -1161,20 +1166,21 @@ def draw():
                             print(f"Item ID {item_id} en ({fila},{columna}) rotado: {rotacion_item} grados")
 
                     # Dibujar borde amarillo si el item está cerca del personaje
-                    if item_id in ITEMS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
+                    if item_id in ITEMS and any(x_tile == columna and y_tile == fila for x_tile, y_tile, _ in personaje.objetos_cerca):
                         # Dibujar borde amarillo
                         for i in range(4):
-                            screen.draw.line((x + i, y + i), (x + TILE_SIZE - i, y + i), (255, 255, 0))
-                            screen.draw.line((x + i, y + i), (x + i, y + TILE_SIZE - i), (255, 255, 0))
-                            screen.draw.line((x + TILE_SIZE - i, y + i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
-                            screen.draw.line((x + i, y + TILE_SIZE - i), (x + TILE_SIZE - i, y + TILE_SIZE - i), (255, 255, 0))
+                            screen.draw.line((x + i, y + i), (x + CONFIG_JUEGO['TILE_SIZE'] - i, y + i), (255, 255, 0))
+                            screen.draw.line((x + i, y + i), (x + i, CONFIG_JUEGO['TILE_SIZE'] - i), (255, 255, 0))
+                            screen.draw.line((x + CONFIG_JUEGO['TILE_SIZE'] - i, y + i), (x + CONFIG_JUEGO['TILE_SIZE'] - i, y + CONFIG_JUEGO['TILE_SIZE'] - i), (255, 255, 0))
+                            screen.draw.line((x + i, y + CONFIG_JUEGO['TILE_SIZE'] - i), (x + CONFIG_JUEGO['TILE_SIZE'] - i, y + CONFIG_JUEGO['TILE_SIZE'] - i), (255, 255, 0))
         
         # Dibujar los enemigos activos que están en pantalla
         for enemigo in enemigos_activos:
             x = enemigo.x - camera_x
-            if 0 <= x <= WINDOW_WIDTH:
-                enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, enemigo.y))
-                enemigo_actor.scale = ENEMIGO_SIZE / TILE_SIZE  # Calcular escala automáticamente
+            y_enemigo = enemigo.y - camera_y
+            if -CONFIG_JUEGO['ENEMIGO_SIZE'] <= x <= WINDOW_WIDTH and -CONFIG_JUEGO['ENEMIGO_SIZE'] <= y_enemigo <= HEIGHT:
+                enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, y_enemigo))
+                enemigo_actor.scale = CONFIG_JUEGO['ENEMIGO_SIZE'] / CONFIG_JUEGO['TILE_SIZE']  # Calcular escala automáticamente
                 if hasattr(enemigo, 'rotacion'):
                     enemigo_actor.angle = -enemigo.rotacion
                 enemigo_actor.draw()
@@ -1182,35 +1188,36 @@ def draw():
                 # Efectos especiales para enemigo especial (tile7)
                 if hasattr(enemigo, 'estado') and enemigo.estado == "ataque":
                     # Efecto de ataque - borde rojo
-                    screen.draw.rect(Rect(x-2, enemigo.y-2, ENEMIGO_SIZE+4, ENEMIGO_SIZE+4), (255, 0, 0))
+                    screen.draw.rect(Rect(x-2, y_enemigo-2, CONFIG_JUEGO['ENEMIGO_SIZE']+4, CONFIG_JUEGO['ENEMIGO_SIZE']+4), (255, 0, 0))
                 elif hasattr(enemigo, 'invulnerable') and enemigo.invulnerable:
                     # Efecto de invulnerabilidad - parpadeo
                     if enemigo.tiempo_invulnerable % 10 < 5:
-                        screen.draw.filled_rect(Rect(x, enemigo.y, ENEMIGO_SIZE, ENEMIGO_SIZE), (255, 255, 0, 100))
+                        screen.draw.filled_rect(Rect(x, y_enemigo, CONFIG_JUEGO['ENEMIGO_SIZE'], CONFIG_JUEGO['ENEMIGO_SIZE']), (255, 255, 0, 100))
                 
                 # Mostrar vida del enemigo especial
                 if hasattr(enemigo, 'vida') and enemigo.vida < CONFIG_JUEGO['ENEMIGO_ESPECIAL_VIDA']:
                     # Barra de vida
-                    vida_width = (enemigo.vida / CONFIG_JUEGO['ENEMIGO_ESPECIAL_VIDA']) * ENEMIGO_SIZE
-                    screen.draw.filled_rect(Rect(x, enemigo.y - 10, ENEMIGO_SIZE, 5), (255, 0, 0))
-                    screen.draw.filled_rect(Rect(x, enemigo.y - 10, vida_width, 5), (0, 255, 0))
+                    vida_width = (enemigo.vida / CONFIG_JUEGO['ENEMIGO_ESPECIAL_VIDA']) * CONFIG_JUEGO['ENEMIGO_SIZE']
+                    screen.draw.filled_rect(Rect(x, y_enemigo - 10, CONFIG_JUEGO['ENEMIGO_SIZE'], 5), (255, 0, 0))
+                    screen.draw.filled_rect(Rect(x, y_enemigo - 10, vida_width, 5), (0, 255, 0))
                 
                 if modo_desarrollador:
-                    screen.draw.rect(Rect(x, enemigo.y, ENEMIGO_SIZE, ENEMIGO_SIZE), (0, 255, 0))
+                    screen.draw.rect(Rect(x, y_enemigo, CONFIG_JUEGO['ENEMIGO_SIZE'], CONFIG_JUEGO['ENEMIGO_SIZE']), (0, 255, 0))
                     # Mostrar información adicional para enemigo especial
                     if hasattr(enemigo, 'estado'):
-                        screen.draw.text(f"Estado: {enemigo.estado}", (x, enemigo.y - 25), color="yellow", fontsize=10)
-                        screen.draw.text(f"Vida: {enemigo.vida}", (x, enemigo.y - 35), color="yellow", fontsize=10)
+                        screen.draw.text(f"Estado: {enemigo.estado}", (x, y_enemigo - 25), color="yellow", fontsize=10)
+                        screen.draw.text(f"Vida: {enemigo.vida}", (x, y_enemigo - 35), color="yellow", fontsize=10)
 
         # Dibujar personaje
-        x = personaje.x - camera_x
-        personaje_actor = Actor(personaje.image, topleft=(x, personaje.y))
+        personaje_screen_x = personaje.x - camera_x
+        personaje_screen_y = personaje.y - camera_y
+        personaje_actor = Actor(personaje.image, topleft=(personaje_screen_x, personaje_screen_y))
         personaje_actor.draw()
 
         # Dibujar texto de interacción si hay items cerca
         if personaje.objetos_cerca:
-            texto_x = x + personaje.hitbox_width / 2
-            texto_y = personaje.y - 20
+            texto_x = personaje_screen_x + personaje.hitbox_width / 2
+            texto_y = personaje_screen_y - 20
             screen.draw.text("Presiona R para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
 
         if game_over:
@@ -1219,7 +1226,7 @@ def draw():
 
         if modo_desarrollador:
             # Mostrar hitbox real del personaje
-            screen.draw.rect(Rect(x, personaje.y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
+            screen.draw.rect(Rect(personaje_screen_x, personaje_screen_y, personaje.hitbox_width, personaje.hitbox_height), (255, 0, 0))
             screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow", fontsize=14)
             # Mostrar controles adicionales
             screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
