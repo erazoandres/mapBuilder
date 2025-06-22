@@ -36,6 +36,11 @@ CONFIG_JUEGO = {
     'ENEMIGO_ESPECIAL_RANGO_DETECCION': 150,
     'ENEMIGO_ESPECIAL_RANGO_ATAQUE': 80,
     'ENEMIGO_ESPECIAL_TIEMPO_INVULNERABLE': 60,
+    # Configuraciones de Personaje
+    'PERSONAJE_POS_INICIAL_X': 50,
+    'PERSONAJE_POS_INICIAL_Y': 100,
+    'DOBLE_SALTO_FACTOR': 0.8,
+    'RADIO_INTERACCION_FACTOR': 1.5,
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -52,6 +57,8 @@ PANTALLA_COMPLETA = CONFIG_JUEGO['PANTALLA_COMPLETA']
 EFECTOS_VISUALES = CONFIG_JUEGO['EFECTOS_VISUALES']
 TAMANO_CUADRO_COLOCACION = CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION']
 LIMITE_CUADROS_COLOCACION = CONFIG_JUEGO['LIMITE_CUADROS_COLOCACION']
+PERSONAJE_POS_INICIAL_X = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_X']
+PERSONAJE_POS_INICIAL_Y = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_Y']
 
 # Dimensiones de la matriz
 with open('mapa.txt', 'r', encoding='utf-8') as f:
@@ -130,7 +137,7 @@ TIPOS_COMPORTAMIENTO_ENEMIGO = {
 
 # Leer configuraciones del archivo mapa.txt
 def cargar_configuraciones():
-    global GRAVEDAD, VELOCIDAD_SALTO, VELOCIDAD_MOVIMIENTO, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN, VOLUMEN_SONIDO, PANTALLA_COMPLETA, EFECTOS_VISUALES
+    global GRAVEDAD, VELOCIDAD_SALTO, VELOCIDAD_MOVIMIENTO, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN, VOLUMEN_SONIDO, PANTALLA_COMPLETA, EFECTOS_VISUALES, PERSONAJE_POS_INICIAL_X, PERSONAJE_POS_INICIAL_Y
     
     try:
         with open('mapa.txt', 'r') as f:
@@ -170,6 +177,10 @@ def cargar_configuraciones():
                         PANTALLA_COMPLETA = config['pantalla_completa'] == "Sí"
                     if 'efectos_visuales' in config:
                         EFECTOS_VISUALES = config['efectos_visuales']
+                    if 'pos_inicial_x' in config:
+                        PERSONAJE_POS_INICIAL_X = config['pos_inicial_x']
+                    if 'pos_inicial_y' in config:
+                        PERSONAJE_POS_INICIAL_Y = config['pos_inicial_y']
                     
                     # print("✅ Configuraciones cargadas desde mapa.txt")
                     # print(f"   Velocidad: {VELOCIDAD_MOVIMIENTO}")
@@ -194,6 +205,8 @@ def cargar_configuraciones():
 cargar_configuraciones()
 
 personaje = Actor("personajes/tile0")
+personaje.x = PERSONAJE_POS_INICIAL_X
+personaje.y = PERSONAJE_POS_INICIAL_Y
 personaje.velocidad_y = 0
 personaje.velocidad_x = 0  # Nueva variable para velocidad horizontal
 personaje.en_suelo = False
@@ -649,8 +662,8 @@ def update():
         if game_over:
             if keyboard.R:
                 game_over = False
-                personaje.x = 0
-                personaje.y = 0
+                personaje.x = PERSONAJE_POS_INICIAL_X
+                personaje.y = PERSONAJE_POS_INICIAL_Y
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
                 personaje.puede_doble_salto = False
@@ -683,8 +696,8 @@ def update():
         # Reinicio completo del juego (incluyendo colección)
         if keyboard.F5:
             game_over = False
-            personaje.x = 0
-            personaje.y = 0
+            personaje.x = PERSONAJE_POS_INICIAL_X
+            personaje.y = PERSONAJE_POS_INICIAL_Y
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
@@ -836,8 +849,8 @@ def on_key_down(key):
         if game_over:
             if key == keys.R:
                 game_over = False
-                personaje.x = 0
-                personaje.y = 0
+                personaje.x = PERSONAJE_POS_INICIAL_X
+                personaje.y = PERSONAJE_POS_INICIAL_Y
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
                 # No reiniciar la colección de items para mantener el progreso
@@ -864,8 +877,8 @@ def on_key_down(key):
         # Reinicio completo del juego (incluyendo colección)
         if key == keys.F5:
             game_over = False
-            personaje.x = 0
-            personaje.y = 0
+            personaje.x = PERSONAJE_POS_INICIAL_X
+            personaje.y = PERSONAJE_POS_INICIAL_Y
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
