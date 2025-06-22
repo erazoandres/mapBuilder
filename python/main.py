@@ -29,6 +29,12 @@ CONFIG_JUEGO = {
     'PERSEGUIDOR_VELOCIDAD': 0.9,
     'ALEATORIO_VEL_MIN': 0.3,
     'ALEATORIO_VEL_MAX': 1.0,
+    # Configuraciones específicas para enemigo especial (tile7)
+    'ENEMIGO_ESPECIAL_VIDA': 3,
+    'ENEMIGO_ESPECIAL_VELOCIDAD': 1.2,
+    'ENEMIGO_ESPECIAL_RANGO_DETECCION': 150,
+    'ENEMIGO_ESPECIAL_RANGO_ATAQUE': 80,
+    'ENEMIGO_ESPECIAL_TIEMPO_INVULNERABLE': 60,
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -334,6 +340,162 @@ class Enemigo:
             self.velocidad_y = 0
             self.en_suelo = True
 
+# --- CLASE ENEMIGO ESPECIAL PARA TILE7 ---
+class Proyectil:
+    def __init__(self, x, y, tipo_id):
+        self.x = x
+        self.y = y
+        self.tipo_id = tipo_id
+        self.velocidad_y = 0
+        self.velocidad_x = 0
+        self.en_suelo = False
+        self.direccion = random.choice([-1, 1])
+        self.contador = 0
+        self.tiempo_ataque = 0
+        self.estado = "patrulla"  # "patrulla", "ataque", "retirada"
+        self.vida = CONFIG_JUEGO['ENEMIGO_ESPECIAL_VIDA']
+        self.invulnerable = False
+        self.tiempo_invulnerable = 0
+        self.velocidad_base = VELOCIDAD_MOVIMIENTO * CONFIG_JUEGO['ENEMIGO_ESPECIAL_VELOCIDAD']
+        
+        # Variables específicas para comportamiento especial
+        self.tiempo_cambio_estado = random.randint(120, 300)  # 2-5 segundos
+        self.rango_deteccion = CONFIG_JUEGO['ENEMIGO_ESPECIAL_RANGO_DETECCION']
+        self.rango_ataque = CONFIG_JUEGO['ENEMIGO_ESPECIAL_RANGO_ATAQUE']
+        
+    def obtener_imagen_actual(self):
+        # Siempre usa tile7.png, pero puede cambiar según el estado
+        if self.estado == "ataque":
+            return "enemigos/tile7.png"  # Imagen de ataque
+        elif self.estado == "retirada":
+            return "enemigos/tile7.png"  # Misma imagen pero con lógica diferente
+        else:
+            return "enemigos/tile7.png"  # Imagen normal
+    
+    def movimiento_patrulla_especial(self, jugador):
+        """Movimiento de patrulla con detección de jugador"""
+        # Movimiento básico de patrulla
+        self.velocidad_x = self.direccion * self.velocidad_base * 0.7
+        
+        # Detectar jugador cercano
+        distancia_x = abs(jugador.x - self.x)
+        distancia_y = abs(jugador.y - self.y)
+        
+        if distancia_x < self.rango_deteccion and distancia_y < 50:
+            # Cambiar a estado de ataque
+            self.estado = "ataque"
+            self.tiempo_ataque = 0
+            # Dirigirse hacia el jugador
+            self.direccion = 1 if jugador.x > self.x else -1
+    
+    def movimiento_ataque_especial(self, jugador):
+        """Movimiento agresivo hacia el jugador"""
+        distancia_x = jugador.x - self.x
+        distancia_y = abs(jugador.y - self.y)
+        
+        if distancia_y < 50:  # Solo atacar si está en el mismo nivel
+            # Movimiento rápido hacia el jugador
+            velocidad_objetivo = self.velocidad_base * 1.5 if distancia_x > 0 else -self.velocidad_base * 1.5
+            self.velocidad_x += (velocidad_objetivo - self.velocidad_x) * 0.2
+            
+            # Salto de ataque
+            if self.en_suelo and abs(distancia_x) < self.rango_ataque:
+                if random.random() < 0.1:  # 10% de probabilidad de salto de ataque
+                    self.velocidad_y = VELOCIDAD_SALTO * 0.8
+                    self.en_suelo = False
+        else:
+            # Si el jugador está muy alto o muy bajo, cambiar a retirada
+            self.estado = "retirada"
+            self.tiempo_ataque = 0
+    
+    def movimiento_retirada_especial(self, jugador):
+        """Movimiento de retirada cuando está en desventaja"""
+        # Moverse en dirección opuesta al jugador
+        self.direccion = -1 if jugador.x > self.x else 1
+        self.velocidad_x = self.direccion * self.velocidad_base * 0.5
+        
+        # Salto de escape
+        if self.en_suelo and random.random() < 0.05:
+            self.velocidad_y = VELOCIDAD_SALTO * 0.6
+            self.en_suelo = False
+    
+    def actualizar(self, jugador=None):
+        # Aplicar gravedad
+        self.velocidad_y += GRAVEDAD
+        
+        # Actualizar contadores
+        self.contador += 1
+        if self.estado == "ataque":
+            self.tiempo_ataque += 1
+        
+        # Manejar invulnerabilidad
+        if self.invulnerable:
+            self.tiempo_invulnerable -= 1
+            if self.tiempo_invulnerable <= 0:
+                self.invulnerable = False
+        
+        # Lógica de cambio de estado
+        if self.contador >= self.tiempo_cambio_estado:
+            if self.estado == "patrulla":
+                # Ocasionalmente cambiar a ataque si el jugador está cerca
+                if jugador and abs(jugador.x - self.x) < self.rango_deteccion:
+                    self.estado = "ataque"
+                else:
+                    self.estado = random.choice(["patrulla", "retirada"])
+            elif self.estado == "ataque":
+                # Cambiar a retirada después de un tiempo
+                if self.tiempo_ataque > 180:  # 3 segundos de ataque
+                    self.estado = "retirada"
+            elif self.estado == "retirada":
+                # Volver a patrulla después de un tiempo
+                self.estado = "patrulla"
+            
+            self.contador = 0
+            self.tiempo_cambio_estado = random.randint(120, 300)
+        
+        # Aplicar movimiento según el estado
+        if self.estado == "patrulla":
+            self.movimiento_patrulla_especial(jugador)
+        elif self.estado == "ataque":
+            self.movimiento_ataque_especial(jugador)
+        elif self.estado == "retirada":
+            self.movimiento_retirada_especial(jugador)
+        
+        # Actualizar posición vertical
+        nueva_y = self.y + self.velocidad_y
+        if not verificar_colision_vertical(self.x, nueva_y):
+            self.y = nueva_y
+            self.en_suelo = False
+        else:
+            if self.velocidad_y > 0:
+                self.en_suelo = True
+            self.velocidad_y = 0
+        
+        # Actualizar posición horizontal
+        nueva_x = self.x + self.velocidad_x
+        if not verificar_colision_horizontal(nueva_x, self.y):
+            self.x = nueva_x
+        else:
+            self.direccion *= -1
+            self.velocidad_x = 0
+        
+        # Mantener al enemigo dentro de los límites
+        self.x = max(0, min(WIDTH - TILE_SIZE, self.x))
+        if self.y >= HEIGHT - TILE_SIZE:
+            self.y = HEIGHT - TILE_SIZE
+            self.velocidad_y = 0
+            self.en_suelo = True
+    
+    def recibir_daño(self):
+        """Método para recibir daño del jugador"""
+        if not self.invulnerable:
+            self.vida -= 1
+            self.invulnerable = True
+            self.tiempo_invulnerable = CONFIG_JUEGO['ENEMIGO_ESPECIAL_TIEMPO_INVULNERABLE']
+            if self.vida <= 0:
+                return True  # Enemigo eliminado
+        return False
+
 with open('mapa.txt', 'r') as f:
     content = f.read()
     in_mapping = False
@@ -352,7 +514,10 @@ with open('mapa.txt', 'r') as f:
                 if 'enemigo' in descripcion:
                     ENEMIGOS.append(id_val)
 
-
+# Agregar manualmente el ID 142 (tile7.png) a la lista de enemigos
+ENEMIGOS.append(142)
+# Agregar el ID 2 que está mapeado al enemigo tile7.png
+ENEMIGOS.append(2)
 
 with open('mapa.txt', 'r') as f:
     content = f.read()
@@ -504,6 +669,17 @@ def verificar_interaccion():
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
 
+# Función para obtener el ID real de un enemigo basado en el mapeo
+def obtener_id_real_enemigo(item_id):
+    """Obtiene el ID real del enemigo basado en el mapeo del archivo mapa.txt"""
+    # Mapeo manual basado en el ID Mapping del archivo
+    mapeo_ids = {
+        2: 142,  # ID 2 mapeado a tile7.png (ID 142)
+    }
+    
+    # Si existe un mapeo, usar el ID real, sino usar el ID original
+    return mapeo_ids.get(item_id, item_id)
+
 # Función para inicializar enemigos desde el mapa
 def inicializar_enemigos():
     enemigos_activos.clear()
@@ -511,11 +687,23 @@ def inicializar_enemigos():
         for columna in range(len(my_items[0])):
             item_id = my_items[fila][columna]
             if item_id in ENEMIGOS:
+                # Obtener el ID real del enemigo usando el mapeo
+                id_real = obtener_id_real_enemigo(item_id)
+                
                 # Crear un nuevo enemigo y agregarlo a la lista
-                nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
+                if id_real == 142:  # ID del enemigo tile7.png
+                    nuevo_enemigo = Proyectil(columna * TILE_SIZE, fila * TILE_SIZE, id_real)
+                else:
+                    nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, id_real)
+                
                 enemigos_activos.append(nuevo_enemigo)
                 # Eliminar el enemigo de la matriz para que no se dibuje estático
                 my_items[fila][columna] = 0
+    
+    print(f"Total de enemigos inicializados: {len(enemigos_activos)}")
+    for i, enemigo in enumerate(enemigos_activos):
+        tipo = "Especial" if hasattr(enemigo, 'estado') else "Normal"
+        print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
 
 def verificar_colision(x, y, es_personaje=False):
     """
@@ -727,8 +915,27 @@ def update():
                 personaje.x + personaje.hitbox_width > enemigo.x and
                 personaje.y < enemigo.y + ENEMIGO_SIZE and
                 personaje.y + personaje.hitbox_height > enemigo.y):
-                # Implementar lógica de daño o juego terminado
-                pass
+                
+                # Lógica específica para enemigo especial
+                if hasattr(enemigo, 'recibir_daño'):
+                    # Si el jugador está saltando sobre el enemigo, dañarlo
+                    if personaje.velocidad_y > 0 and personaje.y < enemigo.y:
+                        if enemigo.recibir_daño():
+                            # Enemigo eliminado
+                            enemigos_activos.remove(enemigo)
+                            # Rebote del personaje
+                            personaje.velocidad_y = VELOCIDAD_SALTO * 0.5
+                        else:
+                            # Enemigo dañado pero no eliminado
+                            personaje.velocidad_y = VELOCIDAD_SALTO * 0.3
+                    else:
+                        # El personaje recibe daño
+                        if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
+                            # Implementar lógica de daño al personaje aquí
+                            pass
+                else:
+                    # Enemigo normal - implementar lógica de daño o juego terminado
+                    pass
 
 def on_key_down(key):
     global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual
@@ -1109,8 +1316,28 @@ def draw():
                 enemigo_actor.scale = ENEMIGO_SIZE / TILE_SIZE  # Calcular escala automáticamente
                 enemigo_actor.draw()
                 
+                # Efectos especiales para enemigo especial (tile7)
+                if hasattr(enemigo, 'estado') and enemigo.estado == "ataque":
+                    # Efecto de ataque - borde rojo
+                    screen.draw.rect(Rect(x-2, enemigo.y-2, ENEMIGO_SIZE+4, ENEMIGO_SIZE+4), (255, 0, 0))
+                elif hasattr(enemigo, 'invulnerable') and enemigo.invulnerable:
+                    # Efecto de invulnerabilidad - parpadeo
+                    if enemigo.tiempo_invulnerable % 10 < 5:
+                        screen.draw.filled_rect(Rect(x, enemigo.y, ENEMIGO_SIZE, ENEMIGO_SIZE), (255, 255, 0, 100))
+                
+                # Mostrar vida del enemigo especial
+                if hasattr(enemigo, 'vida') and enemigo.vida < CONFIG_JUEGO['ENEMIGO_ESPECIAL_VIDA']:
+                    # Barra de vida
+                    vida_width = (enemigo.vida / CONFIG_JUEGO['ENEMIGO_ESPECIAL_VIDA']) * ENEMIGO_SIZE
+                    screen.draw.filled_rect(Rect(x, enemigo.y - 10, ENEMIGO_SIZE, 5), (255, 0, 0))
+                    screen.draw.filled_rect(Rect(x, enemigo.y - 10, vida_width, 5), (0, 255, 0))
+                
                 if modo_desarrollador:
                     screen.draw.rect(Rect(x, enemigo.y, ENEMIGO_SIZE, ENEMIGO_SIZE), (0, 255, 0))
+                    # Mostrar información adicional para enemigo especial
+                    if hasattr(enemigo, 'estado'):
+                        screen.draw.text(f"Estado: {enemigo.estado}", (x, enemigo.y - 25), color="yellow", fontsize=10)
+                        screen.draw.text(f"Vida: {enemigo.vida}", (x, enemigo.y - 35), color="yellow", fontsize=10)
 
         # Dibujar personaje
         x = personaje.x - camera_x

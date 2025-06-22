@@ -387,4 +387,21 @@ Desarrollado como proyecto de juego de plataformas 2D con Pygame Zero.
 
 ## Licencia
 
-Este proyecto es de código abierto y está disponible para uso educativo y personal. 
+Este proyecto es de código abierto y está disponible para uso educativo y personal.
+
+## Características del Juego
+
+### Sistema de Enemigos
+- **Enemigos Normales**: Comportamiento básico con diferentes patrones de movimiento
+- **Enemigo Especial (Tile7)**: Enemigo avanzado con múltiples estados, vida, y comportamientos únicos
+  - 3 puntos de vida
+  - Estados: Patrulla, Ataque, Retirada
+  - Detección automática del jugador
+  - Efectos visuales especiales
+  - Sistema de invulnerabilidad
+
+### Tipos de Comportamiento de Enemigos
+- **Saltador**: Salta periódicamente y cuando detecta al jugador
+- **Patrulla**: Se mueve de un lado a otro en una zona fija
+- **Perseguidor**: Persigue al jugador si entra en su rango de visión
+- **Errático**: Movimiento aleatorio con cambios de dirección 
