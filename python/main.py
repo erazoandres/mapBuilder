@@ -95,6 +95,7 @@ tipo_terreno_actual = 1  # ID del terreno a colocar (por defecto 1)
 TERRENOS = []
 ITEMS = []
 ENEMIGOS = []
+ENEMIGO_ESPECIAL_ID = None
 
 # Lista para almacenar los items recolectados
 items_recolectados = {}  # Cambiado de lista a diccionario para contar items
@@ -362,7 +363,7 @@ class Proyectil:
             if self in enemigos_activos:
                 enemigos_activos.remove(self)
 
-with open('mapa.txt', 'r') as f:
+with open('mapa.txt', 'r', encoding='utf-8') as f:
     content = f.read()
     in_mapping = False
     for line in content.split('\n'):
@@ -380,12 +381,7 @@ with open('mapa.txt', 'r') as f:
                 if 'enemigo' in descripcion:
                     ENEMIGOS.append(id_val)
 
-# Agregar manualmente el ID 142 (tile7.png) a la lista de enemigos
-ENEMIGOS.append(142)
-# Agregar el ID 2 que está mapeado al enemigo tile7.png
-ENEMIGOS.append(2)
-
-with open('mapa.txt', 'r') as f:
+with open('mapa.txt', 'r', encoding='utf-8') as f:
     content = f.read()
     in_mapping = False
     for line in content.split('\n'):
@@ -407,8 +403,9 @@ with open('mapa.txt', 'r') as f:
 
 
 id_to_image = {}
+ENEMIGO_ESPECIAL_ID = None
 
-with open('mapa.txt', 'r') as f:
+with open('mapa.txt', 'r', encoding='utf-8') as f:
     content = f.read()
     exec(content)
 
@@ -425,48 +422,40 @@ with open('mapa.txt', 'r') as f:
             parts = line[1:].strip().split(':')
             if len(parts) == 2:
                 num_id = int(parts[0].strip())
-                image_path = parts[1].strip()
-                if '(' in image_path and ')' in image_path:
-                    image_path = image_path[image_path.find('(')+1:image_path.find(')')]
-                    image_path = re.sub(r'tile0*([0-9]+)\.png', r'tile\1.png', image_path)
+                image_path_full = parts[1].strip()
+                if '(' in image_path_full and ')' in image_path_full:
+                    image_path_extracted = image_path_full[image_path_full.find('(')+1:image_path_full.find(')')]
+                    image_path = image_path_extracted.replace('\\\\', '/') # Normalizar a forward slashes
+                    image_path = re.sub(r'tile0*([0-9]+)\\.png', r'tile\\1.png', image_path)
                     id_to_image[num_id] = image_path
+                    if 'enemigos/tile7.png' in image_path:
+                        ENEMIGO_ESPECIAL_ID = num_id
+                        print(f"✅ Enemigo especial (tile7.png) detectado con ID: {ENEMIGO_ESPECIAL_ID}")
 
-expanded_map = []
-for row in my_map:
-    new_row = row + [0] * (30 - len(row))
-    expanded_map.append(new_row)
-while len(expanded_map) < 10:
-    expanded_map.append([0] * 30)
-my_map = expanded_map
 
-expanded_items = []
-for row in my_items:
-    new_row = row + [0] * (30 - len(row))
-    expanded_items.append(new_row)
-while len(expanded_items) < 10:
-    expanded_items.append([0] * 30)
-my_items = expanded_items
+def expand_matrix(matrix, height, width, default_value=0):
+    """Asegura que la matriz tenga las dimensiones height x width."""
+    # Ajustar filas
+    while len(matrix) < height:
+        matrix.append([])
+    matrix = matrix[:height]
+    
+    # Ajustar columnas
+    for r in range(len(matrix)):
+        row = matrix[r]
+        while len(row) < width:
+            row.append(default_value)
+        matrix[r] = row[:width]
+        
+    return matrix
 
-expanded_rotations = []
-for row in my_rotations:
-    new_row = row + [0] * (30 - len(row))
-    expanded_rotations.append(new_row)
-while len(expanded_rotations) < 10:
-    expanded_rotations.append([0] * 30)
-my_rotations = expanded_rotations
+my_map = expand_matrix(my_map, MATRIZ_ALTO, MATRIZ_ANCHO)
+my_items = expand_matrix(my_items, MATRIZ_ALTO, MATRIZ_ANCHO)
+my_rotations = expand_matrix(my_rotations, MATRIZ_ALTO, MATRIZ_ANCHO)
 
-# Comprobar si my_items_rotations existe y expandirla
-if 'my_items_rotations' in locals():
-    expanded_items_rotations = []
-    for row in my_items_rotations:
-        new_row = row + [0] * (30 - len(row))
-        expanded_items_rotations.append(new_row)
-    while len(expanded_items_rotations) < 10:
-        expanded_items_rotations.append([0] * 30)
-    my_items_rotations = expanded_items_rotations
-else:
-    # Si no existe, crear una matriz vacía para compatibilidad
-    my_items_rotations = [([0] * 30) for _ in range(len(my_map))]
+if 'my_items_rotations' not in locals():
+    my_items_rotations = []
+my_items_rotations = expand_matrix(my_items_rotations, MATRIZ_ALTO, MATRIZ_ANCHO)
 
 game_over = False
 modo_desarrollador = False
@@ -548,17 +537,6 @@ def verificar_interaccion():
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
 
-# Función para obtener el ID real de un enemigo basado en el mapeo
-def obtener_id_real_enemigo(item_id):
-    """Obtiene el ID real del enemigo basado en el mapeo del archivo mapa.txt"""
-    # Mapeo manual basado en el ID Mapping del archivo
-    mapeo_ids = {
-        2: 142,  # ID 2 mapeado a tile7.png (ID 142)
-    }
-    
-    # Si existe un mapeo, usar el ID real, sino usar el ID original
-    return mapeo_ids.get(item_id, item_id)
-
 # Función para inicializar enemigos desde el mapa
 def inicializar_enemigos():
     enemigos_activos.clear()
@@ -566,14 +544,11 @@ def inicializar_enemigos():
         for columna in range(len(my_items[0])):
             item_id = my_items[fila][columna]
             if item_id in ENEMIGOS:
-                # Obtener el ID real del enemigo usando el mapeo
-                id_real = obtener_id_real_enemigo(item_id)
-                
                 # Crear un nuevo enemigo y agregarlo a la lista
-                if id_real == 142:  # ID del enemigo tile7.png
-                    nuevo_enemigo = Proyectil(columna * TILE_SIZE, fila * TILE_SIZE, id_real)
+                if ENEMIGO_ESPECIAL_ID is not None and item_id == ENEMIGO_ESPECIAL_ID:
+                    nuevo_enemigo = Proyectil(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
                 else:
-                    nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, id_real)
+                    nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
                 
                 enemigos_activos.append(nuevo_enemigo)
                 # Eliminar el enemigo de la matriz para que no se dibuje estático
@@ -581,7 +556,7 @@ def inicializar_enemigos():
     
     print(f"Total de enemigos inicializados: {len(enemigos_activos)}")
     for i, enemigo in enumerate(enemigos_activos):
-        tipo = "Especial" if hasattr(enemigo, 'estado') else "Normal"
+        tipo = "Proyectil" if isinstance(enemigo, Proyectil) else "Normal"
         print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
 
 def verificar_colision(x, y, es_personaje=False):
@@ -1133,9 +1108,7 @@ def draw():
                 y = fila * TILE_SIZE
 
                 # Rotación para la capa de terreno (my_map)
-                rotacion_terreno = 0
-                if fila < len(my_rotations) and columna < len(my_rotations[fila]):
-                    rotacion_terreno = my_rotations[fila][columna]
+                rotacion_terreno = my_rotations[fila][columna]
                 
                 tile_id = my_map[fila][columna]
                 if tile_id != 0 and tile_id in id_to_image:
@@ -1144,17 +1117,23 @@ def draw():
                     tile_actor.height = TILE_SIZE
                     tile_actor.angle = rotacion_terreno
                     tile_actor.draw()
+                    if modo_desarrollador:
+                        # Imprimir información de depuración para la rotación del terreno
+                        if rotacion_terreno != 0:
+                            print(f"Terreno ID {tile_id} en ({fila},{columna}) rotado: {rotacion_terreno} grados")
 
                 # Rotación para la capa de items (my_items)
-                rotacion_item = 0
-                if 'my_items_rotations' in locals() and fila < len(my_items_rotations) and columna < len(my_items_rotations[fila]):
-                    rotacion_item = my_items_rotations[fila][columna]
+                rotacion_item = my_items_rotations[fila][columna]
 
                 item_id = my_items[fila][columna]
                 if item_id != 0 and item_id in id_to_image:
                     item_actor = Actor(id_to_image[item_id], topleft=(x, y))
                     item_actor.angle = rotacion_item
                     item_actor.draw()
+                    if modo_desarrollador:
+                        # Imprimir información de depuración para la rotación del item
+                        if rotacion_item != 0:
+                            print(f"Item ID {item_id} en ({fila},{columna}) rotado: {rotacion_item} grados")
 
                     # Dibujar borde amarillo si el item está cerca del personaje
                     if item_id in ITEMS and any(x == columna and y == fila for x, y, _ in personaje.objetos_cerca):
