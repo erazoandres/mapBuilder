@@ -100,7 +100,6 @@ ENEMIGO_ESPECIAL_ID = None
 # Lista para almacenar los items recolectados
 items_recolectados = {}  # Cambiado de lista a diccionario para contar items
 
-print(ITEMS)
 
 cuadros_colocados = 0  # Contador de cuadros colocados
 
@@ -171,15 +170,15 @@ def cargar_configuraciones():
                     if 'efectos_visuales' in config:
                         EFECTOS_VISUALES = config['efectos_visuales']
                     
-                    print("✅ Configuraciones cargadas desde mapa.txt")
-                    print(f"   Velocidad: {VELOCIDAD_MOVIMIENTO}")
-                    print(f"   Salto: {abs(VELOCIDAD_SALTO)}")
-                    print(f"   Gravedad: {GRAVEDAD}")
-                    print(f"   Cámara: {CAMERA_SPEED}")
-                    print(f"   Margen: {CAMERA_MARGIN}")
-                    print(f"   Volumen de sonido: {VOLUMEN_SONIDO}")
-                    print(f"   Pantalla completa: {PANTALLA_COMPLETA}")
-                    print(f"   Efectos visuales: {EFECTOS_VISUALES}")
+                    # print("✅ Configuraciones cargadas desde mapa.txt")
+                    # print(f"   Velocidad: {VELOCIDAD_MOVIMIENTO}")
+                    # print(f"   Salto: {abs(VELOCIDAD_SALTO)}")
+                    # print(f"   Gravedad: {GRAVEDAD}")
+                    # print(f"   Cámara: {CAMERA_SPEED}")
+                    # print(f"   Margen: {CAMERA_MARGIN}")
+                    # print(f"   Volumen de sonido: {VOLUMEN_SONIDO}")
+                    # print(f"   Pantalla completa: {PANTALLA_COMPLETA}")
+                    # print(f"   Efectos visuales: {EFECTOS_VISUALES}")
                 else:
                     print("⚠️ No se encontró el diccionario de configuraciones en mapa.txt")
             else:
@@ -557,7 +556,7 @@ def inicializar_enemigos():
     print(f"Total de enemigos inicializados: {len(enemigos_activos)}")
     for i, enemigo in enumerate(enemigos_activos):
         tipo = "Proyectil" if isinstance(enemigo, Proyectil) else "Normal"
-        print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
+        # print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
 
 def verificar_colision(x, y, es_personaje=False):
     """
@@ -1115,7 +1114,7 @@ def draw():
                     tile_actor = Actor(id_to_image[tile_id], topleft=(x, y))
                     tile_actor.width = TILE_SIZE
                     tile_actor.height = TILE_SIZE
-                    tile_actor.angle = rotacion_terreno
+                    tile_actor.angle = -rotacion_terreno
                     tile_actor.draw()
                     if modo_desarrollador:
                         # Imprimir información de depuración para la rotación del terreno
@@ -1128,7 +1127,7 @@ def draw():
                 item_id = my_items[fila][columna]
                 if item_id != 0 and item_id in id_to_image:
                     item_actor = Actor(id_to_image[item_id], topleft=(x, y))
-                    item_actor.angle = rotacion_item
+                    item_actor.angle = -rotacion_item
                     item_actor.draw()
                     if modo_desarrollador:
                         # Imprimir información de depuración para la rotación del item
