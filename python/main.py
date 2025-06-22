@@ -340,161 +340,27 @@ class Enemigo:
             self.velocidad_y = 0
             self.en_suelo = True
 
-# --- CLASE ENEMIGO ESPECIAL PARA TILE7 ---
+# --- CLASE PROYECTIL PARA TILE7 ---
 class Proyectil:
     def __init__(self, x, y, tipo_id):
         self.x = x
         self.y = y
         self.tipo_id = tipo_id
-        self.velocidad_y = 0
-        self.velocidad_x = 0
-        self.en_suelo = False
-        self.direccion = random.choice([-1, 1])
-        self.contador = 0
-        self.tiempo_ataque = 0
-        self.estado = "patrulla"  # "patrulla", "ataque", "retirada"
-        self.vida = CONFIG_JUEGO['ENEMIGO_ESPECIAL_VIDA']
-        self.invulnerable = False
-        self.tiempo_invulnerable = 0
-        self.velocidad_base = VELOCIDAD_MOVIMIENTO * CONFIG_JUEGO['ENEMIGO_ESPECIAL_VELOCIDAD']
-        
-        # Variables específicas para comportamiento especial
-        self.tiempo_cambio_estado = random.randint(120, 300)  # 2-5 segundos
-        self.rango_deteccion = CONFIG_JUEGO['ENEMIGO_ESPECIAL_RANGO_DETECCION']
-        self.rango_ataque = CONFIG_JUEGO['ENEMIGO_ESPECIAL_RANGO_ATAQUE']
-        
+        self.velocidad_x = VELOCIDAD_MOVIMIENTO * 2  # Más rápido que un enemigo normal
+        self.imagen = "enemigos/tile7.png"
+        self.ancho = ENEMIGO_SIZE
+        self.alto = ENEMIGO_SIZE
+
     def obtener_imagen_actual(self):
-        # Siempre usa tile7.png, pero puede cambiar según el estado
-        if self.estado == "ataque":
-            return "enemigos/tile7.png"  # Imagen de ataque
-        elif self.estado == "retirada":
-            return "enemigos/tile7.png"  # Misma imagen pero con lógica diferente
-        else:
-            return "enemigos/tile7.png"  # Imagen normal
-    
-    def movimiento_patrulla_especial(self, jugador):
-        """Movimiento de patrulla con detección de jugador"""
-        # Movimiento básico de patrulla
-        self.velocidad_x = self.direccion * self.velocidad_base * 0.7
-        
-        # Detectar jugador cercano
-        distancia_x = abs(jugador.x - self.x)
-        distancia_y = abs(jugador.y - self.y)
-        
-        if distancia_x < self.rango_deteccion and distancia_y < 50:
-            # Cambiar a estado de ataque
-            self.estado = "ataque"
-            self.tiempo_ataque = 0
-            # Dirigirse hacia el jugador
-            self.direccion = 1 if jugador.x > self.x else -1
-    
-    def movimiento_ataque_especial(self, jugador):
-        """Movimiento agresivo hacia el jugador"""
-        distancia_x = jugador.x - self.x
-        distancia_y = abs(jugador.y - self.y)
-        
-        if distancia_y < 50:  # Solo atacar si está en el mismo nivel
-            # Movimiento rápido hacia el jugador
-            velocidad_objetivo = self.velocidad_base * 1.5 if distancia_x > 0 else -self.velocidad_base * 1.5
-            self.velocidad_x += (velocidad_objetivo - self.velocidad_x) * 0.2
-            
-            # Salto de ataque
-            if self.en_suelo and abs(distancia_x) < self.rango_ataque:
-                if random.random() < 0.1:  # 10% de probabilidad de salto de ataque
-                    self.velocidad_y = VELOCIDAD_SALTO * 0.8
-                    self.en_suelo = False
-        else:
-            # Si el jugador está muy alto o muy bajo, cambiar a retirada
-            self.estado = "retirada"
-            self.tiempo_ataque = 0
-    
-    def movimiento_retirada_especial(self, jugador):
-        """Movimiento de retirada cuando está en desventaja"""
-        # Moverse en dirección opuesta al jugador
-        self.direccion = -1 if jugador.x > self.x else 1
-        self.velocidad_x = self.direccion * self.velocidad_base * 0.5
-        
-        # Salto de escape
-        if self.en_suelo and random.random() < 0.05:
-            self.velocidad_y = VELOCIDAD_SALTO * 0.6
-            self.en_suelo = False
-    
+        return self.imagen
+
     def actualizar(self, jugador=None):
-        # Aplicar gravedad
-        self.velocidad_y += GRAVEDAD
-        
-        # Actualizar contadores
-        self.contador += 1
-        if self.estado == "ataque":
-            self.tiempo_ataque += 1
-        
-        # Manejar invulnerabilidad
-        if self.invulnerable:
-            self.tiempo_invulnerable -= 1
-            if self.tiempo_invulnerable <= 0:
-                self.invulnerable = False
-        
-        # Lógica de cambio de estado
-        if self.contador >= self.tiempo_cambio_estado:
-            if self.estado == "patrulla":
-                # Ocasionalmente cambiar a ataque si el jugador está cerca
-                if jugador and abs(jugador.x - self.x) < self.rango_deteccion:
-                    self.estado = "ataque"
-                else:
-                    self.estado = random.choice(["patrulla", "retirada"])
-            elif self.estado == "ataque":
-                # Cambiar a retirada después de un tiempo
-                if self.tiempo_ataque > 180:  # 3 segundos de ataque
-                    self.estado = "retirada"
-            elif self.estado == "retirada":
-                # Volver a patrulla después de un tiempo
-                self.estado = "patrulla"
-            
-            self.contador = 0
-            self.tiempo_cambio_estado = random.randint(120, 300)
-        
-        # Aplicar movimiento según el estado
-        if self.estado == "patrulla":
-            self.movimiento_patrulla_especial(jugador)
-        elif self.estado == "ataque":
-            self.movimiento_ataque_especial(jugador)
-        elif self.estado == "retirada":
-            self.movimiento_retirada_especial(jugador)
-        
-        # Actualizar posición vertical
-        nueva_y = self.y + self.velocidad_y
-        if not verificar_colision_vertical(self.x, nueva_y):
-            self.y = nueva_y
-            self.en_suelo = False
-        else:
-            if self.velocidad_y > 0:
-                self.en_suelo = True
-            self.velocidad_y = 0
-        
-        # Actualizar posición horizontal
-        nueva_x = self.x + self.velocidad_x
-        if not verificar_colision_horizontal(nueva_x, self.y):
-            self.x = nueva_x
-        else:
-            self.direccion *= -1
-            self.velocidad_x = 0
-        
-        # Mantener al enemigo dentro de los límites
-        self.x = max(0, min(WIDTH - TILE_SIZE, self.x))
-        if self.y >= HEIGHT - TILE_SIZE:
-            self.y = HEIGHT - TILE_SIZE
-            self.velocidad_y = 0
-            self.en_suelo = True
-    
-    def recibir_daño(self):
-        """Método para recibir daño del jugador"""
-        if not self.invulnerable:
-            self.vida -= 1
-            self.invulnerable = True
-            self.tiempo_invulnerable = CONFIG_JUEGO['ENEMIGO_ESPECIAL_TIEMPO_INVULNERABLE']
-            if self.vida <= 0:
-                return True  # Enemigo eliminado
-        return False
+        # El proyectil se mueve siempre hacia la derecha
+        self.x += self.velocidad_x
+        # Si sale de la pantalla, marcar para eliminar
+        if self.x > MATRIZ_ANCHO * TILE_SIZE:
+            if self in enemigos_activos:
+                enemigos_activos.remove(self)
 
 with open('mapa.txt', 'r') as f:
     content = f.read()
