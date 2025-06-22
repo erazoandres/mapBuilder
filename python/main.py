@@ -2,11 +2,12 @@ import pgzrun
 import re
 import random
 import time
+import math
 
 # Diccionario global de configuración del juego
 CONFIG_JUEGO = {
-    'TILE_SIZE': 64,
-    'ENEMIGO_SIZE': 64,
+    'TILE_SIZE': 40,
+    'ENEMIGO_SIZE': 40,
     'PROBABILIDAD_SALTO_ENEMIGO': 0.000000000000002,
     'GRAVEDAD': 0.8,
     'VELOCIDAD_SALTO': -15,
@@ -347,7 +348,14 @@ class Proyectil:
         self.y = y
         self.tipo_id = tipo_id
         self.rotacion = rotacion
-        self.velocidad_x = VELOCIDAD_MOVIMIENTO   # Más rápido que un enemigo normal
+        
+        # Calcular velocidad basada en la rotación
+        velocidad_magnitud = VELOCIDAD_MOVIMIENTO
+        angulo_rad = math.radians(self.rotacion)
+        
+        self.velocidad_x = velocidad_magnitud * math.cos(angulo_rad)
+        self.velocidad_y = velocidad_magnitud * math.sin(angulo_rad)
+
         self.imagen = "enemigos/tile7.png"
         self.ancho = ENEMIGO_SIZE
         self.alto = ENEMIGO_SIZE
@@ -356,10 +364,13 @@ class Proyectil:
         return self.imagen
 
     def actualizar(self, jugador=None):
-        # El proyectil se mueve siempre hacia la derecha
+        # El proyectil se mueve en la dirección de su velocidad
         self.x += self.velocidad_x
+        self.y += self.velocidad_y
+        
         # Si sale de la pantalla, marcar para eliminar
-        if self.x > MATRIZ_ANCHO * TILE_SIZE:
+        if self.x > MATRIZ_ANCHO * TILE_SIZE or self.x < -self.ancho or \
+           self.y > MATRIZ_ALTO * TILE_SIZE or self.y < -self.alto:
             if self in enemigos_activos:
                 enemigos_activos.remove(self)
 

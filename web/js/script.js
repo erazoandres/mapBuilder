@@ -312,11 +312,7 @@ function generarMatriz(useExisting = false) {
         if (matriz[row][col] !== 0) {
           // Increment rotation by 90 degrees, wrap around using modulo 360
           let currentRotation = rotaciones[row][col] || 0;
-          let newRotation = currentRotation - 90;
-          if (newRotation <= -360) {
-            newRotation = 0;
-          }
-          rotaciones[row][col] = newRotation;
+          rotaciones[row][col] = (currentRotation + 90) % 360;
           cell.style.transform = `rotate(${rotaciones[row][col]}deg)`;
           // Guardar el estado actualizado en localStorage para persistencia
           localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
@@ -1115,12 +1111,7 @@ function createSecondLayer() {
           const col = parseInt(cell.dataset.col);
           
           if (matriz2[row][col] !== 0) {
-            let currentRotation = rotaciones2[row][col] || 0;
-            let newRotation = currentRotation - 90;
-            if (newRotation <= -360) {
-                newRotation = 0;
-            }
-            rotaciones2[row][col] = newRotation;
+            rotaciones2[row][col] = ((rotaciones2[row][col] || 0) + 90) % 360;
             cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
             
             localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
@@ -1263,12 +1254,7 @@ function redrawSecondLayerTiles(container) {
           const col = parseInt(cell.dataset.col);
           
           if (matriz2[row][col] !== 0) {
-            let currentRotation = rotaciones2[row][col] || 0;
-            let newRotation = currentRotation - 90;
-            if (newRotation <= -360) {
-                newRotation = 0;
-            }
-            rotaciones2[row][col] = newRotation;
+            rotaciones2[row][col] = ((rotaciones2[row][col] || 0) + 90) % 360;
             cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
             
             localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
