@@ -1,5 +1,6 @@
 let draggedId = null;
 let matriz = [];
+let rotaciones = [];
 let lastClickedId = null;
 let selectedTileId = null;
 let cursorImg = null;
@@ -8,9 +9,6 @@ let isPainting = false; // Flag for painting mode
 
 // Constantes
 const TILE_SIZE = 32; // Tamaño de cada tile en píxeles
-
-// Matriz para almacenar las rotaciones de cada celda
-let rotaciones = [];
 
 // Variables para la segunda capa/matriz
 let matriz2 = [];
@@ -216,7 +214,7 @@ function generarMatriz(useExisting = false) {
      if (!rotaciones[r]) {
         rotaciones[r] = Array(cols).fill(0);
      }
-     // Asegurarse que la fila exista en la matriz
+    // Asegurarse que la fila exista en la matriz
      if (!matriz[r]) {
         matriz[r] = Array(cols).fill(0);
      }
@@ -251,13 +249,6 @@ function generarMatriz(useExisting = false) {
       // --- End applying existing tile data ---
 
       // --- Painting/Placement Logic --- 
-      // REMOVED Original 'click' listener
-      // cell.addEventListener('click', () => {
-      //  if (selectedTileId) {
-      //    placeTile(cell, selectedTileId);
-      //  }
-      // });
-
       cell.addEventListener('mousedown', (e) => {
         if (e.button === 0) { // Only react to left mouse button
           if (selectedTileId) {
@@ -304,7 +295,7 @@ function generarMatriz(useExisting = false) {
 
           // Clear the visual representation
           cell.style.backgroundImage = '';
-          cell.style.transform = ''; // Remove rotation
+          cell.style.transform = '';
           cell.dataset.id = 0; // Update data-id attribute
 
           // console.log(`Deleted tile at [${row}, ${col}]`); // Optional: for debugging
@@ -320,9 +311,11 @@ function generarMatriz(useExisting = false) {
         // Only rotate if there's a tile in the cell
         if (matriz[row][col] !== 0) {
           // Increment rotation by 90 degrees, wrap around using modulo 360
-          rotaciones[row][col] = (rotaciones[row][col] + 90) % 360;
+          let currentRotation = rotaciones[row][col] || 0;
+          rotaciones[row][col] = (currentRotation + 90) % 360;
           cell.style.transform = `rotate(${rotaciones[row][col]}deg)`;
-          // console.log(`Rotated tile at [${row}, ${col}] to ${rotaciones[row][col]}deg`); // Optional: for debugging
+          // Guardar el estado actualizado en localStorage para persistencia
+          localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
         }
       });
 
@@ -344,44 +337,6 @@ function generarMatriz(useExisting = false) {
           }
       };
 
-       // Evento doble click para rotar (código existente)
-       cell.addEventListener('dblclick', handleDoubleClick);
-
-      // Aplicar el tile y la rotación existente (cargado o redimensionado)
-      // const currentTileId = matriz[r][c]; // Ya debería ser string ID o 0
-      // const currentRotation = rotaciones[r][c];
-
-      // if (currentTileId !== 0) {
-      //   const tileImage = document.querySelector(`.tiles img[data-id='${currentTileId}']`);
-      //   if (tileImage) {
-      //     cell.style.backgroundImage = `url(${tileImage.src})`;
-      //     cell.style.backgroundSize = "cover";
-      //     cell.dataset.tileId = currentTileId; // Guardar el id
-      //     // Habilitar drag solo si hay un tile
-      //     cell.draggable = true;
-      //     cell.ondragstart = (e) => {
-      //         if (cell.dataset.tileId && cell.dataset.tileId !== '0') {
-      //            e.dataTransfer.setData("text/plain", cell.dataset.tileId);
-      //         } else {
-      //             e.preventDefault(); // No arrastrar celdas vacías
-      //         }
-      //     };
-      //   } else {
-      //     console.warn(`Tile ID '${currentTileId}' en matriz [${r}][${c}] no encontrado. Limpiando celda.`);
-      //     matriz[r][c] = 0; // Marcar como vacío si el tile no existe
-      //     cell.style.backgroundImage = '';
-      //     delete cell.dataset.tileId;
-      //     cell.draggable = false;
-      //   }
-      // } else {
-      //    cell.style.backgroundImage = ''; // Asegurar que esté vacío
-      //    delete cell.dataset.tileId;
-      //    cell.draggable = false; // No arrastrar celdas vacías
-      // }
-
-      // Aplicar rotación
-      // cell.style.transform = `rotate(${currentRotation}deg)`;
-
       grid.appendChild(cell);
     }
   }
@@ -389,7 +344,7 @@ function generarMatriz(useExisting = false) {
   // Actualizar la segunda capa si existe
   const layer2Container = document.getElementById("grid-layer2");
   if (layer2Container) {
-    layer2Container.style.gridTemplateColumns = firstGrid.style.gridTemplateColumns;
+    layer2Container.style.gridTemplateColumns = grid.style.gridTemplateColumns;
     redrawSecondLayerTiles(layer2Container);
   }
 }
@@ -400,48 +355,6 @@ document.addEventListener('mouseup', () => {
     isPainting = false;
   }
 });
-
-function handleDoubleClick(ev) {
-  ev.preventDefault();
-  const cell = ev.currentTarget;
-  const row = parseInt(cell.dataset.row);
-  const col = parseInt(cell.dataset.col);
-  
-  if (matriz[row][col] !== 0) {
-    const img = cell.querySelector('img');
-    if (img) {
-      // Inicializar rotación si no existe
-      if (!rotaciones[row]) rotaciones[row] = [];
-      if (typeof rotaciones[row][col] === 'undefined') rotaciones[row][col] = 0;
-      
-      // Rotar la imagen
-      rotaciones[row][col] = ((rotaciones[row][col] || 0) + 1) % 4;
-      
-      // Remover clases de rotación anteriores
-      img.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
-      
-      // Agregar nueva clase de rotación si no es 0
-      if (rotaciones[row][col] > 0) {
-        img.classList.add(`rotate-${rotaciones[row][col] * 90}`);
-      }
-      
-      // Guardar el estado actual
-      localStorage.setItem('rotaciones', JSON.stringify(rotaciones));
-    }
-  }
-}
-
-function handleMouseClick(ev) {
-  if (ev.button === 1) {
-    ev.preventDefault();
-    const cell = ev.currentTarget;
-    const row = parseInt(cell.dataset.row);
-    const col = parseInt(cell.dataset.col);
-    cell.innerHTML = '';
-    matriz[row][col] = 0;
-    rotaciones[row][col] = 0;
-  }
-}
 
 function placeTile(cell, tileId) {
   const row = parseInt(cell.dataset.row);
@@ -594,6 +507,14 @@ function exportarMatriz() {
   }
   fileContentString += '\n];\n\n';
 
+  fileContentString += 'my_items_rotations = [\n';
+  for (let i = 0; i < rotaciones2.length; i++) {
+    const rowContent = Array.isArray(rotaciones2[i]) ? rotaciones2[i].join(',') : Array(cols).fill(0).join(',');
+    fileContentString += '  [' + rowContent + ']';
+    if (i < rotaciones2.length - 1) fileContentString += ',\n';
+  }
+  fileContentString += '\n];\n\n';
+
   // Agregar el diccionario de tilesets después de my_items
   fileContentString += 'tileset_dict = {\n';
   const sortedKeys = Object.keys(tilesetDictionary).sort((a, b) => parseInt(a) - parseInt(b));
@@ -683,6 +604,7 @@ function exportarMatriz() {
     localStorage.setItem('idMap', JSON.stringify(idMapArray));
     localStorage.setItem('rotaciones', JSON.stringify(finalRotations));
     localStorage.setItem('items', JSON.stringify(itemsNumerica));
+    localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
   } catch (e) {
     console.error("Error guardando datos en localStorage:", e);
     alert("Error al guardar el mapa en almacenamiento local. Posiblemente el mapa es demasiado grande.");
@@ -731,6 +653,15 @@ function importarMatriz(event) {
         const numericMatrix = extractMatrix(content, 'my_map');
         const importedRotations = extractMatrix(content, 'my_rotations');
         const importedItems = extractMatrix(content, 'my_items');
+        let importedRotations2 = [];
+        try {
+            importedRotations2 = extractMatrix(content, 'my_items_rotations');
+        } catch (e) {
+            const rows = numericMatrix.length;
+            const cols = numericMatrix[0]?.length || 0;
+            importedRotations2 = Array.from({ length: rows }, () => Array(cols).fill(0));
+            console.warn("La matriz 'my_items_rotations' no se encontró. Se usará una matriz vacía.");
+        }
         
         // Validación de dimensiones
         const rows = numericMatrix.length;
@@ -740,7 +671,6 @@ function importarMatriz(event) {
           throw new Error("La matriz importada está vacía o mal formada");
         }
 
-        // Validar que todas las matrices tengan las mismas dimensiones
         if (!importedRotations.every(row => row.length === cols) || importedRotations.length !== rows) {
           throw new Error("Las dimensiones de la matriz de rotaciones no coinciden");
         }
@@ -834,7 +764,7 @@ function importarMatriz(event) {
         // Asignar matrices importadas
         rotaciones = importedRotations;
         matriz2 = Array(rows).fill().map(() => Array(cols).fill(0)); // Inicializar matriz2
-        rotaciones2 = Array(rows).fill().map(() => Array(cols).fill(0)); // Inicializar rotaciones2
+        rotaciones2 = importedRotations2; // Inicializar rotaciones2
 
         // Actualizar controles de UI
         document.getElementById('rows').value = rows;
@@ -1181,7 +1111,7 @@ function createSecondLayer() {
           const col = parseInt(cell.dataset.col);
           
           if (matriz2[row][col] !== 0) {
-            rotaciones2[row][col] = (rotaciones2[row][col] + 90) % 360;
+            rotaciones2[row][col] = ((rotaciones2[row][col] || 0) + 90) % 360;
             cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
             
             localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));
@@ -1324,7 +1254,7 @@ function redrawSecondLayerTiles(container) {
           const col = parseInt(cell.dataset.col);
           
           if (matriz2[row][col] !== 0) {
-            rotaciones2[row][col] = (rotaciones2[row][col] + 90) % 360;
+            rotaciones2[row][col] = ((rotaciones2[row][col] || 0) + 90) % 360;
             cell.style.transform = `rotate(${rotaciones2[row][col]}deg)`;
             
             localStorage.setItem('rotaciones2', JSON.stringify(rotaciones2));

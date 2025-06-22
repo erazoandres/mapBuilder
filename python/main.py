@@ -455,6 +455,19 @@ while len(expanded_rotations) < 10:
     expanded_rotations.append([0] * 30)
 my_rotations = expanded_rotations
 
+# Comprobar si my_items_rotations existe y expandirla
+if 'my_items_rotations' in locals():
+    expanded_items_rotations = []
+    for row in my_items_rotations:
+        new_row = row + [0] * (30 - len(row))
+        expanded_items_rotations.append(new_row)
+    while len(expanded_items_rotations) < 10:
+        expanded_items_rotations.append([0] * 30)
+    my_items_rotations = expanded_items_rotations
+else:
+    # Si no existe, crear una matriz vacía para compatibilidad
+    my_items_rotations = [([0] * 30) for _ in range(len(my_map))]
+
 game_over = False
 modo_desarrollador = False
 personaje_direccion = 0
@@ -1119,16 +1132,28 @@ def draw():
                 x = columna * TILE_SIZE - camera_x
                 y = fila * TILE_SIZE
 
+                # Rotación para la capa de terreno (my_map)
+                rotacion_terreno = 0
+                if fila < len(my_rotations) and columna < len(my_rotations[fila]):
+                    rotacion_terreno = my_rotations[fila][columna]
+                
                 tile_id = my_map[fila][columna]
                 if tile_id != 0 and tile_id in id_to_image:
                     tile_actor = Actor(id_to_image[tile_id], topleft=(x, y))
                     tile_actor.width = TILE_SIZE
                     tile_actor.height = TILE_SIZE
+                    tile_actor.angle = rotacion_terreno
                     tile_actor.draw()
+
+                # Rotación para la capa de items (my_items)
+                rotacion_item = 0
+                if 'my_items_rotations' in locals() and fila < len(my_items_rotations) and columna < len(my_items_rotations[fila]):
+                    rotacion_item = my_items_rotations[fila][columna]
 
                 item_id = my_items[fila][columna]
                 if item_id != 0 and item_id in id_to_image:
                     item_actor = Actor(id_to_image[item_id], topleft=(x, y))
+                    item_actor.angle = rotacion_item
                     item_actor.draw()
 
                     # Dibujar borde amarillo si el item está cerca del personaje
