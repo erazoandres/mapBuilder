@@ -37,7 +37,11 @@ CONFIG_JUEGO = {
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
     'ITEMS_BLOQUEAN_PASO': True,
-    'MOSTRAR_PANEL_DETALLADO': False
+    'MOSTRAR_PANEL_DETALLADO': False,
+    # Nueva opción: perder por proyectil
+    'PERDER_POR_PROYECTIL': True,
+    # Nueva opción: daño por proyectil (si es False, muerte instantánea; si es True, resta vida)
+    'DANO_POR_PROYECTIL': False
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -790,6 +794,9 @@ def update():
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
                 personaje.puede_doble_salto = False
+                personaje.vida = 3  # Restaurar vida al reiniciar
+                personaje.invulnerable = False
+                personaje.tiempo_invulnerable = 0
                 # No reiniciar la colección de items para mantener el progreso
                 return
 
@@ -940,6 +947,36 @@ def update():
                 else:
                     # Enemigo normal - implementar lógica de daño o juego terminado
                     pass
+            # --- Lógica de daño/muerte por proyectil ---
+            # Si el enemigo es un proyectil (Proyectil o ProyectilArtillero)
+            if (isinstance(enemigo, Proyectil) or isinstance(enemigo, ProyectilArtillero)):
+                if (personaje.x < enemigo.x + ENEMIGO_SIZE and
+                    personaje.x + personaje.hitbox_width > enemigo.x and
+                    personaje.y < enemigo.y + ENEMIGO_SIZE and
+                    personaje.y + personaje.hitbox_height > enemigo.y):
+                    if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
+                        if CONFIG_JUEGO.get('PERDER_POR_PROYECTIL', True):
+                            if CONFIG_JUEGO.get('DANO_POR_PROYECTIL', False):
+                                # Daño progresivo
+                                personaje.vida -= 1
+                                personaje.invulnerable = True
+                                personaje.tiempo_invulnerable = 60  # 1 segundo de invulnerabilidad
+                                if personaje.vida <= 0:
+                                    game_over = True
+                                # Eliminar el proyectil
+                                if enemigo in enemigos_activos:
+                                    enemigos_activos.remove(enemigo)
+                            else:
+                                # Muerte instantánea
+                                game_over = True
+                                # Eliminar el proyectil
+                                if enemigo in enemigos_activos:
+                                    enemigos_activos.remove(enemigo)
+        # --- Lógica para reducir la invulnerabilidad del personaje ---
+        if hasattr(personaje, 'invulnerable') and personaje.invulnerable:
+            personaje.tiempo_invulnerable -= 1
+            if personaje.tiempo_invulnerable <= 0:
+                personaje.invulnerable = False
 
 def on_key_down(key):
     global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual, modo_borrado, posicion_borrado_x, posicion_borrado_y, cuadros_borrados
@@ -978,6 +1015,9 @@ def on_key_down(key):
                 personaje.y = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_Y']
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
+                personaje.vida = 3  # Restaurar vida al reiniciar
+                personaje.invulnerable = False
+                personaje.tiempo_invulnerable = 0
                 # No reiniciar la colección de items para mantener el progreso
                 return
 
