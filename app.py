@@ -23,5 +23,9 @@ def js(filename):
 def images(filename):
     return send_from_directory(IMAGES_DIR, filename)
 
+@app.route('/aporta')
+def aporta():
+    return send_from_directory(WEB_DIR, 'aporta.html')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000) 

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aporta un Tileset</title>
+  <link rel="stylesheet" href="css/aporta.css" />
+</head>
+<body>
+  <div class="main-container">
+    <h1>Colabora con el Proyecto: Sube tu Tileset</h1>
+    <p>¡Ayúdanos a mejorar el proyecto! Puedes subir un tileset para que sea considerado e incluido. El archivo debe ser una imagen PNG de <strong>64x64 píxeles</strong>.</p>
+    <form id="tilesetForm" enctype="multipart/form-data">
+      <label for="tileset">Selecciona tu tileset (PNG, 64x64):</label><br>
+      <input type="file" id="tileset" name="tileset" accept="image/png" required><br><br>
+      <button type="submit">Subir Tileset</button>
+    </form>
+    <div id="mensaje"></div>
+    <a href="/">Volver al editor</a>
+  </div>
+  <script>
+    document.getElementById('tilesetForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('tileset');
+      const file = fileInput.files[0];
+      const mensaje = document.getElementById('mensaje');
+      if (!file) {
+        mensaje.textContent = 'Por favor selecciona un archivo.';
+        return;
+      }
+      const img = new Image();
+      img.onload = function() {
+        if (img.width === 64 && img.height === 64) {
+          mensaje.textContent = '¡Tileset válido! (pero la subida real debe implementarse en el backend)';
+        } else {
+          mensaje.textContent = 'El tileset debe ser exactamente de 64x64 píxeles.';
+        }
+      };
+      img.onerror = function() {
+        mensaje.textContent = 'No se pudo leer la imagen. Asegúrate de que sea un PNG válido.';
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  </script>
+</body>
+</html> 
