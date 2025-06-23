@@ -33,7 +33,7 @@ CONFIG_JUEGO = {
     'PERSONAJE_POS_INICIAL_X': 50,
     'PERSONAJE_POS_INICIAL_Y': 100,
     'DOBLE_SALTO_FACTOR': 0.8,
-    # Configuraciones de rebote y daño
+    # Configuraciones de rebote y dano
     'REBOTE_ENEMIGO': 0.7,  # Rebote al eliminar enemigo especial
     'REBOTE_ENEMIGO_DANADO': 0.4,  # Rebote al daniar pero no eliminar
     # Configuraciones de caída
@@ -43,15 +43,15 @@ CONFIG_JUEGO = {
     'MOSTRAR_PANEL_DETALLADO': False,
     # Nueva opción: perder por proyectil
     'PERDER_POR_PROYECTIL': True,
-    # Nueva opción: daño por proyectil (si es False, muerte instantánea; si es True, resta vida)
+    # Nueva opcion: dano por proyectil (si es False, muerte instantanea; si es True, resta vida)
     'DANO_POR_PROYECTIL': True,
     # Nueva opción: mostrar barra de vida
     'MOSTRAR_BARRA_VIDA': True,
     # Nueva opción: vida máxima del personaje (1-100)
     'VIDA_MAXIMA': 3,
-    # Nueva opción: daño recibido por proyectil
+    # Nueva opcion: dano recibido por proyectil
     'DANO_PROYECTIL': 1,
-    # Nueva opción: daño recibido por colisión con enemigo
+    # Nueva opcion: dano recibido por colision con enemigo
     'DANO_ENEMIGO': 1
 }
 
@@ -82,7 +82,7 @@ with open('mapa.txt', 'r', encoding='utf-8') as f:
             MATRIZ_ANCHO = int(dimensions[1])
             break
 
-# Tamaño de la ventana del juego
+# Tamano de la ventana del juego
 WIDTH = 800
 HEIGHT = 600
 WINDOW_WIDTH = WIDTH # Usaremos el ancho total para la vista de juego por ahora
@@ -240,12 +240,12 @@ personaje.velocidad_x = 0  # Nueva variable para velocidad horizontal
 personaje.en_suelo = False
 personaje.objetos_cerca = []
 personaje.puede_doble_salto = False  # Nueva variable para el doble salto
-# Obtener el tamaño real de la imagen del personaje
+# Obtener el tamano real de la imagen del personaje
 personaje.hitbox_width = personaje.width
 personaje.hitbox_height = personaje.height
 personaje.vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)  # Vida inicial configurable
 
-# Aplicar configuración de tamaño de hitbox después de crear el personaje
+# Aplicar configuracion de tamano de hitbox despues de crear el personaje
 def aplicar_configuracion_hitbox():
     global personaje
     try:
@@ -941,7 +941,7 @@ def update():
                 
                 # Lógica específica para enemigo especial
                 if hasattr(enemigo, 'recibir_daño'):
-                    # Si el jugador está saltando sobre el enemigo, dañarlo
+                    # Si el jugador esta saltando sobre el enemigo, danarlo
                     if personaje.velocidad_y > 0 and personaje.y < enemigo.y:
                         if enemigo.recibir_daño():
                             # Enemigo eliminado
@@ -949,17 +949,17 @@ def update():
                             # Rebote del personaje
                             personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO']
                         else:
-                            # Enemigo dañado pero no eliminado
+                            # Enemigo danado pero no eliminado
                             personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO_DANADO']
                     else:
-                        # El personaje recibe daño
+                        # El personaje recibe dano
                         if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
-                            # Implementar lógica de daño al personaje aquí
+                            # Implementar logica de dano al personaje aqui
                             pass
                 else:
-                    # Enemigo normal - implementar lógica de daño o juego terminado
+                    # Enemigo normal - implementar logica de dano o juego terminado
                     pass
-            # --- Lógica de daño/muerte por proyectil ---
+            # --- Logica de dano/muerte por proyectil ---
             # Si el enemigo es un proyectil (Proyectil o ProyectilArtillero)
             if (isinstance(enemigo, Proyectil) or isinstance(enemigo, ProyectilArtillero)):
                 if (personaje.x < enemigo.x + ENEMIGO_SIZE and
@@ -969,7 +969,7 @@ def update():
                     if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
                         if CONFIG_JUEGO.get('PERDER_POR_PROYECTIL', True):
                             if CONFIG_JUEGO.get('DANO_POR_PROYECTIL', False):
-                                # Daño progresivo configurable
+                                # Dano progresivo configurable
                                 dano = CONFIG_JUEGO.get('DANO_PROYECTIL', 10)
                                 personaje.vida -= dano
                                 personaje.invulnerable = True
@@ -985,7 +985,7 @@ def update():
                                 # Eliminar el proyectil
                                 if enemigo in enemigos_activos:
                                     enemigos_activos.remove(enemigo)
-            # --- Lógica de daño por colisión con enemigo ---
+            # --- Logica de dano por colision con enemigo ---
             # Si el enemigo NO es proyectil ni especial (ya manejado arriba)
             if not (isinstance(enemigo, Proyectil) or isinstance(enemigo, ProyectilArtillero)):
                 if (personaje.x < enemigo.x + ENEMIGO_SIZE and
@@ -1177,7 +1177,7 @@ def update_camera():
     center_y = HEIGHT // 2
     dist_y = personaje.y - (center_y + camera_y)
     
-    # Un margen vertical más pequeño para que la cámara reaccione antes
+    # Un margen vertical mas pequeno para que la camara reaccione antes
     camera_margin_y = CONFIG_JUEGO['CAMERA_MARGIN'] * 0.8 
 
     if abs(dist_y) > camera_margin_y:
@@ -1314,7 +1314,7 @@ def dibujar_cuadro_colocacion_terreno():
     
     # Solo dibujar si está en pantalla
     if -CONFIG_JUEGO['TILE_SIZE'] <= x <= WINDOW_WIDTH and -CONFIG_JUEGO['TILE_SIZE'] <= y <= HEIGHT:
-        # Calcular el área del cuadro pequeño
+        # Calcular el area del cuadro pequeno
         cuadro_x = x + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
         cuadro_y = y + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
         # Dibujar borde entrelineado (líneas discontinuas)
@@ -1399,7 +1399,7 @@ def draw():
 
                     # Dibujar borde amarillo si el item está cerca del personaje
                     if item_id in ITEMS and any(x_tile == columna and y_tile == fila for x_tile, y_tile, _ in personaje.objetos_cerca):
-                        # Crear el actor para obtener el tamaño real de la imagen
+                        # Crear el actor para obtener el tamano real de la imagen
                         item_actor = Actor(id_to_image[item_id], topleft=(x, y))
                         rect_borde = Rect(item_actor.left, item_actor.top, item_actor.width, item_actor.height)
                         # Borde exterior
