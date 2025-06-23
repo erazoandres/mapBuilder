@@ -41,6 +41,9 @@ CONFIG_JUEGO = {
     'PERSONAJE_POS_INICIAL_Y': 100,
     'DOBLE_SALTO_FACTOR': 0.8,
     'RADIO_INTERACCION_FACTOR': 1.5,
+    # Configuraciones de caída
+    'PERDER_POR_CAIDA': True,
+    'LIMITE_INFERIOR': False, # Si es False, el personaje no puede caer por debajo del mapa
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -771,8 +774,18 @@ def update():
         personaje.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - personaje.hitbox_width, personaje.x))
 
         # Comprobar si el personaje se ha caído por debajo del mapa
-        if personaje.y > MATRIZ_ALTO * TILE_SIZE:
-            game_over = True
+        if CONFIG_JUEGO['LIMITE_INFERIOR']:
+            if personaje.y > MATRIZ_ALTO * TILE_SIZE:
+                if CONFIG_JUEGO['PERDER_POR_CAIDA']:
+                    game_over = True
+        else:
+            # Si el límite inferior está desactivado, no dejar que el personaje caiga
+            limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - personaje.hitbox_height
+            if personaje.y > limite_inferior_y:
+                personaje.y = limite_inferior_y
+                personaje.velocidad_y = 0
+                personaje.en_suelo = True
+                personaje.puede_doble_salto = False
 
         # Actualizar dirección del personaje
         if personaje.velocidad_x > 0:
