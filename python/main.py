@@ -1133,13 +1133,12 @@ def dibujar_cuadro_colocacion_terreno():
         # Dibujar texto indicativo
         texto_x = x + CONFIG_JUEGO['TILE_SIZE'] // 2
         texto_y = y - 25
-        screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=12)
+        screen.draw.text("TERRENO", center=(texto_x, texto_y), color="yellow", fontsize=18)
         # Mostrar el tipo de terreno seleccionado
-        screen.draw.text(f"ID: {tipo_terreno_actual}", center=(texto_x, texto_y - 15), color="orange", fontsize=10)
         if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
             screen.draw.text(f"Presiona T para colocar ({LIMITE_CUADROS_COLOCACION - cuadros_colocados} restantes)", center=(texto_x, texto_y + 15), color="white", fontsize=10)
         else:
-            screen.draw.text("¡Límite alcanzado!", center=(texto_x, texto_y + 15), color="red", fontsize=12)
+            screen.draw.text("¡Límite alcanzado!", center=(texto_x, texto_y + 15), color="red", fontsize=18)
 
 def draw():
     screen.clear()
@@ -1340,6 +1339,15 @@ def on_mouse_down(pos, button):
                     print(f"Terreno colocado con mouse en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
                     print("¡Límite de cuadros de colocación alcanzado!")
+
+def on_mouse_move(pos):
+    global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
+    if modo_colocacion_terreno:
+        # Calcular la posición de inserción según el mouse
+        x_mapa = pos[0] + camera_x
+        y_mapa = pos[1] + camera_y
+        posicion_terreno_x = int(x_mapa // TILE_SIZE) * TILE_SIZE
+        posicion_terreno_y = int(y_mapa // TILE_SIZE) * TILE_SIZE
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
