@@ -49,7 +49,7 @@ CONFIG_JUEGO = {
     # Nueva opción: daño recibido por proyectil
     'DANO_PROYECTIL': 1,
     # Nueva opción: daño recibido por colisión con enemigo
-    'DANO_ENEMIGO': 20
+    'DANO_ENEMIGO': 1
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
