@@ -42,7 +42,7 @@ CONFIG_JUEGO = {
     'DOBLE_SALTO_FACTOR': 0.8,
     'RADIO_INTERACCION_FACTOR': 1.5,
     # Configuraciones de caída
-    'PERDER_POR_CAIDA': False,
+    'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
 }
 
