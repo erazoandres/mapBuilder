@@ -1167,13 +1167,7 @@ def draw():
     
     # Si estamos en extras
     elif estado_juego == "extras":
-        # Fondo
-        screen.draw.filled_rect(Rect(0, 0, WIDTH, HEIGHT), (0, 0, 0))
-        # Título
-        screen.draw.text("EXTRAS", center=(WIDTH//2, 120), color="white", fontsize=48)
-        # Contenido (placeholder)
-        screen.draw.text("Contenido extra del juego", center=(WIDTH//2, HEIGHT//2), color="white", fontsize=28)
-        screen.draw.text("Presiona ESC para volver", center=(WIDTH//2, HEIGHT - 60), color="white", fontsize=18)
+        dibujar_pantalla_controles()
         return
     
     # Si estamos jugando
@@ -1368,5 +1362,54 @@ def on_mouse_move(pos):
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
+
+
+
+def dibujar_pantalla_controles():
+    """Dibuja la pantalla de ayuda con los controles del juego."""
+    # Fondo similar al menú principal
+    for y in range(HEIGHT):
+        intensidad = int(20 + (y / HEIGHT) * 40)
+        color = (intensidad, intensidad, intensidad + 20)
+        screen.draw.line((0, y), (WIDTH, y), color)
+
+    # Título
+    centro_x = WIDTH // 2
+    screen.draw.text("CONTROLES", center=(centro_x, 80), color=(255, 215, 0), fontsize=48, owidth=0.5, ocolor="black")
+    
+    # --- Columnas de Controles ---
+    y_inicio = 150
+    x_col1 = 100
+    x_col2 = 450
+    line_height = 35
+    font_size_cat = 24
+    font_size_item = 20
+    color_cat = "orange"
+    color_item = "white"
+
+    # --- Columna 1: Movimiento e Interacción ---
+    screen.draw.text("JUGADOR", (x_col1, y_inicio), color=color_cat, fontsize=font_size_cat)
+    screen.draw.text("- Moverse: Flechas Izquierda/Derecha", (x_col1, y_inicio + line_height), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Saltar: Espacio / Flecha Arriba", (x_col1, y_inicio + line_height * 2), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Doble Salto: Espacio (en el aire)", (x_col1, y_inicio + line_height * 3), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Recoger Objeto: Tecla E", (x_col1, y_inicio + line_height * 4), color=color_item, fontsize=font_size_item)
+
+    # --- Columna 2: Modo Construcción ---
+    screen.draw.text("CONSTRUCCIÓN", (x_col2, y_inicio), color=color_cat, fontsize=font_size_cat)
+    screen.draw.text("- Activar/Desactivar: Clic Derecho", (x_col2, y_inicio + line_height), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Colocar Bloque: Clic Izquierdo", (x_col2, y_inicio + line_height * 2), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Mover Indicador: Mover Mouse", (x_col2, y_inicio + line_height * 3), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Cambiar Bloque: Tecla TAB", (x_col2, y_inicio + line_height * 4), color=color_item, fontsize=font_size_item)
+    
+    # --- Otros Controles ---
+    y_otros = y_inicio + line_height * 6
+    screen.draw.text("OTROS", (x_col1, y_otros), color=color_cat, fontsize=font_size_cat)
+    screen.draw.text("- Modo Desarrollador: Tecla F", (x_col1, y_otros + line_height), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Menú Principal: Tecla ESC", (x_col1, y_otros + line_height * 2), color=color_item, fontsize=font_size_item)
+    
+    # Instrucción para volver
+    screen.draw.text("Presiona ESC para volver al menú", center=(centro_x, HEIGHT - 50), color="white", fontsize=22)
+
+
 
 pgzrun.go()
