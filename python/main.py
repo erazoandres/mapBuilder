@@ -915,7 +915,7 @@ def on_key_down(key):
             modo_desarrollador = not modo_desarrollador
         
         # Mostrar/ocultar panel detallado de items
-        if key == keys.U:
+        if key == keys.U or key == keys.I:
             mostrar_panel_detallado = not mostrar_panel_detallado
         
         # Activar/desactivar modo de colocación de terreno
@@ -1048,43 +1048,52 @@ def update_camera():
 
 def dibujar_panel_detallado_items():
     """Dibuja un panel detallado con información de los items recolectados"""
-    if not items_recolectados or not mostrar_panel_detallado:
+    if not mostrar_panel_detallado:
         return
     
-    # Configuración del panel - ajustado para ventana más ancha
-    panel_x = WIDTH - 160  # Ajustado para la nueva ventana
+    # Configuración del panel
+    panel_x = WIDTH - 160
     panel_y = 10
     item_size = 20
     line_height = 25
     padding = 10
     
-    # Calcular el alto necesario basado en el número de items únicos
-    panel_height = len(items_recolectados) * line_height + padding * 2
+    # Calcular el alto necesario (mínimo para el título, y luego por cada item)
+    num_items = len(items_recolectados)
+    panel_height = (padding * 2) + 20 + (num_items * line_height) if num_items > 0 else 60
     
     # Dibujar fondo del panel
-    screen.draw.filled_rect(Rect(panel_x, panel_y, 150, panel_height), (0, 0, 0, 120))
-    screen.draw.rect(Rect(panel_x, panel_y, 150, panel_height), (255, 255, 255, 150))
+    screen.draw.filled_rect(Rect(panel_x, panel_y, 150, panel_height), (0, 0, 0, 180)) # Más opaco
+    screen.draw.rect(Rect(panel_x, panel_y, 150, panel_height), (255, 255, 255, 200))
     
     # Dibujar título
-    screen.draw.text("Items Recolectados:", (panel_x + 5, panel_y + 5), color="white", fontsize=14)
-    
+    screen.draw.text("Inventario", (panel_x + padding, panel_y + padding), color="white", fontsize=16)
+
+    # Si no hay items, mostrar mensaje
+    if not items_recolectados:
+        screen.draw.text("(Vacío)", center=(panel_x + 75, panel_y + 40), color=(150, 150, 150), fontsize=14)
+        return
+
     # Dibujar cada item con su información
     for i, (item_id, cantidad) in enumerate(items_recolectados.items()):
         if item_id in id_to_image:
-            y_pos = panel_y + padding + 20 + i * line_height
+            y_pos = panel_y + padding + 25 + i * line_height
             
             # Dibujar el item
-            item_actor = Actor(id_to_image[item_id], topleft=(panel_x + 5, y_pos - 7))
-            item_actor.scale = 0.5
-            item_actor.draw()
+            try:
+                item_actor = Actor(id_to_image[item_id], topleft=(panel_x + padding, y_pos))
+                item_actor.draw()
+            except Exception as e:
+                # Si la imagen no se encuentra, dibuja un placeholder
+                screen.draw.filled_rect(Rect(panel_x + padding, y_pos, item_size, item_size), (255,0,255))
             
-            # Dibujar el nombre del item (basado en el ID)
+            # Dibujar el nombre del item
             item_name = f"Item {item_id}"
-            screen.draw.text(item_name, (panel_x + 30, y_pos - 2), color="white", fontsize=12)
+            screen.draw.text(item_name, (panel_x + padding + item_size + 5, y_pos + 5), color="white", fontsize=12)
             
-            # Dibujar la cantidad real
+            # Dibujar la cantidad
             cantidad_texto = f"x{cantidad}"
-            screen.draw.text(cantidad_texto, (panel_x + 125, y_pos - 2), color="yellow", fontsize=12)
+            screen.draw.text(cantidad_texto, (panel_x + 135 - padding, y_pos + 5), color="yellow", fontsize=14, anchor=("right", "top"))
 
 def dibujar_menu_principal():
     """Dibuja el menú principal con los 3 botones"""
@@ -1313,7 +1322,7 @@ def draw():
             screen.draw.text("Modo Desarrollador: ON", (10, 30), color="yellow", fontsize=14)
             # Mostrar controles adicionales
             screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
-            screen.draw.text("U: Panel detallado de items", (10, 70), color="yellow", fontsize=14)
+            screen.draw.text("U/I: Panel detallado de items", (10, 70), color="yellow", fontsize=14)
             screen.draw.text("Y: Modo colocación terreno", (10, 90), color="yellow", fontsize=14)
             screen.draw.text("R: Modo borrado", (10, 110), color="yellow", fontsize=14)
             
@@ -1327,14 +1336,14 @@ def draw():
                 screen.draw.text("Flechas: Mover cuadro", (10, 150), color="yellow", fontsize=14)
                 screen.draw.text("T: Borrar elemento", (10, 170), color="yellow", fontsize=14)
 
-        # Dibujar el panel detallado de items
-        dibujar_panel_detallado_items()
-
         # Dibujar el cuadro de colocación de terreno
         dibujar_cuadro_colocacion_terreno()
 
         # Dibujar el cuadro de borrado
         dibujar_cuadro_borrado()
+        
+        # Dibujar el panel detallado de items (al final para que esté por encima de todo)
+        dibujar_panel_detallado_items()
 
 def on_mouse_down(pos, button):
     global estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, tipo_terreno_actual, modo_borrado
