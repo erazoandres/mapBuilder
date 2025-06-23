@@ -41,7 +41,9 @@ CONFIG_JUEGO = {
     # Nueva opción: perder por proyectil
     'PERDER_POR_PROYECTIL': True,
     # Nueva opción: daño por proyectil (si es False, muerte instantánea; si es True, resta vida)
-    'DANO_POR_PROYECTIL': False
+    'DANO_POR_PROYECTIL': False,
+    # Nueva opción: mostrar barra de vida
+    'MOSTRAR_BARRA_VIDA': True
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -1475,6 +1477,10 @@ def draw():
         # Dibujar el panel detallado de items (al final para que esté por encima de todo)
         dibujar_panel_detallado_items()
 
+        # Dibujar barra de vida si está activada
+        if CONFIG_JUEGO.get('MOSTRAR_BARRA_VIDA', True) and estado_juego == "jugando":
+            dibujar_barra_vida_personaje()
+
 def on_mouse_down(pos, button):
     global estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, tipo_terreno_actual, modo_borrado
     if estado_juego == "menu":
@@ -1697,5 +1703,37 @@ def dibujar_pantalla_controles():
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
+
+# --- FUNCIÓN PARA DIBUJAR LA BARRA DE VIDA ---
+def dibujar_barra_vida_personaje():
+    """Dibuja una barra de vida moderna en la esquina superior izquierda."""
+    max_vida = 3  # Valor por defecto
+    if hasattr(personaje, 'vida'):
+        vida_actual = personaje.vida
+    else:
+        vida_actual = max_vida
+    # Puedes hacer que max_vida sea configurable si lo deseas
+    x = 30
+    y = 30
+    ancho = 200
+    alto = 28
+    radio = 12
+    # Fondo barra (gris oscuro)
+    screen.draw.filled_rect(Rect(x, y, ancho, alto), (40, 40, 40, 220))
+    # Borde barra
+    screen.draw.rect(Rect(x, y, ancho, alto), (255, 255, 255))
+    # Barra de vida (degradado rojo-amarillo-verde)
+    porcentaje = max(0, min(vida_actual / max_vida, 1))
+    if porcentaje > 0.5:
+        color = (int(255 - (porcentaje-0.5)*2*255), 255, 0)  # Verde a amarillo
+    else:
+        color = (255, int(porcentaje*2*255), 0)  # Amarillo a rojo
+    ancho_vida = int(ancho * porcentaje)
+    screen.draw.filled_rect(Rect(x, y, ancho_vida, alto), color)
+    # Sombra de vida perdida
+    if porcentaje < 1:
+        screen.draw.filled_rect(Rect(x+ancho_vida, y, ancho-ancho_vida, alto), (80, 0, 0, 80))
+    # Texto de vida
+    screen.draw.text(f"Vida: {vida_actual}/{max_vida}", center=(x+ancho//2, y+alto//2), color="white", fontsize=22, owidth=0.5, ocolor="black")
 
 pgzrun.go()
