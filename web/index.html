@@ -31,10 +31,10 @@
           <h2>⚙️ CONFIGURACIÓN DEL JUEGO</h2>
           <span class="close" onclick="cerrarConfiguracion()">&times;</span>
         </div>
-        <div class="config-container">
-          <div class="config-column">
+        <div class="config-container compact">
+          <div class="config-grid">
             <div class="config-item">
-              <label>Velocidad del Personaje:</label>
+              <label>Velocidad del Personaje</label>
               <div class="value-control">
                 <button onclick="cambiarValor('velocidad_personaje', -1)">◀</button>
                 <span id="velocidad_personaje">3</span>
@@ -42,7 +42,7 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Velocidad de Salto:</label>
+              <label>Velocidad de Salto</label>
               <div class="value-control">
                 <button onclick="cambiarValor('velocidad_salto', -1)">◀</button>
                 <span id="velocidad_salto">15</span>
@@ -50,7 +50,7 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Gravedad:</label>
+              <label>Gravedad</label>
               <div class="value-control">
                 <button onclick="cambiarValor('gravedad', -1)">◀</button>
                 <span id="gravedad">0.8</span>
@@ -58,7 +58,7 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Probabilidad Salto Enemigo:</label>
+              <label>Probabilidad Salto Enemigo</label>
               <div class="value-control">
                 <button onclick="cambiarValor('prob_salto_enemigo', -1)">◀</button>
                 <span id="prob_salto_enemigo">0.02</span>
@@ -66,17 +66,15 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Velocidad de Cámara:</label>
+              <label>Velocidad de Cámara</label>
               <div class="value-control">
                 <button onclick="cambiarValor('velocidad_camara', -1)">◀</button>
                 <span id="velocidad_camara">8</span>
                 <button onclick="cambiarValor('velocidad_camara', 1)">▶</button>
               </div>
             </div>
-          </div>
-          <div class="config-column">
             <div class="config-item">
-              <label>Margen de Cámara:</label>
+              <label>Margen de Cámara</label>
               <div class="value-control">
                 <button onclick="cambiarValor('margen_camara', -1)">◀</button>
                 <span id="margen_camara">100</span>
@@ -84,7 +82,7 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Volumen de Sonido:</label>
+              <label>Volumen de Sonido</label>
               <div class="value-control">
                 <button onclick="cambiarValor('volumen_sonido', -1)">◀</button>
                 <span id="volumen_sonido">50</span>
@@ -92,7 +90,7 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Modo Pantalla Completa:</label>
+              <label>Modo Pantalla Completa</label>
               <div class="value-control">
                 <button onclick="cambiarValor('pantalla_completa', -1)">◀</button>
                 <span id="pantalla_completa">No</span>
@@ -100,7 +98,7 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Tamaño de Hitbox:</label>
+              <label>Tamaño de Hitbox</label>
               <div class="value-control">
                 <button onclick="cambiarValor('tamaño_hitbox', -1)">◀</button>
                 <span id="tamaño_hitbox">Normal</span>
@@ -108,11 +106,259 @@
               </div>
             </div>
             <div class="config-item">
-              <label>Efectos Visuales:</label>
+              <label>Efectos Visuales</label>
               <div class="value-control">
                 <button onclick="cambiarValor('efectos_visuales', -1)">◀</button>
                 <span id="efectos_visuales">Básicos</span>
                 <button onclick="cambiarValor('efectos_visuales', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Tamaño de Tile</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('TILE_SIZE', -1)">◀</button>
+                <span id="TILE_SIZE">40</span>
+                <button onclick="cambiarValor('TILE_SIZE', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Tamaño de Enemigo</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('ENEMIGO_SIZE', -1)">◀</button>
+                <span id="ENEMIGO_SIZE">40</span>
+                <button onclick="cambiarValor('ENEMIGO_SIZE', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Probabilidad Salto Enemigo</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('PROBABILIDAD_SALTO_ENEMIGO', -0.0001)">◀</button>
+                <span id="PROBABILIDAD_SALTO_ENEMIGO">0.000000000000002</span>
+                <button onclick="cambiarValor('PROBABILIDAD_SALTO_ENEMIGO', 0.0001)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Gravedad</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('GRAVEDAD', -0.1)">◀</button>
+                <span id="GRAVEDAD">0.8</span>
+                <button onclick="cambiarValor('GRAVEDAD', 0.1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Velocidad de Salto</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('VELOCIDAD_SALTO', -1)">◀</button>
+                <span id="VELOCIDAD_SALTO">-15</span>
+                <button onclick="cambiarValor('VELOCIDAD_SALTO', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Velocidad de Movimiento</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('VELOCIDAD_MOVIMIENTO', -1)">◀</button>
+                <span id="VELOCIDAD_MOVIMIENTO">3</span>
+                <button onclick="cambiarValor('VELOCIDAD_MOVIMIENTO', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Velocidad de Cámara</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('CAMERA_SPEED', -1)">◀</button>
+                <span id="CAMERA_SPEED">8</span>
+                <button onclick="cambiarValor('CAMERA_SPEED', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Margen de Cámara</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('CAMERA_MARGIN', -10)">◀</button>
+                <span id="CAMERA_MARGIN">100</span>
+                <button onclick="cambiarValor('CAMERA_MARGIN', 10)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Volumen de Sonido</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('VOLUMEN_SONIDO', -1)">◀</button>
+                <span id="VOLUMEN_SONIDO">50</span>
+                <button onclick="cambiarValor('VOLUMEN_SONIDO', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Pantalla Completa</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('PANTALLA_COMPLETA', -1)">◀</button>
+                <span id="PANTALLA_COMPLETA">No</span>
+                <button onclick="cambiarValor('PANTALLA_COMPLETA', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Efectos Visuales</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('EFECTOS_VISUALES', -1)">◀</button>
+                <span id="EFECTOS_VISUALES">Básicos</span>
+                <button onclick="cambiarValor('EFECTOS_VISUALES', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Tamaño Cuadro Colocación</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('TAMANO_CUADRO_COLOCACION', -1)">◀</button>
+                <span id="TAMANO_CUADRO_COLOCACION">24</span>
+                <button onclick="cambiarValor('TAMANO_CUADRO_COLOCACION', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Límite Cuadros Colocación</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('LIMITE_CUADROS_COLOCACION', -1)">◀</button>
+                <span id="LIMITE_CUADROS_COLOCACION">10</span>
+                <button onclick="cambiarValor('LIMITE_CUADROS_COLOCACION', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Límite Cuadros Borrado</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('LIMITE_CUADROS_BORRADO', -1)">◀</button>
+                <span id="LIMITE_CUADROS_BORRADO">10</span>
+                <button onclick="cambiarValor('LIMITE_CUADROS_BORRADO', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Vida Enemigo Especial</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('ENEMIGO_ESPECIAL_VIDA', -1)">◀</button>
+                <span id="ENEMIGO_ESPECIAL_VIDA">3</span>
+                <button onclick="cambiarValor('ENEMIGO_ESPECIAL_VIDA', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Velocidad Proyectil Artillero</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('ARTILLERO_VEL_PROYECTIL', -1)">◀</button>
+                <span id="ARTILLERO_VEL_PROYECTIL">6</span>
+                <button onclick="cambiarValor('ARTILLERO_VEL_PROYECTIL', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Posición Inicial X</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('PERSONAJE_POS_INICIAL_X', -1)">◀</button>
+                <span id="PERSONAJE_POS_INICIAL_X">50</span>
+                <button onclick="cambiarValor('PERSONAJE_POS_INICIAL_X', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Posición Inicial Y</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('PERSONAJE_POS_INICIAL_Y', -1)">◀</button>
+                <span id="PERSONAJE_POS_INICIAL_Y">100</span>
+                <button onclick="cambiarValor('PERSONAJE_POS_INICIAL_Y', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Factor Doble Salto</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('DOBLE_SALTO_FACTOR', -0.1)">◀</button>
+                <span id="DOBLE_SALTO_FACTOR">0.8</span>
+                <button onclick="cambiarValor('DOBLE_SALTO_FACTOR', 0.1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Rebote Enemigo</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('REBOTE_ENEMIGO', -0.1)">◀</button>
+                <span id="REBOTE_ENEMIGO">0.7</span>
+                <button onclick="cambiarValor('REBOTE_ENEMIGO', 0.1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Rebote Enemigo Dañado</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('REBOTE_ENEMIGO_DAÑADO', -0.1)">◀</button>
+                <span id="REBOTE_ENEMIGO_DAÑADO">0.4</span>
+                <button onclick="cambiarValor('REBOTE_ENEMIGO_DAÑADO', 0.1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Perder por Caída</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('PERDER_POR_CAIDA', -1)">◀</button>
+                <span id="PERDER_POR_CAIDA">Sí</span>
+                <button onclick="cambiarValor('PERDER_POR_CAIDA', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Límite Inferior</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('LIMITE_INFERIOR', -1)">◀</button>
+                <span id="LIMITE_INFERIOR">Sí</span>
+                <button onclick="cambiarValor('LIMITE_INFERIOR', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Items Bloquean Paso</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('ITEMS_BLOQUEAN_PASO', -1)">◀</button>
+                <span id="ITEMS_BLOQUEAN_PASO">Sí</span>
+                <button onclick="cambiarValor('ITEMS_BLOQUEAN_PASO', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Mostrar Panel Detallado</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('MOSTRAR_PANEL_DETALLADO', -1)">◀</button>
+                <span id="MOSTRAR_PANEL_DETALLADO">No</span>
+                <button onclick="cambiarValor('MOSTRAR_PANEL_DETALLADO', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Perder por Proyectil</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('PERDER_POR_PROYECTIL', -1)">◀</button>
+                <span id="PERDER_POR_PROYECTIL">Sí</span>
+                <button onclick="cambiarValor('PERDER_POR_PROYECTIL', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Daño por Proyectil</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('DANO_POR_PROYECTIL', -1)">◀</button>
+                <span id="DANO_POR_PROYECTIL">Sí</span>
+                <button onclick="cambiarValor('DANO_POR_PROYECTIL', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Mostrar Barra de Vida</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('MOSTRAR_BARRA_VIDA', -1)">◀</button>
+                <span id="MOSTRAR_BARRA_VIDA">Sí</span>
+                <button onclick="cambiarValor('MOSTRAR_BARRA_VIDA', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Vida Máxima</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('VIDA_MAXIMA', -1)">◀</button>
+                <span id="VIDA_MAXIMA">3</span>
+                <button onclick="cambiarValor('VIDA_MAXIMA', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Daño Proyectil</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('DANO_PROYECTIL', -1)">◀</button>
+                <span id="DANO_PROYECTIL">1</span>
+                <button onclick="cambiarValor('DANO_PROYECTIL', 1)">▶</button>
+              </div>
+            </div>
+            <div class="config-item">
+              <label>Daño Enemigo</label>
+              <div class="value-control">
+                <button onclick="cambiarValor('DANO_ENEMIGO', -1)">◀</button>
+                <span id="DANO_ENEMIGO">1</span>
+                <button onclick="cambiarValor('DANO_ENEMIGO', 1)">▶</button>
               </div>
             </div>
           </div>
