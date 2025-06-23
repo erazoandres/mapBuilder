@@ -543,6 +543,10 @@ def verificar_colision_vertical(x, y):
             for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
                 if (tile_id in TERRENOS) or (item_id in ITEMS):  # Verificamos terrenos para detectar suelo
+                    nombre_imagen = id_to_image.get(tile_id, 'desconocido')
+                    print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                    if nombre_imagen == 'terrenos/tile120.png':
+                        game_over = True
                     personaje.en_suelo = True
                     return True
         # Verificamos colisión en la parte superior solo cuando está saltando
@@ -550,6 +554,10 @@ def verificar_colision_vertical(x, y):
             for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
                 if (tile_id in TERRENOS) or (item_id in ITEMS):  # Mantenemos colisión con terrenos al saltar
+                    nombre_imagen = id_to_image.get(tile_id, 'desconocido')
+                    print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                    if nombre_imagen == 'terrenos/tile120.png':
+                        game_over = True
                     return True
         return False
     else:  # Para enemigos u otros objetos, mantener la lógica original
@@ -607,6 +615,7 @@ def inicializar_enemigos():
         # print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
 
 def verificar_colision(x, y, es_personaje=False):
+    global game_over
     """
     Función unificada para verificar colisiones.
     Retorna: (colision_vertical, colision_horizontal, es_suelo)
@@ -629,6 +638,10 @@ def verificar_colision(x, y, es_personaje=False):
                 if 0 <= tile_x < len(my_map[0]) and 0 <= tile_y_abajo < len(my_map):
                     tile_id = my_map[tile_y_abajo][tile_x]
                     if tile_id in TERRENOS:
+                        nombre_imagen = id_to_image.get(tile_id, 'desconocido')
+                        print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                        if nombre_imagen == 'terrenos/tile120.png':
+                            game_over = True
                         colision_vertical = True
                         es_suelo = True
                         break
@@ -638,6 +651,10 @@ def verificar_colision(x, y, es_personaje=False):
                 if 0 <= tile_x < len(my_map[0]) and 0 <= tile_y_arriba < len(my_map):
                     tile_id = my_map[tile_y_arriba][tile_x]
                     if tile_id in TERRENOS:
+                        nombre_imagen = id_to_image.get(tile_id, 'desconocido')
+                        print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                        if nombre_imagen == 'terrenos/tile120.png':
+                            game_over = True
                         colision_vertical = True
                         break
 
