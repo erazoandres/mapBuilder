@@ -239,7 +239,7 @@ def aplicar_configuracion_hitbox():
                         else:  # Normal
                             personaje.hitbox_width = personaje.width
                             personaje.hitbox_height = personaje.height
-                        print(f"   Hitbox: {config['tamaño_hitbox']}")
+                        # print(f"   Hitbox: {config['tamaño_hitbox']}")
     except:
         pass
 
@@ -473,7 +473,7 @@ with open('mapa.txt', 'r', encoding='utf-8') as f:
                     id_to_image[num_id] = image_path
                     if 'enemigos/tile7.png' in image_path:
                         ENEMIGO_ESPECIAL_ID = num_id
-                        print(f"✅ Enemigo especial (tile7.png) detectado con ID: {ENEMIGO_ESPECIAL_ID}")
+                        # print(f"✅ Enemigo especial (tile7.png) detectado con ID: {ENEMIGO_ESPECIAL_ID}")
 
 
 def expand_matrix(matrix, height, width, default_value=0):
@@ -541,7 +541,7 @@ def verificar_colision_vertical(x, y):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
                 if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Verificamos terrenos y solo items si está activado
                     nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                    print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                    # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                     if nombre_imagen == 'terrenos/tile120.png':
                         game_over = True
                     personaje.en_suelo = True
@@ -552,7 +552,7 @@ def verificar_colision_vertical(x, y):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
                 if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Mantenemos colisión con terrenos y solo items si está activado
                     nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                    print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                    # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                     if nombre_imagen == 'terrenos/tile120.png':
                         game_over = True
                     return True
@@ -636,7 +636,7 @@ def verificar_colision(x, y, es_personaje=False):
                     tile_id = my_map[tile_y_abajo][tile_x]
                     if tile_id in TERRENOS:
                         nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                        print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                        # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                         if nombre_imagen == 'terrenos/tile120.png':
                             game_over = True
                         colision_vertical = True
@@ -649,7 +649,7 @@ def verificar_colision(x, y, es_personaje=False):
                     tile_id = my_map[tile_y_arriba][tile_x]
                     if tile_id in TERRENOS:
                         nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                        print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                        # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                         if nombre_imagen == 'terrenos/tile120.png':
                             game_over = True
                         colision_vertical = True
@@ -984,7 +984,7 @@ def on_key_down(key):
                         cuadros_colocados += 1
                         posicion_terreno_x = columna * TILE_SIZE
                         posicion_terreno_y = fila * TILE_SIZE
-                        print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
+                        # print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
                     print("¡Límite de cuadros de colocación alcanzado!")
         
@@ -1227,10 +1227,10 @@ def draw():
                     tile_actor.height = CONFIG_JUEGO['TILE_SIZE']
                     tile_actor.angle = -rotacion_terreno
                     tile_actor.draw()
-                    if modo_desarrollador:
-                        # Imprimir información de depuración para la rotación del terreno
-                        if rotacion_terreno != 0:
-                            print(f"Terreno ID {tile_id} en ({fila},{columna}) rotado: {rotacion_terreno} grados")
+                    # if modo_desarrollador:
+                    #     # Imprimir información de depuración para la rotación del terreno
+                    #     if rotacion_terreno != 0:
+                    #         print(f"Terreno ID {tile_id} en ({fila},{columna}) rotado: {rotacion_terreno} grados")
 
                 # Rotación para la capa de items (my_items)
                 rotacion_item = my_items_rotations[fila][columna]
@@ -1240,10 +1240,10 @@ def draw():
                     item_actor = Actor(id_to_image[item_id], topleft=(x, y))
                     item_actor.angle = -rotacion_item
                     item_actor.draw()
-                    if modo_desarrollador:
-                        # Imprimir información de depuración para la rotación del item
-                        if rotacion_item != 0:
-                            print(f"Item ID {item_id} en ({fila},{columna}) rotado: {rotacion_item} grados")
+                    # if modo_desarrollador:
+                    #     # Imprimir información de depuración para la rotación del item
+                    #     if rotacion_item != 0:
+                    #         print(f"Item ID {item_id} en ({fila},{columna}) rotado: {rotacion_item} grados")
 
                     # Dibujar borde amarillo si el item está cerca del personaje
                     if item_id in ITEMS and any(x_tile == columna and y_tile == fila for x_tile, y_tile, _ in personaje.objetos_cerca):
@@ -1398,7 +1398,7 @@ def on_mouse_down(pos, button):
                     cuadros_colocados += 1
                     posicion_terreno_x = columna * TILE_SIZE
                     posicion_terreno_y = fila * TILE_SIZE
-                    print(f"Terreno colocado con mouse en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
+                    # print(f"Terreno colocado con mouse en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
                     print("¡Límite de cuadros de colocación alcanzado!")
         elif button == mouse.LEFT and modo_borrado:
