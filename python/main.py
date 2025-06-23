@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# coding: utf-8 
 
 
 import os
@@ -36,18 +36,18 @@ CONFIG_JUEGO = {
     # Configuraciones de rebote y dano
     'REBOTE_ENEMIGO': 0.7,  # Rebote al eliminar enemigo especial
     'REBOTE_ENEMIGO_DANADO': 0.4,  # Rebote al daniar pero no eliminar
-    # Configuraciones de caída
+    # Configuraciones de caida
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
     'ITEMS_BLOQUEAN_PASO': True,
     'MOSTRAR_PANEL_DETALLADO': False,
-    # Nueva opción: perder por proyectil
+    # Nueva opcion: perder por proyectil
     'PERDER_POR_PROYECTIL': True,
     # Nueva opcion: dano por proyectil (si es False, muerte instantanea; si es True, resta vida)
     'DANO_POR_PROYECTIL': True,
-    # Nueva opción: mostrar barra de vida
+    # Nueva opcion: mostrar barra de vida
     'MOSTRAR_BARRA_VIDA': True,
-    # Nueva opción: vida máxima del personaje (1-100)
+    # Nueva opcion: vida maxima del personaje (1-100)
     'VIDA_MAXIMA': 3,
     # Nueva opcion: dano recibido por proyectil
     'DANO_PROYECTIL': 1,
@@ -55,7 +55,7 @@ CONFIG_JUEGO = {
     'DANO_ENEMIGO': 1
 }
 
-# Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
+# Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el codigo relevante
 TILE_SIZE = CONFIG_JUEGO['TILE_SIZE']
 ENEMIGO_SIZE = CONFIG_JUEGO['ENEMIGO_SIZE']
 PROBABILIDAD_SALTO_ENEMIGO = CONFIG_JUEGO['PROBABILIDAD_SALTO_ENEMIGO']
@@ -91,20 +91,20 @@ WINDOW_HEIGHT = HEIGHT # Usaremos el alto total
 # Variables globales para configuraciones adicionales
 VOLUMEN_SONIDO = 50
 PANTALLA_COMPLETA = False
-EFECTOS_VISUALES = "Básicos"
+EFECTOS_VISUALES = "Basicos"
 
-# Variables de la cámara
+# Variables de la camara
 camera_x = 0
 camera_y = 0
 
-# Variables para el sistema de menú
+# Variables para el sistema de menu
 estado_juego = "menu"  # "menu", "jugando", "extras"
 boton_seleccionado = 0  # 0: Jugar, 1: Extras
 
 # Variable para mostrar panel detallado de items
 mostrar_panel_detallado = CONFIG_JUEGO['MOSTRAR_PANEL_DETALLADO']
 
-# Variables para el modo de colocación de terreno
+# Variables para el modo de colocacion de terreno
 modo_colocacion_terreno = False
 posicion_terreno_x = 0
 posicion_terreno_y = 0
@@ -131,7 +131,7 @@ cuadros_borrados = 0
 TIPOS_COMPORTAMIENTO_ENEMIGO = {
     'saltador': {
         'nombre': 'Saltador',
-        'descripcion': 'Enemigo que salta periódicamente o cuando detecta al jugador cerca.'
+        'descripcion': 'Enemigo que salta periodicamente o cuando detecta al jugador cerca.'
     },
     'patrulla': {
         'nombre': 'Patrulla',
@@ -139,11 +139,11 @@ TIPOS_COMPORTAMIENTO_ENEMIGO = {
     },
     'perseguidor': {
         'nombre': 'Perseguidor',
-        'descripcion': 'Enemigo que persigue al jugador si entra en su rango de visión.'
+        'descripcion': 'Enemigo que persigue al jugador si entra en su rango de vision.'
     },
     'aleatorio': {
-        'nombre': 'Errático',
-        'descripcion': 'Enemigo que se mueve de forma aleatoria, cambiando de dirección y velocidad.'
+        'nombre': 'Erratico',
+        'descripcion': 'Enemigo que se mueve de forma aleatoria, cambiando de direccion y velocidad.'
     },
     'camper': {
         'nombre': 'Camper',
@@ -151,7 +151,7 @@ TIPOS_COMPORTAMIENTO_ENEMIGO = {
     },
     'artillero': {
         'nombre': 'Artillero',
-        'descripcion': 'Enemigo que dispara proyectiles hacia el jugador periódicamente.'
+        'descripcion': 'Enemigo que dispara proyectiles hacia el jugador periodicamente.'
     },
     'explosivo': {
         'nombre': 'Explosivo',
@@ -159,9 +159,9 @@ TIPOS_COMPORTAMIENTO_ENEMIGO = {
     },
 }
 
-# Ejemplo de cómo asociar un tipo de comportamiento a un enemigo:
+# Ejemplo de como asociar un tipo de comportamiento a un enemigo:
 # enemigo.tipo_comportamiento = 'saltador'
-# Luego, en la lógica de actualización del enemigo, se puede usar TIPOS_COMPORTAMIENTO_ENEMIGO[enemigo.tipo_comportamiento]
+# Luego, en la logica de actualizacion del enemigo, se puede usar TIPOS_COMPORTAMIENTO_ENEMIGO[enemigo.tipo_comportamiento]
 
 # Leer configuraciones del archivo mapa.txt
 def cargar_configuraciones():
@@ -173,7 +173,7 @@ def cargar_configuraciones():
             
             # Buscar el diccionario de configuraciones
             if 'configuraciones = {' in content:
-                # Extraer la sección de configuraciones
+                # Extraer la seccion de configuraciones
                 start = content.find('configuraciones = {')
                 end = content.find('}', start) + 1
                 config_section = content[start:end]
@@ -186,7 +186,7 @@ def cargar_configuraciones():
                 if 'configuraciones' in config_dict:
                     config = config_dict['configuraciones']
                     
-                    # Aplicar valores numéricos
+                    # Aplicar valores numericos
                     if 'velocidad_personaje' in config:
                         VELOCIDAD_MOVIMIENTO = config['velocidad_personaje']
                     if 'velocidad_salto' in config:
@@ -202,7 +202,7 @@ def cargar_configuraciones():
                     if 'volumen_sonido' in config:
                         VOLUMEN_SONIDO = config['volumen_sonido']
                     if 'pantalla_completa' in config:
-                        PANTALLA_COMPLETA = config['pantalla_completa'] == "Sí"
+                        PANTALLA_COMPLETA = config['pantalla_completa'] == "Si"
                     if 'efectos_visuales' in config:
                         EFECTOS_VISUALES = config['efectos_visuales']
                     if 'pos_inicial_x' in config:
@@ -210,24 +210,24 @@ def cargar_configuraciones():
                     if 'pos_inicial_y' in config:
                         PERSONAJE_POS_INICIAL_Y = config['pos_inicial_y']
                     
-                    # print("✅ Configuraciones cargadas desde mapa.txt")
+                    # print("Config. cargadas desde mapa.txt")
                     # print(f"   Velocidad: {VELOCIDAD_MOVIMIENTO}")
                     # print(f"   Salto: {abs(VELOCIDAD_SALTO)}")
                     # print(f"   Gravedad: {GRAVEDAD}")
-                    # print(f"   Cámara: {CAMERA_SPEED}")
+                    # print(f"   Camara: {CAMERA_SPEED}")
                     # print(f"   Margen: {CAMERA_MARGIN}")
                     # print(f"   Volumen de sonido: {VOLUMEN_SONIDO}")
                     # print(f"   Pantalla completa: {PANTALLA_COMPLETA}")
                     # print(f"   Efectos visuales: {EFECTOS_VISUALES}")
                 else:
-                    print("⚠️ No se encontró el diccionario de configuraciones en mapa.txt")
+                    print("No se encontro el diccionario de configuraciones en mapa.txt")
             else:
-                print("⚠️ No se encontró la sección de configuraciones en mapa.txt")
+                print("No se encontro la seccion de configuraciones en mapa.txt")
                 
     except FileNotFoundError:
-        print("⚠️ Archivo mapa.txt no encontrado. Usando configuraciones por defecto.")
+        print("Archivo mapa.txt no encontrado. Usando configuraciones por defecto.")
     except Exception as e:
-        print(f"⚠️ Error al cargar configuraciones: {e}. Usando configuraciones por defecto.")
+        print(f"Error al cargar configuraciones: {e}. Usando configuraciones por defecto.")
 
 # Cargar configuraciones antes de crear el personaje
 cargar_configuraciones()
@@ -260,17 +260,17 @@ def aplicar_configuracion_hitbox():
                 
                 if 'configuraciones' in config_dict:
                     config = config_dict['configuraciones']
-                    if 'tamaño_hitbox' in config:
-                        if config['tamaño_hitbox'] == "Pequeño":
+                    if 'tamano_hitbox' in config:
+                        if config['tamano_hitbox'] == "Pequeno":
                             personaje.hitbox_width = personaje.width * 0.7
                             personaje.hitbox_height = personaje.height * 0.7
-                        elif config['tamaño_hitbox'] == "Grande":
+                        elif config['tamano_hitbox'] == "Grande":
                             personaje.hitbox_width = personaje.width * 1.3
                             personaje.hitbox_height = personaje.height * 1.3
                         else:  # Normal
                             personaje.hitbox_width = personaje.width
                             personaje.hitbox_height = personaje.height
-                        # print(f"   Hitbox: {config['tamaño_hitbox']}")
+                        # print(f"   Hitbox: {config['tamano_hitbox']}")
     except:
         pass
 
@@ -281,39 +281,39 @@ enemigos_activos = []
 
 # --- FUNCIONES DE MOVIMIENTO PARA CADA COMPORTAMIENTO ---
 def movimiento_saltador(enemigo, jugador):
-    # Salta periódicamente o si el jugador está cerca, y se mueve horizontalmente
+    # Salta periodicamente o si el jugador esta cerca, y se mueve horizontalmente
     if enemigo.en_suelo:
         if random.random() < 0.02 or abs(enemigo.x - jugador.x) < 100:
             enemigo.velocidad_y = VELOCIDAD_SALTO
             enemigo.en_suelo = False
-        # Elegir dirección hacia el jugador si está cerca
+        # Elegir direccion hacia el jugador si esta cerca
         if abs(enemigo.x - jugador.x) < 100:
             enemigo.direccion = 1 if jugador.x > enemigo.x else -1
     # Movimiento horizontal fluido
     enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.5)
 
 def movimiento_patrulla(enemigo, jugador):
-    # Se mueve de un lado a otro, cambia de dirección solo al llegar a los bordes o colisión
+    # Se mueve de un lado a otro, cambia de direccion solo al llegar a los bordes o colision
     enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.7)
-    # Si está cerca del borde, cambia de dirección
+    # Si esta cerca del borde, cambia de direccion
     if enemigo.x <= 0 or enemigo.x >= WIDTH - TILE_SIZE:
         enemigo.direccion *= -1
-    # Si hay colisión horizontal, cambiar dirección (esto ya se maneja en actualizar)
+    # Si hay colision horizontal, cambiar direccion (esto ya se maneja en actualizar)
 
 def movimiento_perseguidor(enemigo, jugador):
-    # Persigue al jugador suavemente si está cerca en X y Y
+    # Persigue al jugador suavemente si esta cerca en X y Y
     distancia_x = jugador.x - enemigo.x
     distancia_y = abs(jugador.y - enemigo.y)
     if abs(distancia_x) < 200 and distancia_y < 40:
         velocidad_objetivo = VELOCIDAD_MOVIMIENTO * 0.9 if distancia_x > 0 else -VELOCIDAD_MOVIMIENTO * 0.9
-        # Interpolación suave
+        # Interpolacion suave
         enemigo.velocidad_x += (velocidad_objetivo - enemigo.velocidad_x) * 0.1
     else:
         # Detenerse completamente
         enemigo.velocidad_x = 0
 
 def movimiento_aleatorio(enemigo, jugador):
-    # Mantiene dirección por más tiempo, cambia menos abruptamente
+    # Mantiene direccion por mas tiempo, cambia menos abruptamente
     if not hasattr(enemigo, 'frames_direccion'):
         enemigo.frames_direccion = random.randint(60, 180)
     enemigo.frames_direccion -= 1
@@ -321,13 +321,13 @@ def movimiento_aleatorio(enemigo, jugador):
         enemigo.direccion = random.choice([-1, 0, 1])
         enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * random.uniform(0.3, 1.0))
         enemigo.frames_direccion = random.randint(60, 180)
-    # Si está cerca del borde, cambia de dirección
+    # Si esta cerca del borde, cambia de direccion
     if enemigo.x <= 0 or enemigo.x >= WIDTH - TILE_SIZE:
         enemigo.direccion *= -1
         enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * random.uniform(0.3, 1.0))
 
 def movimiento_camper(enemigo, jugador):
-    # Permanece quieto hasta que el jugador está muy cerca, entonces se mueve hacia él
+    # Permanece quieto hasta que el jugador esta muy cerca, entonces se mueve hacia el
     distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
     if distancia < 80:
         # Se activa y se mueve hacia el jugador
@@ -341,7 +341,7 @@ def movimiento_artillero(enemigo, jugador):
         enemigo.cooldown_disparo = 0
     enemigo.cooldown_disparo -= 1
     if enemigo.cooldown_disparo <= 0:
-        # Calcular dirección hacia el jugador
+        # Calcular direccion hacia el jugador
         dx = jugador.x - enemigo.x
         dy = jugador.y - enemigo.y
         distancia = (dx**2 + dy**2) ** 0.5
@@ -356,20 +356,19 @@ def movimiento_artillero(enemigo, jugador):
     enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.3)
 
 def movimiento_explosivo(enemigo, jugador):
-    # Se lanza hacia el jugador y "explota" (desaparece) si está muy cerca
+    # Se lanza hacia el jugador y "explota" (desaparece) si esta muy cerca
     distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
     if distancia < 50:
-        # Simula explosión eliminando al enemigo
+        # Simula explosion eliminando al enemigo
         if enemigo in enemigos_activos:
             enemigos_activos.remove(enemigo)
         return
-    # Se lanza rápidamente hacia el jugador
+    # Se lanza rapidamente hacia el jugador
     enemigo.velocidad_x = (VELOCIDAD_MOVIMIENTO * 1.5) if jugador.x > enemigo.x else -(VELOCIDAD_MOVIMIENTO * 1.5)
     # Opcional: puede saltar hacia el jugador
     if enemigo.en_suelo and abs(enemigo.x - jugador.x) < 100:
         enemigo.velocidad_y = VELOCIDAD_SALTO * 0.7
         enemigo.en_suelo = False
-
 # --- CLASE ENEMIGO MODIFICADA ---
 class Enemigo:
     def __init__(self, x, y, tipo_id):
@@ -380,7 +379,7 @@ class Enemigo:
         self.velocidad_x = 0
         self.en_suelo = False
         self.direccion = random.choice([-1, 1])  # -1 izquierda, 1 derecha
-        self.tiempo_cambio_direccion = random.randint(60, 180)  # frames hasta cambiar dirección
+        self.tiempo_cambio_direccion = random.randint(60, 180)  # frames hasta cambiar direccion
         self.contador = 0
         self.imagen_base = id_to_image.get(tipo_id, "enemigos/default")
         # Asignar comportamiento aleatorio
@@ -395,7 +394,7 @@ class Enemigo:
     def actualizar(self, jugador=None):
         # Aplicar gravedad
         self.velocidad_y += GRAVEDAD
-        # Lógica de movimiento según comportamiento
+        # Logica de movimiento segun comportamiento
         if self.tipo_comportamiento == 'saltador':
             movimiento_saltador(self, jugador)
         elif self.tipo_comportamiento == 'patrulla':
@@ -410,7 +409,7 @@ class Enemigo:
             movimiento_artillero(self, jugador)
         elif self.tipo_comportamiento == 'explosivo':
             movimiento_explosivo(self, jugador)
-        # Actualizar posición vertical
+        # Actualizar posicion vertical
         nueva_y = self.y + self.velocidad_y
         if not verificar_colision_vertical(self.x, nueva_y):
             self.y = nueva_y
@@ -419,25 +418,25 @@ class Enemigo:
             if self.velocidad_y > 0:
                 self.en_suelo = True
             self.velocidad_y = 0
-        # Actualizar posición horizontal
+        # Actualizar posicion horizontal
         nueva_x = self.x + self.velocidad_x
         if not verificar_colision_horizontal(nueva_x, self.y):
             self.x = nueva_x
         else:
             self.direccion *= -1
             self.velocidad_x = 0
-        # Mantener al enemigo dentro de los límites
+        # Mantener al enemigo dentro de los limites
         self.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - ENEMIGO_SIZE, self.x))
 
         if CONFIG_JUEGO['LIMITE_INFERIOR']:
-            # Si el límite inferior está activado, no dejar que el enemigo caiga
+            # Si el limite inferior esta activado, no dejar que el enemigo caiga
             limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - ENEMIGO_SIZE
             if self.y > limite_inferior_y:
                 self.y = limite_inferior_y
                 self.velocidad_y = 0
                 self.en_suelo = True
         else:
-            # Si el límite está desactivado, el enemigo se elimina si cae del mapa
+            # Si el limite esta desactivado, el enemigo se elimina si cae del mapa
             if self.y > MATRIZ_ALTO * TILE_SIZE:
                 if self in enemigos_activos:
                     enemigos_activos.remove(self)
@@ -450,7 +449,7 @@ class Proyectil:
         self.tipo_id = tipo_id
         self.rotacion = rotacion
         
-        # Calcular velocidad basada en la rotación
+        # Calcular velocidad basada en la rotacion
         velocidad_magnitud = VELOCIDAD_MOVIMIENTO
         angulo_rad = math.radians(self.rotacion)
         
@@ -465,7 +464,7 @@ class Proyectil:
         return self.imagen
 
     def actualizar(self, jugador=None):
-        # El proyectil se mueve en la dirección de su velocidad
+        # El proyectil se mueve en la direccion de su velocidad
         self.x += self.velocidad_x
         self.y += self.velocidad_y
         
@@ -476,13 +475,13 @@ class Proyectil:
             return 
 
         if CONFIG_JUEGO['LIMITE_INFERIOR']:
-            # Si el límite inferior está activado, detener el proyectil en el borde
+            # Si el limite inferior esta activado, detener el proyectil en el borde
             limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - self.alto
             if self.y > limite_inferior_y:
                 self.y = limite_inferior_y
                 self.velocidad_y = 0 
         else:
-            # Si el límite inferior está desactivado, eliminar el proyectil si cae
+            # Si el limite inferior esta desactivado, eliminar el proyectil si cae
             if self.y > MATRIZ_ALTO * TILE_SIZE:
                 if self in enemigos_activos:
                     enemigos_activos.remove(self)
@@ -576,7 +575,7 @@ with open('mapa.txt', 'r', encoding='utf-8') as f:
                     id_to_image[num_id] = image_path
                     if 'enemigos/tile7.png' in image_path:
                         ENEMIGO_ESPECIAL_ID = num_id
-                        # print(f"✅ Enemigo especial (tile7.png) detectado con ID: {ENEMIGO_ESPECIAL_ID}")
+                        # print(f"Enemigo especial (tile7.png) detectado con ID: {ENEMIGO_ESPECIAL_ID}")
 
 
 def expand_matrix(matrix, height, width, default_value=0):
@@ -620,14 +619,14 @@ def verificar_colision_horizontal(x, y):
         for offset_y in range(0, personaje.hitbox_height, 5):
             # Borde izquierdo
             tile_id, item_id = obtener_tile_en_posicion(x, y + offset_y)
-            if CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS:  # Solo verificamos items si está activado
+            if CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS:  # Solo verificamos items si esta activado
                 return True
             # Borde derecho
             tile_id, item_id = obtener_tile_en_posicion(x + personaje.hitbox_width, y + offset_y)
-            if CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS:  # Solo verificamos items si está activado
+            if CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS:  # Solo verificamos items si esta activado
                 return True
         return False
-    else:  # Para enemigos u otros objetos, mantener la lógica original
+    else:  # Para enemigos u otros objetos, mantener la logica original
         for offset_y in [1, TILE_SIZE - 2]:
             for offset_x in [0, TILE_SIZE - 1]:
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
@@ -638,29 +637,29 @@ def verificar_colision_horizontal(x, y):
 def verificar_colision_vertical(x, y):
     # Para el personaje, solo verificamos colisiones con items y terrenos en la parte inferior
     if x == personaje.x:  # Si es el personaje
-        # Solo verificamos colisión en la parte inferior cuando está cayendo
+        # Solo verificamos colision en la parte inferior cuando esta cayendo
         if personaje.velocidad_y > 0:
             for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
-                if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Verificamos terrenos y solo items si está activado
+                if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Verificamos terrenos y solo items si esta activado
                     nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                    # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                    # print(f'Colision con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                     if nombre_imagen == 'terrenos/tile120.png':
                         game_over = True
                     personaje.en_suelo = True
                     return True
-        # Verificamos colisión en la parte superior solo cuando está saltando
-        elif personaje.velocidad_y < 0:  # Si está saltando
+        # Verificamos colision en la parte superior solo cuando esta saltando
+        elif personaje.velocidad_y < 0:  # Si esta saltando
             for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
-                if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Mantenemos colisión con terrenos y solo items si está activado
+                if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Mantenemos colision con terrenos y solo items si esta activado
                     nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                    # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                    # print(f'Colision con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                     if nombre_imagen == 'terrenos/tile120.png':
                         game_over = True
                     return True
         return False
-    else:  # Para enemigos u otros objetos, mantener la lógica original
+    else:  # Para enemigos u otros objetos, mantener la logica original
         for offset_x in [1, TILE_SIZE - 2]:
             for offset_y in [0, TILE_SIZE - 1]:
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + offset_y)
@@ -691,7 +690,7 @@ def verificar_interaccion():
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
 
-# Función para inicializar enemigos desde el mapa
+# Funcion para inicializar enemigos desde el mapa
 def inicializar_enemigos():
     enemigos_activos.clear()
     for fila in range(len(my_items)):
@@ -706,7 +705,7 @@ def inicializar_enemigos():
                     nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
                 
                 enemigos_activos.append(nuevo_enemigo)
-                # Eliminar el enemigo de la matriz para que no se dibuje estático
+                # Eliminar el enemigo de la matriz para que no se dibuje estatico
                 my_items[fila][columna] = 0
     
     print(f"Total de enemigos inicializados: {len(enemigos_activos)}")
@@ -717,14 +716,14 @@ def inicializar_enemigos():
 def verificar_colision(x, y, es_personaje=False):
     global game_over
     """
-    Función unificada para verificar colisiones.
+    Funcion unificada para verificar colisiones.
     Retorna: (colision_vertical, colision_horizontal, es_suelo)
     """
     colision_vertical = False
     colision_horizontal = False
     es_suelo = False
 
-    # Obtener las coordenadas de los tiles que podrían colisionar
+    # Obtener las coordenadas de los tiles que podrian colisionar
     tile_x_izq = int(x // TILE_SIZE)
     tile_x_der = int((x + personaje.hitbox_width) // TILE_SIZE)
     tile_y_arriba = int(y // TILE_SIZE)
@@ -732,27 +731,27 @@ def verificar_colision(x, y, es_personaje=False):
 
     # Verificar colisiones verticales
     if es_personaje:
-        # Verificar suelo solo cuando está cayendo
+        # Verificar suelo solo cuando esta cayendo
         if personaje.velocidad_y > 0:
             for tile_x in range(tile_x_izq, tile_x_der + 1):
                 if 0 <= tile_x < len(my_map[0]) and 0 <= tile_y_abajo < len(my_map):
                     tile_id = my_map[tile_y_abajo][tile_x]
                     if tile_id in TERRENOS:
                         nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                        # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                        # print(f'Colision con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                         if nombre_imagen == 'terrenos/tile120.png':
                             game_over = True
                         colision_vertical = True
                         es_suelo = True
                         break
-        # Verificar techo solo cuando está saltando
+        # Verificar techo solo cuando esta saltando
         elif personaje.velocidad_y < 0:
             for tile_x in range(tile_x_izq, tile_x_der + 1):
                 if 0 <= tile_x < len(my_map[0]) and 0 <= tile_y_arriba < len(my_map):
                     tile_id = my_map[tile_y_arriba][tile_x]
                     if tile_id in TERRENOS:
                         nombre_imagen = id_to_image.get(tile_id, 'desconocido')
-                        # print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
+                        # print(f'Colision con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                         if nombre_imagen == 'terrenos/tile120.png':
                             game_over = True
                         colision_vertical = True
@@ -781,9 +780,9 @@ def verificar_colision(x, y, es_personaje=False):
 def update():
     global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual, cuadros_colocados, LIMITE_CUADROS_COLOCACION, modo_borrado
     
-    # Si estamos en el menú principal
+    # Si estamos en el menu principal
     if estado_juego == "menu":
-        # Los controles del menú se manejan en on_key_down()
+        # Los controles del menu se manejan en on_key_down()
         return
     
     # Si estamos en extras
@@ -793,7 +792,7 @@ def update():
     
     # Si estamos jugando
     elif estado_juego == "jugando":
-        # Volver al menú con ESC
+        # Volver al menu con ESC
         if keyboard.ESCAPE:
             estado_juego = "menu"
             return
@@ -809,29 +808,29 @@ def update():
                 personaje.vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)  # Restaurar vida al reiniciar
                 personaje.invulnerable = False
                 personaje.tiempo_invulnerable = 0
-                # No reiniciar la colección de items para mantener el progreso
+                # No reiniciar la coleccion de items para mantener el progreso
                 return
 
  
         
-        # Activar/desactivar modo de colocación de terreno
+        # Activar/desactivar modo de colocacion de terreno
         if keyboard.Y:
             modo_colocacion_terreno = not modo_colocacion_terreno
             if modo_colocacion_terreno:
                 modo_borrado = False # Desactivar modo borrado
-                # Inicializar posición del terreno en la posición del personaje
+                # Inicializar posicion del terreno en la posicion del personaje
                 posicion_terreno_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
                 posicion_terreno_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
-                # Al inicio, asegúrate de que tipo_terreno_actual esté en TERRENOS si la lista no está vacía
+                # Al inicio, asegurate de que tipo_terreno_actual este en TERRENOS si la lista no esta vacia
                 if TERRENOS:
                     tipo_terreno_actual = TERRENOS[0]
                 else:
                     tipo_terreno_actual = 1
             else:
-                # Salir del modo de colocación
+                # Salir del modo de colocacion
                 pass
         
-        # Reinicio completo del juego (incluyendo colección)
+        # Reinicio completo del juego (incluyendo coleccion)
         if keyboard.F5:
             game_over = False
             personaje.x = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_X']
@@ -839,29 +838,29 @@ def update():
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
-            items_recolectados.clear()  # Limpiar la colección
+            items_recolectados.clear()  # Limpiar la coleccion
             cuadros_colocados = 0
             cuadros_borrados = 0
             # Reinicializar el mapa de items
             inicializar_enemigos()
             return
 
-        # Lógica de salto mejorada - controles fluidos
+        # Logica de salto mejorada - controles fluidos
         if (keyboard.SPACE or keyboard.UP):
             if personaje.en_suelo:
                 personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO']
                 personaje.en_suelo = False
                 personaje.puede_doble_salto = True
-            elif personaje.puede_doble_salto and personaje.velocidad_y < 0:  # Solo permitir doble salto cuando está cayendo
-                personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['DOBLE_SALTO_FACTOR']  # El segundo salto es ligeramente más débil
+            elif personaje.puede_doble_salto and personaje.velocidad_y < 0:  # Solo permitir doble salto cuando esta cayendo
+                personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['DOBLE_SALTO_FACTOR']  # El segundo salto es ligeramente mas debil
                 personaje.puede_doble_salto = False
                 # Nota: El volumen del sonido se puede ajustar editando el archivo de audio directamente
                 # sounds.jump.play()  # Sonido de salto (volumen controlado por el archivo de audio)
 
-        # Interacción con items - se maneja en on_key_down para que sea una sola pulsación
+        # Interaccion con items - se maneja en on_key_down para que sea una sola pulsacion
 
         # Movimiento horizontal - controles fluidos
-        if not modo_colocacion_terreno and not modo_borrado:  # Solo permitir movimiento si no está en ningún modo
+        if not modo_colocacion_terreno and not modo_borrado:  # Solo permitir movimiento si no esta en ningun modo
             if keyboard.LEFT:
                 personaje.velocidad_x = -CONFIG_JUEGO['VELOCIDAD_MOVIMIENTO']
             elif keyboard.RIGHT:
@@ -869,10 +868,10 @@ def update():
             else:
                 personaje.velocidad_x = 0
         else:
-            # En modo colocación, detener el movimiento del personaje
+            # En modo colocacion, detener el movimiento del personaje
             personaje.velocidad_x = 0
 
-        # Aplicar gravedad solo si no está en el suelo
+        # Aplicar gravedad solo si no esta en el suelo
         if not personaje.en_suelo:
             personaje.velocidad_y += CONFIG_JUEGO['GRAVEDAD']
 
@@ -883,7 +882,7 @@ def update():
         # Verificar colisiones
         colision_vertical, colision_horizontal, es_suelo = verificar_colision(nueva_x, nueva_y, True)
 
-        # Actualizar posición vertical
+        # Actualizar posicion vertical
         if not colision_vertical:
             personaje.y = nueva_y
             personaje.en_suelo = False
@@ -896,16 +895,16 @@ def update():
             else:
                 personaje.velocidad_y = 0
 
-        # Actualizar posición horizontal
+        # Actualizar posicion horizontal
         if not colision_horizontal:
             personaje.x = nueva_x
 
-        # Mantener al personaje dentro de los límites horizontales del mapa
+        # Mantener al personaje dentro de los limites horizontales del mapa
         personaje.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - personaje.hitbox_width, personaje.x))
 
-        # Comprobar si el personaje se ha caído por debajo del mapa
+        # Comprobar si el personaje se ha caido por debajo del mapa
         if CONFIG_JUEGO['LIMITE_INFERIOR']:
-            # Si el límite inferior está activado, no dejar que el personaje caiga
+            # Si el limite inferior esta activado, no dejar que el personaje caiga
             limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - personaje.hitbox_height
             if personaje.y > limite_inferior_y:
                 if CONFIG_JUEGO['PERDER_POR_CAIDA']:
@@ -916,12 +915,12 @@ def update():
                 personaje.en_suelo = True
                 personaje.puede_doble_salto = False
         else:
-            # Si el límite inferior está desactivado, el personaje puede caer y perder
+            # Si el limite inferior esta desactivado, el personaje puede caer y perder
             if personaje.y > MATRIZ_ALTO * TILE_SIZE:
                 if CONFIG_JUEGO['PERDER_POR_CAIDA']:
                     game_over = True
 
-        # Actualizar dirección del personaje
+        # Actualizar direccion del personaje
         if personaje.velocidad_x > 0:
             personaje.image = "personajes/tile0"
         elif personaje.velocidad_x < 0:
@@ -933,17 +932,17 @@ def update():
         for enemigo in enemigos_activos:
             enemigo.actualizar(personaje)
             
-            # Comprobar colisión con el personaje usando el hitbox real
+            # Comprobar colision con el personaje usando el hitbox real
             if (personaje.x < enemigo.x + ENEMIGO_SIZE and
                 personaje.x + personaje.hitbox_width > enemigo.x and
                 personaje.y < enemigo.y + ENEMIGO_SIZE and
                 personaje.y + personaje.hitbox_height > enemigo.y):
                 
-                # Lógica específica para enemigo especial
-                if hasattr(enemigo, 'recibir_daño'):
+                # Logica especifica para enemigo especial
+                if hasattr(enemigo, 'recibir_dano'):
                     # Si el jugador esta saltando sobre el enemigo, danarlo
                     if personaje.velocidad_y > 0 and personaje.y < enemigo.y:
-                        if enemigo.recibir_daño():
+                        if enemigo.recibir_dano():
                             # Enemigo eliminado
                             enemigos_activos.remove(enemigo)
                             # Rebote del personaje
@@ -980,7 +979,7 @@ def update():
                                 if enemigo in enemigos_activos:
                                     enemigos_activos.remove(enemigo)
                             else:
-                                # Muerte instantánea
+                                # Muerte instantanea
                                 game_over = True
                                 # Eliminar el proyectil
                                 if enemigo in enemigos_activos:
@@ -993,7 +992,7 @@ def update():
                     personaje.y < enemigo.y + ENEMIGO_SIZE and
                     personaje.y + personaje.hitbox_height > enemigo.y):
                     # Si no es el caso especial de saltar sobre el enemigo
-                    if not (hasattr(enemigo, 'recibir_daño') and personaje.velocidad_y > 0 and personaje.y < enemigo.y):
+                    if not (hasattr(enemigo, 'recibir_dano') and personaje.velocidad_y > 0 and personaje.y < enemigo.y):
                         if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
                             dano = CONFIG_JUEGO.get('DANO_ENEMIGO', 20)
                             personaje.vida -= dano
@@ -1010,14 +1009,14 @@ def update():
 def on_key_down(key):
     global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual, modo_borrado, posicion_borrado_x, posicion_borrado_y, cuadros_borrados
 
-    # Si estamos en el menú principal
+    # Si estamos en el menu principal
     if estado_juego == "menu":
         if key == keys.UP:
             boton_seleccionado = (boton_seleccionado - 1) % 2
         elif key == keys.DOWN:
             boton_seleccionado = (boton_seleccionado + 1) % 2
         elif key == keys.RETURN or key == keys.SPACE:
-            # Seleccionar botón
+            # Seleccionar boton
             if boton_seleccionado == 0:  # Jugar
                 estado_juego = "jugando"
             elif boton_seleccionado == 1:  # Extras
@@ -1032,7 +1031,7 @@ def on_key_down(key):
     
     # Si estamos jugando
     elif estado_juego == "jugando":
-        # Volver al menú con ESC
+        # Volver al menu con ESC
         if key == keys.ESCAPE: # type: ignore
             estado_juego = "menu"
             return
@@ -1047,10 +1046,10 @@ def on_key_down(key):
                 personaje.vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)  # Restaurar vida al reiniciar
                 personaje.invulnerable = False
                 personaje.tiempo_invulnerable = 0
-                # No reiniciar la colección de items para mantener el progreso
+                # No reiniciar la coleccion de items para mantener el progreso
                 return
 
-        # Mover aquí el control de la tecla F
+        # Mover aqui el control de la tecla F
         if key == keys.F: # type: ignore
             modo_desarrollador = not modo_desarrollador
         
@@ -1058,30 +1057,30 @@ def on_key_down(key):
         if key == keys.I:
             mostrar_panel_detallado = not mostrar_panel_detallado
         
-        # Activar/desactivar modo de colocación de terreno
+        # Activar/desactivar modo de colocacion de terreno
         if key == keys.Y:
             modo_colocacion_terreno = not modo_colocacion_terreno
             if modo_colocacion_terreno:
                 modo_borrado = False # Desactivar modo borrado
-                # Inicializar posición del terreno en la posición del personaje
+                # Inicializar posicion del terreno en la posicion del personaje
                 posicion_terreno_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
                 posicion_terreno_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
             else:
-                # Salir del modo de colocación
+                # Salir del modo de colocacion
                 pass
         
         # Activar/desactivar modo de borrado
         if key == keys.R:
             modo_borrado = not modo_borrado
             if modo_borrado:
-                modo_colocacion_terreno = False # Desactivar modo colocación
-                # Inicializar posición del cuadro en la posición del personaje
+                modo_colocacion_terreno = False # Desactivar modo colocacion
+                # Inicializar posicion del cuadro en la posicion del personaje
                 posicion_borrado_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
                 posicion_borrado_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
             else:
                 pass # Salir de modo borrado
         
-        # Reinicio completo del juego (incluyendo colección)
+        # Reinicio completo del juego (incluyendo coleccion)
         if key == keys.F5:
             game_over = False
             personaje.x = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_X']
@@ -1089,7 +1088,7 @@ def on_key_down(key):
             personaje.velocidad_y = 0
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
-            items_recolectados.clear()  # Limpiar la colección
+            items_recolectados.clear()  # Limpiar la coleccion
             cuadros_colocados = 0
             cuadros_borrados = 0
             # Reinicializar el mapa de items
@@ -1102,7 +1101,7 @@ def on_key_down(key):
 
         if key == keys.E and personaje.objetos_cerca:
             x, y, item_id = personaje.objetos_cerca[0]
-            # Agregar el item a la colección si no está ya recolectado
+            # Agregar el item a la coleccion si no esta ya recolectado
             if item_id not in items_recolectados:
                 items_recolectados[item_id] = 1
             else:
@@ -1110,9 +1109,9 @@ def on_key_down(key):
             my_items[y][x] = 0
             personaje.objetos_cerca.remove((x, y, item_id))
 
-        # Lógica del modo de colocación de terreno
+        # Logica del modo de colocacion de terreno
         if modo_colocacion_terreno:
-            # Mover el cuadro de colocación con las flechas
+            # Mover el cuadro de colocacion con las flechas
             if key == keys.LEFT:
                 posicion_terreno_x = max(0, posicion_terreno_x - TILE_SIZE)
             elif key == keys.RIGHT:
@@ -1127,7 +1126,7 @@ def on_key_down(key):
                     idx = TERRENOS.index(tipo_terreno_actual) if tipo_terreno_actual in TERRENOS else 0
                     tipo_terreno_actual = TERRENOS[(idx + 1) % len(TERRENOS)]
 
-            elif key == keys.T:  # Confirmar colocación con la tecla T
+            elif key == keys.T:  # Confirmar colocacion con la tecla T
                 if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
                     columna = int(posicion_terreno_x // TILE_SIZE)
                     fila = int(posicion_terreno_y // TILE_SIZE)
@@ -1136,11 +1135,11 @@ def on_key_down(key):
                         cuadros_colocados += 1
                         posicion_terreno_x = columna * TILE_SIZE
                         posicion_terreno_y = fila * TILE_SIZE
-                        # print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
+                        # print(f"Terreno colocado con tecla T en posicion ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
-                    print("¡Límite de cuadros de colocación alcanzado!")
+                    print("Limite de cuadros de colocacion alcanzado")
         
-        # Lógica del modo de borrado
+        # Logica del modo de borrado
         elif modo_borrado:
             # Mover el cuadro de borrado con las flechas
             if key == keys.LEFT:
@@ -1187,34 +1186,34 @@ def update_camera():
     camera_y = max(0, min(camera_y, max_camera_y if max_camera_y > 0 else 0))
 
 def dibujar_panel_detallado_items():
-    """Dibuja un panel detallado con información de los items recolectados"""
+    """Dibuja un panel detallado con informacion de los items recolectados"""
     if not mostrar_panel_detallado:
         return
     
-    # Configuración del panel
+    # Configuracion del panel
     panel_x = WIDTH - 160
     panel_y = 10
     item_size = 20
     line_height = 25
     padding = 10
     
-    # Calcular el alto necesario (mínimo para el título, y luego por cada item)
+    # Calcular el alto necesario (minimo para el titulo, y luego por cada item)
     num_items = len(items_recolectados)
     panel_height = (padding * 2) + 20 + (num_items * line_height) if num_items > 0 else 60
     
     # Dibujar fondo del panel
-    screen.draw.filled_rect(Rect(panel_x, panel_y, 150, panel_height), (0, 0, 0, 180)) # Más opaco
+    screen.draw.filled_rect(Rect(panel_x, panel_y, 150, panel_height), (0, 0, 0, 180)) # Mas opaco
     screen.draw.rect(Rect(panel_x, panel_y, 150, panel_height), (255, 255, 255, 200))
     
-    # Dibujar título
+    # Dibujar titulo
     screen.draw.text("Inventario", (panel_x + padding, panel_y + padding), color="white", fontsize=16)
 
     # Si no hay items, mostrar mensaje
     if not items_recolectados:
-        screen.draw.text("(Vacío)", center=(panel_x + 75, panel_y + 40), color=(150, 150, 150), fontsize=14)
+        screen.draw.text("(Vacio)", center=(panel_x + 75, panel_y + 40), color=(150, 150, 150), fontsize=14)
         return
 
-    # Dibujar cada item con su información
+    # Dibujar cada item con su informacion
     for i, (item_id, cantidad) in enumerate(items_recolectados.items()):
         if item_id in id_to_image:
             y_pos = panel_y + padding + 25 + i * line_height
@@ -1236,18 +1235,18 @@ def dibujar_panel_detallado_items():
             screen.draw.text(cantidad_texto, (panel_x + 135 - padding, y_pos + 5), color="yellow", fontsize=14)
 
 def dibujar_menu_principal():
-    """Dibuja el menú principal con los 3 botones"""
+    """Dibuja el menu principal con los 3 botones"""
     global boton_seleccionado
     
-    # Configuración del menú - ajustado para ventana más ancha
-    boton_width = 250  # Botones más anchos
-    boton_height = 70  # Botones más altos
-    espaciado = 30     # Más espacio entre botones
+    # Configuracion del menu - ajustado para ventana mas ancha
+    boton_width = 250  # Botones mas anchos
+    boton_height = 70  # Botones mas altos
+    espaciado = 30     # Mas espacio entre botones
     centro_x = WIDTH // 2  # Centrar en la nueva ventana
     centro_y = HEIGHT // 2
     
     # Posiciones de los botones (en columna)
-    # Calcular la posición vertical inicial para centrar ambos botones en la pantalla
+    # Calcular la posicion vertical inicial para centrar ambos botones en la pantalla
     total_altura_botones = 2 * boton_height + espaciado
     inicio_y = centro_y - total_altura_botones // 2
 
@@ -1266,20 +1265,20 @@ def dibujar_menu_principal():
         color = (intensidad, intensidad, intensidad + 20)
         screen.draw.line((0, y), (WIDTH, y), color)
     
-    # Dibujar patrón de estrellas en el fondo
+    # Dibujar patron de estrellas en el fondo
     for i in range(50):
         x = (i * 37) % WIDTH
         y = (i * 23) % HEIGHT
         if (x + y) % 2 == 0:
             screen.draw.circle((x, y), 1, (255, 255, 255, 100))
     
-    # Dibujar cada botón
+    # Dibujar cada boton
     for i, (x, y) in enumerate(botones):
         # Fondo igual para todos
         color_fondo = (100, 100, 100, 150)
         screen.draw.filled_rect(Rect(x, y, boton_width, boton_height), color_fondo)
 
-        # Borde según selección
+        # Borde segun seleccion
         if i == boton_seleccionado:
             color_borde = (255, 215, 0)  # Amarillo
             color_texto = (255, 255, 255)
@@ -1294,30 +1293,30 @@ def dibujar_menu_principal():
         texto_y = y + boton_height // 2
         screen.draw.text(textos[i], center=(texto_x, texto_y), color=color_texto, fontsize=24)
     
-    # Dibujar título del juego con efectos
-    # Sombra del título
+    # Dibujar titulo del juego con efectos
+    # Sombra del titulo
     screen.draw.text("MAP BUILDER", center=(centro_x + 2, 30), color=(0, 0, 0, 100), fontsize=48)
-    # Título principal
+    # Titulo principal
     screen.draw.text("MAP BUILDER", center=(centro_x, 32), color=(255, 215, 0), fontsize=48)
     
-    # Línea decorativa bajo el título
+    # Linea decorativa bajo el titulo
     screen.draw.line((centro_x - 150, 50), (centro_x + 150, 50), (255, 215, 0))  
 
 def dibujar_cuadro_colocacion_terreno():
-    """Dibuja solo el borde entrelineado del cuadro de colocación de terreno, sin imagen de tile"""
+    """Dibuja solo el borde entrelineado del cuadro de colocacion de terreno, sin imagen de tile"""
     if not modo_colocacion_terreno:
         return
     
-    # Calcular posición en pantalla (considerando la cámara)
+    # Calcular posicion en pantalla (considerando la camara)
     x = posicion_terreno_x - camera_x
     y = posicion_terreno_y - camera_y
     
-    # Solo dibujar si está en pantalla
+    # Solo dibujar si esta en pantalla
     if -CONFIG_JUEGO['TILE_SIZE'] <= x <= WINDOW_WIDTH and -CONFIG_JUEGO['TILE_SIZE'] <= y <= HEIGHT:
         # Calcular el area del cuadro pequeno
         cuadro_x = x + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
         cuadro_y = y + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
-        # Dibujar borde entrelineado (líneas discontinuas)
+        # Dibujar borde entrelineado (lineas discontinuas)
         color_borde = (255, 255, 0)
         dash = 4
         length = CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION']
@@ -1337,12 +1336,12 @@ def dibujar_cuadro_colocacion_terreno():
         if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
             screen.draw.text(f"Presiona T para colocar ({LIMITE_CUADROS_COLOCACION - cuadros_colocados} restantes)", center=(texto_x, texto_y + 15), color="white", fontsize=10)
         else:
-            screen.draw.text("¡Límite alcanzado!", center=(texto_x, texto_y + 15), color="red", fontsize=18)
+            screen.draw.text("Limite alcanzado", center=(texto_x, texto_y + 15), color="red", fontsize=18)
 
 def draw():
     screen.clear()
     
-    # Si estamos en el menú principal
+    # Si estamos en el menu principal
     if estado_juego == "menu":
         dibujar_menu_principal()
         return
@@ -1354,7 +1353,7 @@ def draw():
     
     # Si estamos jugando
     elif estado_juego == "jugando":
-        # Actualizar la posición de la cámara
+        # Actualizar la posicion de la camara
         update_camera()
 
         # Calcular el rango de tiles visibles
@@ -1369,7 +1368,7 @@ def draw():
                 x = columna * CONFIG_JUEGO['TILE_SIZE'] - camera_x
                 y = fila * CONFIG_JUEGO['TILE_SIZE'] - camera_y
                 
-                # Rotación para la capa de terreno (my_map)
+                # Rotacion para la capa de terreno (my_map)
                 rotacion_terreno = my_rotations[fila][columna]
                 
                 tile_id = my_map[fila][columna]
@@ -1380,11 +1379,11 @@ def draw():
                     tile_actor.angle = -rotacion_terreno
                     tile_actor.draw()
                     # if modo_desarrollador:
-                    #     # Imprimir información de depuración para la rotación del terreno
+                    #     # Imprimir informacion de depuracion para la rotacion del terreno
                     #     if rotacion_terreno != 0:
                     #         print(f"Terreno ID {tile_id} en ({fila},{columna}) rotado: {rotacion_terreno} grados")
 
-                # Rotación para la capa de items (my_items)
+                # Rotacion para la capa de items (my_items)
                 rotacion_item = my_items_rotations[fila][columna]
 
                 item_id = my_items[fila][columna]
@@ -1393,18 +1392,18 @@ def draw():
                     item_actor.angle = -rotacion_item
                     item_actor.draw()
                     # if modo_desarrollador:
-                    #     # Imprimir información de depuración para la rotación del item
+                    #     # Imprimir informacion de depuracion para la rotacion del item
                     #     if rotacion_item != 0:
                     #         print(f"Item ID {item_id} en ({fila},{columna}) rotado: {rotacion_item} grados")
 
-                    # Dibujar borde amarillo si el item está cerca del personaje
+                    # Dibujar borde amarillo si el item esta cerca del personaje
                     if item_id in ITEMS and any(x_tile == columna and y_tile == fila for x_tile, y_tile, _ in personaje.objetos_cerca):
                         # Crear el actor para obtener el tamano real de la imagen
                         item_actor = Actor(id_to_image[item_id], topleft=(x, y))
                         rect_borde = Rect(item_actor.left, item_actor.top, item_actor.width, item_actor.height)
                         # Borde exterior
                         screen.draw.rect(rect_borde, (255, 255, 0))
-                        # Borde de 2px (4 líneas)
+                        # Borde de 2px (4 lineas)
                         screen.draw.line(rect_borde.topleft, rect_borde.topright, (255, 255, 0))
                         screen.draw.line((rect_borde.left, rect_borde.top + 1), (rect_borde.right, rect_borde.top + 1), (255, 255, 0))
                         screen.draw.line(rect_borde.bottomleft, rect_borde.bottomright, (255, 255, 0))
@@ -1414,7 +1413,7 @@ def draw():
                         screen.draw.line(rect_borde.topright, rect_borde.bottomright, (255, 255, 0))
                         screen.draw.line((rect_borde.right - 1, rect_borde.top), (rect_borde.right - 1, rect_borde.bottom), (255, 255, 0))
         
-        # Dibujar los enemigos activos que están en pantalla
+        # Dibujar los enemigos activos que estan en pantalla
         for enemigo in enemigos_activos:
             x = enemigo.x - camera_x
             y_enemigo = enemigo.y - camera_y
@@ -1450,7 +1449,7 @@ def draw():
                 
                 if modo_desarrollador:
                     screen.draw.rect(Rect(x, y_enemigo, CONFIG_JUEGO['ENEMIGO_SIZE'], CONFIG_JUEGO['ENEMIGO_SIZE']), (0, 255, 0))
-                    # Mostrar información adicional para enemigo especial
+                    # Mostrar informacion adicional para enemigo especial
                     if hasattr(enemigo, 'estado'):
                         screen.draw.text(f"Estado: {enemigo.estado}", (x, y_enemigo - 25), color="yellow", fontsize=10)
                         screen.draw.text(f"Vida: {enemigo.vida}", (x, y_enemigo - 35), color="yellow", fontsize=10)
@@ -1465,14 +1464,14 @@ def draw():
         personaje_actor = Actor(personaje.image, topleft=(personaje_screen_x, personaje_screen_y))
         personaje_actor.draw()
 
-        # Dibujar texto de interacción si hay items cerca
+        # Dibujar texto de interaccion si hay items cerca
         if personaje.objetos_cerca:
             texto_x = personaje_screen_x + personaje.hitbox_width / 2
             texto_y = personaje_screen_y - 20
             screen.draw.text("Presiona E para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
 
         if game_over:
-            screen.draw.text("¡Has perdido!", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
+            screen.draw.text("Has perdido", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
             screen.draw.text("Presiona R para reiniciar", center=(WINDOW_WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
 
         if modo_desarrollador:
@@ -1482,12 +1481,12 @@ def draw():
             # Mostrar controles adicionales
             screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
             screen.draw.text("U/I: Panel detallado de items", (10, 70), color="yellow", fontsize=14)
-            screen.draw.text("Y: Modo colocación terreno", (10, 90), color="yellow", fontsize=14)
+            screen.draw.text("Y: Modo colocacion terreno", (10, 90), color="yellow", fontsize=14)
             screen.draw.text("R: Modo borrado", (10, 110), color="yellow", fontsize=14)
             
-            # Mostrar información del modo de colocación si está activo
+            # Mostrar informacion del modo de colocacion si esta activo
             if modo_colocacion_terreno:
-                screen.draw.text("MODO COLOCACIÓN ACTIVO", (10, 130), color="red", fontsize=16)
+                screen.draw.text("MODO COLOCACION ACTIVO", (10, 130), color="red", fontsize=16)
                 screen.draw.text("Flechas: Mover cuadro", (10, 150), color="yellow", fontsize=14)
                 screen.draw.text("T: Colocar terreno", (10, 170), color="yellow", fontsize=14)
             elif modo_borrado:
@@ -1495,16 +1494,16 @@ def draw():
                 screen.draw.text("Flechas: Mover cuadro", (10, 150), color="yellow", fontsize=14)
                 screen.draw.text("T: Borrar elemento", (10, 170), color="yellow", fontsize=14)
 
-        # Dibujar el cuadro de colocación de terreno
+        # Dibujar el cuadro de colocacion de terreno
         dibujar_cuadro_colocacion_terreno()
 
         # Dibujar el cuadro de borrado
         dibujar_cuadro_borrado()
         
-        # Dibujar el panel detallado de items (al final para que esté por encima de todo)
+        # Dibujar el panel detallado de items (al final para que este por encima de todo)
         dibujar_panel_detallado_items()
 
-        # Dibujar barra de vida si está activada
+        # Dibujar barra de vida si esta activada
         if CONFIG_JUEGO.get('MOSTRAR_BARRA_VIDA', True) and estado_juego == "jugando":
             dibujar_barra_vida_personaje()
 
@@ -1523,11 +1522,11 @@ def on_mouse_down(pos, button):
             (centro_x - boton_width // 2, inicio_y),
             (centro_x - boton_width // 2, inicio_y + boton_height + espaciado)
         ]
-        # Revisar si el mouse está sobre algún botón
+        # Revisar si el mouse esta sobre algun boton
         for i, (x, y) in enumerate(botones):
             if x <= pos[0] <= x + boton_width and y <= pos[1] <= y + boton_height:
                 boton_seleccionado = i
-                # Simular ENTER para activar la opción
+                # Simular ENTER para activar la opcion
                 if boton_seleccionado == 0:
                     estado_juego = "jugando"
                 elif boton_seleccionado == 1:
@@ -1535,11 +1534,11 @@ def on_mouse_down(pos, button):
                 break
     elif estado_juego == "jugando":
         if button == mouse.RIGHT:
-            # Activar/desactivar modo de colocación de terreno
+            # Activar/desactivar modo de colocacion de terreno
             modo_colocacion_terreno = not modo_colocacion_terreno
             if modo_colocacion_terreno:
                 modo_borrado = False # Desactivar modo borrado
-                # Calcular la posición de inserción según el mouse
+                # Calcular la posicion de insercion segun el mouse
                 x_mapa = pos[0] + camera_x
                 y_mapa = pos[1] + camera_y
                 posicion_terreno_x = int(x_mapa // TILE_SIZE) * TILE_SIZE
@@ -1550,7 +1549,7 @@ def on_mouse_down(pos, button):
                 else:
                     tipo_terreno_actual = 1
         elif button == mouse.LEFT and modo_colocacion_terreno:
-            # Insertar terreno en la posición del mouse
+            # Insertar terreno en la posicion del mouse
             x_mapa = pos[0] + camera_x
             y_mapa = pos[1] + camera_y
             columna = int(x_mapa // TILE_SIZE)
@@ -1561,11 +1560,11 @@ def on_mouse_down(pos, button):
                     cuadros_colocados += 1
                     posicion_terreno_x = columna * TILE_SIZE
                     posicion_terreno_y = fila * TILE_SIZE
-                    # print(f"Terreno colocado con mouse en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
+                    # print(f"Terreno colocado con mouse en posicion ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
-                    print("¡Límite de cuadros de colocación alcanzado!")
+                    print("Limite de cuadros de colocacion alcanzado")
         elif button == mouse.LEFT and modo_borrado:
-            # Borrar elemento en la posición del mouse
+            # Borrar elemento en la posicion del mouse
             x_mapa = pos[0] + camera_x
             y_mapa = pos[1] + camera_y
             columna = int(x_mapa // TILE_SIZE)
@@ -1575,13 +1574,13 @@ def on_mouse_down(pos, button):
 def on_mouse_move(pos):
     global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, modo_borrado, posicion_borrado_x, posicion_borrado_y
     if modo_colocacion_terreno:
-        # Calcular la posición de inserción según el mouse
+        # Calcular la posicion de insercion segun el mouse
         x_mapa = pos[0] + camera_x
         y_mapa = pos[1] + camera_y
         posicion_terreno_x = int(x_mapa // TILE_SIZE) * TILE_SIZE
         posicion_terreno_y = int(y_mapa // TILE_SIZE) * TILE_SIZE
     elif modo_borrado:
-        # Calcular la posición del cuadro de borrado según el mouse
+        # Calcular la posicion del cuadro de borrado segun el mouse
         x_mapa = pos[0] + camera_x
         y_mapa = pos[1] + camera_y
         posicion_borrado_x = int(x_mapa // TILE_SIZE) * TILE_SIZE
@@ -1589,7 +1588,7 @@ def on_mouse_move(pos):
 
 def encontrar_tile_cercano(fila, columna):
     """Busca un tile de fondo cercano para usar como relleno."""
-    # Buscar en un área de 3x3 alrededor de la posición
+    # Buscar en un area de 3x3 alrededor de la posicion
     for f_offset in range(-1, 2):
         for c_offset in range(-1, 2):
             if f_offset == 0 and c_offset == 0:
@@ -1597,21 +1596,21 @@ def encontrar_tile_cercano(fila, columna):
             
             f_vecino, c_vecino = fila + f_offset, columna + c_offset
             
-            # Verificar si el vecino está dentro del mapa
+            # Verificar si el vecino esta dentro del mapa
             if 0 <= f_vecino < MATRIZ_ALTO and 0 <= c_vecino < MATRIZ_ANCHO:
                 tile_id = my_map[f_vecino][c_vecino]
                 # Verificar si el tile es un fondo
                 if tile_id in id_to_image and 'fondos/' in id_to_image[tile_id]:
                     return tile_id # Devuelve el primer tile de fondo encontrado
     
-    return 0 # Si no se encuentra ninguno, devuelve aire/vacío
+    return 0 # Si no se encuentra ninguno, devuelve aire/vacio
 
 def borrar_elemento(columna, fila):
-    """Borra un elemento (item o terreno) en la posición dada, pero no los fondos."""
+    """Borra un elemento (item o terreno) en la posicion dada, pero no los fondos."""
     global cuadros_borrados
 
     if cuadros_borrados >= CONFIG_JUEGO['LIMITE_CUADROS_BORRADO']:
-        print("¡Límite de cuadros de borrado alcanzado!")
+        print("Limite de cuadros de borrado alcanzado")
         return
 
     if not (0 <= fila < MATRIZ_ALTO and 0 <= columna < MATRIZ_ANCHO):
@@ -1627,9 +1626,9 @@ def borrar_elemento(columna, fila):
             es_fondo = True
             
     borrado_exitoso = False
-    # Lógica de borrado
+    # Logica de borrado
     if es_fondo:
-        # Si es un fondo, solo podemos borrar el item que está encima
+        # Si es un fondo, solo podemos borrar el item que esta encima
         if item_id != 0:
             my_items[fila][columna] = 0
             my_items_rotations[fila][columna] = 0
@@ -1681,17 +1680,17 @@ def dibujar_cuadro_borrado():
             restantes = limite - cuadros_borrados
             screen.draw.text(f"T/Click para borrar ({restantes} restantes)", center=(texto_x, texto_y + 15), color="white", fontsize=10)
         else:
-            screen.draw.text("¡Límite alcanzado!", center=(texto_x, texto_y + 15), color="red", fontsize=18)
+            screen.draw.text("Limite alcanzado", center=(texto_x, texto_y + 15), color="red", fontsize=18)
 
 def dibujar_pantalla_controles():
     """Dibuja la pantalla de ayuda con los controles del juego."""
-    # Fondo similar al menú principal
+    # Fondo similar al menu principal
     for y in range(HEIGHT):
         intensidad = int(20 + (y / HEIGHT) * 40)
         color = (intensidad, intensidad, intensidad + 20)
         screen.draw.line((0, y), (WIDTH, y), color)
 
-    # Título
+    # Titulo
     centro_x = WIDTH // 2
     screen.draw.text("CONTROLES", center=(centro_x, 80), color=(255, 215, 0), fontsize=48, owidth=0.5, ocolor="black")
     
@@ -1705,15 +1704,15 @@ def dibujar_pantalla_controles():
     color_cat = "orange"
     color_item = "white"
 
-    # --- Columna 1: Movimiento e Interacción ---
+    # --- Columna 1: Movimiento e Interaccion ---
     screen.draw.text("JUGADOR", (x_col1, y_inicio), color=color_cat, fontsize=font_size_cat)
     screen.draw.text("- Moverse: Flechas Izquierda/Derecha", (x_col1, y_inicio + line_height), color=color_item, fontsize=font_size_item)
     screen.draw.text("- Saltar: Espacio / Flecha Arriba", (x_col1, y_inicio + line_height * 2), color=color_item, fontsize=font_size_item)
     screen.draw.text("- Doble Salto: Espacio (en el aire)", (x_col1, y_inicio + line_height * 3), color=color_item, fontsize=font_size_item)
     screen.draw.text("- Recoger Objeto: Tecla E", (x_col1, y_inicio + line_height * 4), color=color_item, fontsize=font_size_item)
 
-    # --- Columna 2: Modo Construcción ---
-    screen.draw.text("CONSTRUCCIÓN", (x_col2, y_inicio), color=color_cat, fontsize=font_size_cat)
+    # --- Columna 2: Modo Construccion ---
+    screen.draw.text("CONSTRUCCION", (x_col2, y_inicio), color=color_cat, fontsize=font_size_cat)
     screen.draw.text("- Activar/Desactivar: Clic Derecho", (x_col2, y_inicio + line_height), color=color_item, fontsize=font_size_item)
     screen.draw.text("- Colocar Bloque: Clic Izquierdo", (x_col2, y_inicio + line_height * 2), color=color_item, fontsize=font_size_item)
     screen.draw.text("- Mover Indicador: Mover Mouse", (x_col2, y_inicio + line_height * 3), color=color_item, fontsize=font_size_item)
@@ -1723,15 +1722,15 @@ def dibujar_pantalla_controles():
     y_otros = y_inicio + line_height * 6
     screen.draw.text("OTROS", (x_col1, y_otros), color=color_cat, fontsize=font_size_cat)
     screen.draw.text("- Modo Desarrollador: Tecla F", (x_col1, y_otros + line_height), color=color_item, fontsize=font_size_item)
-    screen.draw.text("- Menú Principal: Tecla ESC", (x_col1, y_otros + line_height * 2), color=color_item, fontsize=font_size_item)
+    screen.draw.text("- Menu Principal: Tecla ESC", (x_col1, y_otros + line_height * 2), color=color_item, fontsize=font_size_item)
     
-    # Instrucción para volver
-    screen.draw.text("Presiona ESC para volver al menú", center=(centro_x, HEIGHT - 50), color="white", fontsize=22)
+    # Instruccion para volver
+    screen.draw.text("Presiona ESC para volver al menu", center=(centro_x, HEIGHT - 50), color="white", fontsize=22)
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
 
-# --- FUNCIÓN PARA DIBUJAR LA BARRA DE VIDA ---
+# --- FUNCION PARA DIBUJAR LA BARRA DE VIDA ---
 def dibujar_barra_vida_personaje():
     """Dibuja una barra de vida moderna en la esquina superior izquierda."""
     max_vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)
