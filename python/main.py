@@ -1390,8 +1390,8 @@ def on_mouse_down(pos, button):
             # Borrar elemento en la posición del mouse
             x_mapa = pos[0] + camera_x
             y_mapa = pos[1] + camera_y
-            columna = int(x_mapa // TILE_SIZE)
-            fila = int(y_mapa // TILE_SIZE)
+            columna = int(x_mapa // TILE_SIZE) * TILE_SIZE
+            fila = int(y_mapa // TILE_SIZE) * TILE_SIZE
             borrar_elemento(columna, fila)
 
 def on_mouse_move(pos):
@@ -1410,7 +1410,7 @@ def on_mouse_move(pos):
         posicion_borrado_y = int(y_mapa // TILE_SIZE) * TILE_SIZE
 
 def encontrar_tile_cercano(fila, columna):
-    """Busca un tile de terreno cercano para usar como relleno."""
+    """Busca un tile de fondo cercano para usar como relleno."""
     # Buscar en un área de 3x3 alrededor de la posición
     for f_offset in range(-1, 2):
         for c_offset in range(-1, 2):
@@ -1422,23 +1422,43 @@ def encontrar_tile_cercano(fila, columna):
             # Verificar si el vecino está dentro del mapa
             if 0 <= f_vecino < MATRIZ_ALTO and 0 <= c_vecino < MATRIZ_ANCHO:
                 tile_id = my_map[f_vecino][c_vecino]
-                if tile_id in TERRENOS:
-                    return tile_id # Devuelve el primer tile de terreno encontrado
+                # Verificar si el tile es un fondo
+                if tile_id in id_to_image and 'fondos/' in id_to_image[tile_id]:
+                    return tile_id # Devuelve el primer tile de fondo encontrado
     
     return 0 # Si no se encuentra ninguno, devuelve aire/vacío
 
 def borrar_elemento(columna, fila):
-    """Borra un elemento (item o terreno) en la posición dada."""
-    if 0 <= fila < MATRIZ_ALTO and 0 <= columna < MATRIZ_ANCHO:
-        # Solo borrar si hay algo que borrar
-        if my_map[fila][columna] != 0 or my_items[fila][columna] != 0:
-            id_reemplazo = encontrar_tile_cercano(fila, columna)
+    """Borra un elemento (item o terreno) en la posición dada, pero no los fondos."""
+    if not (0 <= fila < MATRIZ_ALTO and 0 <= columna < MATRIZ_ANCHO):
+        return
+
+    tile_id = my_map[fila][columna]
+    item_id = my_items[fila][columna]
+    
+    # Comprobar si el tile principal es un fondo
+    es_fondo = False
+    if tile_id in id_to_image:
+        if 'fondos/' in id_to_image[tile_id]:
+            es_fondo = True
             
+    # Lógica de borrado
+    if es_fondo:
+        # Si es un fondo, solo podemos borrar el item que está encima
+        if item_id != 0:
+            my_items[fila][columna] = 0
+            my_items_rotations[fila][columna] = 0
+            print(f"Item en ({fila}, {columna}) borrado. El fondo permanece.")
+        else:
+            print(f"No se puede borrar el bloque de fondo en ({fila}, {columna}). No hay item para borrar.")
+    else:
+        # Si no es un fondo, podemos borrar tanto el tile como el item.
+        if tile_id != 0 or item_id != 0:
+            id_reemplazo = encontrar_tile_cercano(fila, columna)
             my_map[fila][columna] = id_reemplazo
             my_items[fila][columna] = 0
             my_rotations[fila][columna] = 0
             my_items_rotations[fila][columna] = 0
-            
             print(f"Elemento en ({fila}, {columna}) borrado y rellenado con tile ID {id_reemplazo}.")
         else:
             print(f"No hay nada que borrar en ({fila}, {columna}).")
