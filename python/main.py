@@ -1,3 +1,5 @@
+import os
+os.environ['SDL_VIDEO_CENTERED'] = '1'
 import pgzrun
 import re
 import random
