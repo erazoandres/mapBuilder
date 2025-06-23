@@ -44,10 +44,19 @@ CONFIG_JUEGO = {
     'PERSONAJE_POS_INICIAL_Y': 100,
     'DOBLE_SALTO_FACTOR': 0.8,
     'RADIO_INTERACCION_FACTOR': 1.5,
-    # Configuraciones de caída
+    # Configuraciones de rebote y daño
+    'REBOTE_ENEMIGO': 0.7,  # Rebote al eliminar enemigo especial
+    'REBOTE_ENEMIGO_DAÑADO': 0.4,  # Rebote al dañar pero no eliminar
+    # Configuraciones de caída avanzadas
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
     'ITEMS_BLOQUEAN_PASO': True,
+    'CAIDA_SIN_LIMITE': False, # Permite caída infinita
+    'REGRESAR_POSICION_INICIAL': False, # Regresa a posición inicial al caer
+    # Configuración de invulnerabilidad del personaje (si se implementa)
+    'PERSONAJE_TIEMPO_INVULNERABLE': 60, # frames
+    # Configuración de vida del personaje (si se implementa)
+    'PERSONAJE_VIDA_MAX': 3,
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
