@@ -1283,6 +1283,32 @@ def draw():
         # Dibujar el cuadro de colocación de terreno
         dibujar_cuadro_colocacion_terreno()
 
+def on_mouse_down(pos, button):
+    global estado_juego, boton_seleccionado
+    if estado_juego == "menu":
+        # Definir dimensiones y posiciones de los botones igual que en dibujar_menu_principal
+        boton_width = 250
+        boton_height = 70
+        espaciado = 30
+        centro_x = WIDTH // 2
+        centro_y = HEIGHT // 2
+        total_altura_botones = 2 * boton_height + espaciado
+        inicio_y = centro_y - total_altura_botones // 2
+        botones = [
+            (centro_x - boton_width // 2, inicio_y),
+            (centro_x - boton_width // 2, inicio_y + boton_height + espaciado)
+        ]
+        # Revisar si el mouse está sobre algún botón
+        for i, (x, y) in enumerate(botones):
+            if x <= pos[0] <= x + boton_width and y <= pos[1] <= y + boton_height:
+                boton_seleccionado = i
+                # Simular ENTER para activar la opción
+                if boton_seleccionado == 0:
+                    estado_juego = "jugando"
+                elif boton_seleccionado == 1:
+                    estado_juego = "extras"
+                break
+
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
 
