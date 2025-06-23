@@ -24,6 +24,8 @@ CONFIG_JUEGO = {
     'LIMITE_CUADROS_BORRADO': 10,
     # Configuraciones específicas para enemigo especial (tile7)
     'ENEMIGO_ESPECIAL_VIDA': 3,
+    # Configuración de proyectil artillero
+    'ARTILLERO_VEL_PROYECTIL': 6,
     # Configuraciones de Personaje
     'PERSONAJE_POS_INICIAL_X': 50,
     'PERSONAJE_POS_INICIAL_Y': 100,
@@ -132,9 +134,9 @@ TIPOS_COMPORTAMIENTO_ENEMIGO = {
         'nombre': 'Camper',
         'descripcion': 'Enemigo que permanece quieto hasta que el jugador se acerca mucho, entonces ataca o se mueve.'
     },
-    'zigzag': {
-        'nombre': 'Zigzag',
-        'descripcion': 'Enemigo que se mueve en un patrón de zigzag horizontal y vertical.'
+    'artillero': {
+        'nombre': 'Artillero',
+        'descripcion': 'Enemigo que dispara proyectiles hacia el jugador periódicamente.'
     },
     'explosivo': {
         'nombre': 'Explosivo',
@@ -317,19 +319,25 @@ def movimiento_camper(enemigo, jugador):
     else:
         enemigo.velocidad_x = 0
 
-
-def movimiento_zigzag(enemigo, jugador):
-    # Se mueve en zigzag horizontal y vertical
-    if not hasattr(enemigo, 'zigzag_dir'):
-        enemigo.zigzag_dir = 1
-        enemigo.zigzag_timer = 0
-    enemigo.zigzag_timer += 1
-    if enemigo.zigzag_timer > 30:
-        enemigo.zigzag_dir *= -1
-        enemigo.zigzag_timer = 0
-    enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.6)
-    enemigo.velocidad_y += enemigo.zigzag_dir * 0.3  # Pequeño movimiento vertical
-
+def movimiento_artillero(enemigo, jugador):
+    # Dispara proyectiles hacia el jugador cada cierto tiempo
+    if not hasattr(enemigo, 'cooldown_disparo'):
+        enemigo.cooldown_disparo = 0
+    enemigo.cooldown_disparo -= 1
+    if enemigo.cooldown_disparo <= 0:
+        # Calcular dirección hacia el jugador
+        dx = jugador.x - enemigo.x
+        dy = jugador.y - enemigo.y
+        distancia = (dx**2 + dy**2) ** 0.5
+        if distancia > 0:
+            vel = CONFIG_JUEGO['ARTILLERO_VEL_PROYECTIL']  # velocidad del proyectil configurable
+            vx = vel * dx / distancia
+            vy = vel * dy / distancia
+            proyectil = ProyectilArtillero(enemigo.x, enemigo.y, vx, vy)
+            enemigos_activos.append(proyectil)
+        enemigo.cooldown_disparo = 90  # Dispara cada 90 frames aprox.
+    # El artillero puede patrullar ligeramente
+    enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.3)
 
 def movimiento_explosivo(enemigo, jugador):
     # Se lanza hacia el jugador y "explota" (desaparece) si está muy cerca
@@ -382,8 +390,8 @@ class Enemigo:
             movimiento_aleatorio(self, jugador)
         elif self.tipo_comportamiento == 'camper':
             movimiento_camper(self, jugador)
-        elif self.tipo_comportamiento == 'zigzag':
-            movimiento_zigzag(self, jugador)
+        elif self.tipo_comportamiento == 'artillero':
+            movimiento_artillero(self, jugador)
         elif self.tipo_comportamiento == 'explosivo':
             movimiento_explosivo(self, jugador)
         # Actualizar posición vertical
@@ -462,6 +470,28 @@ class Proyectil:
             if self.y > MATRIZ_ALTO * TILE_SIZE:
                 if self in enemigos_activos:
                     enemigos_activos.remove(self)
+
+# --- CLASE PROYECTIL ARTILLERO ---
+class ProyectilArtillero:
+    def __init__(self, x, y, vx, vy):
+        self.x = x
+        self.y = y
+        self.velocidad_x = vx
+        self.velocidad_y = vy
+        self.ancho = 32
+        self.alto = 32
+        self.tipo_id = None  # No se usa
+        self.imagen = "items/tile4.png"
+    def obtener_imagen_actual(self):
+        return self.imagen
+    def actualizar(self, jugador=None):
+        self.x += self.velocidad_x
+        self.y += self.velocidad_y
+        # Eliminar si sale de la pantalla
+        if (self.x < -self.ancho or self.x > MATRIZ_ANCHO * TILE_SIZE or
+            self.y < -self.alto or self.y > MATRIZ_ALTO * TILE_SIZE):
+            if self in enemigos_activos:
+                enemigos_activos.remove(self)
 
 with open('mapa.txt', 'r', encoding='utf-8') as f:
     content = f.read()
@@ -1320,11 +1350,18 @@ def draw():
             x = enemigo.x - camera_x
             y_enemigo = enemigo.y - camera_y
             if -CONFIG_JUEGO['ENEMIGO_SIZE'] <= x <= WINDOW_WIDTH and -CONFIG_JUEGO['ENEMIGO_SIZE'] <= y_enemigo <= HEIGHT:
-                enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, y_enemigo))
-                enemigo_actor.scale = CONFIG_JUEGO['ENEMIGO_SIZE'] / CONFIG_JUEGO['TILE_SIZE']  # Calcular escala automáticamente
-                if hasattr(enemigo, 'rotacion'):
-                    enemigo_actor.angle = -enemigo.rotacion
-                enemigo_actor.draw()
+                # Soporte para proyectiles artilleros
+                if hasattr(enemigo, 'obtener_imagen_actual') and hasattr(enemigo, 'ancho'):
+                    enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, y_enemigo))
+                    enemigo_actor.width = enemigo.ancho
+                    enemigo_actor.height = enemigo.alto
+                    enemigo_actor.draw()
+                else:
+                    enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, y_enemigo))
+                    enemigo_actor.scale = CONFIG_JUEGO['ENEMIGO_SIZE'] / CONFIG_JUEGO['TILE_SIZE']
+                    if hasattr(enemigo, 'rotacion'):
+                        enemigo_actor.angle = -enemigo.rotacion
+                    enemigo_actor.draw()
                 
                 # Efectos especiales para enemigo especial (tile7)
                 if hasattr(enemigo, 'estado') and enemigo.estado == "ataque":
