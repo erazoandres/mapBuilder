@@ -35,7 +35,7 @@ CONFIG_JUEGO = {
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
     'ITEMS_BLOQUEAN_PASO': True,
-    'MOSTRAR_PANEL_DETALLADO': True
+    'MOSTRAR_PANEL_DETALLADO': False
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -127,7 +127,19 @@ TIPOS_COMPORTAMIENTO_ENEMIGO = {
     'aleatorio': {
         'nombre': 'Errático',
         'descripcion': 'Enemigo que se mueve de forma aleatoria, cambiando de dirección y velocidad.'
-    }
+    },
+    'camper': {
+        'nombre': 'Camper',
+        'descripcion': 'Enemigo que permanece quieto hasta que el jugador se acerca mucho, entonces ataca o se mueve.'
+    },
+    'zigzag': {
+        'nombre': 'Zigzag',
+        'descripcion': 'Enemigo que se mueve en un patrón de zigzag horizontal y vertical.'
+    },
+    'explosivo': {
+        'nombre': 'Explosivo',
+        'descripcion': 'Enemigo que se lanza hacia el jugador y explota al acercarse.'
+    },
 }
 
 # Ejemplo de cómo asociar un tipo de comportamiento a un enemigo:
@@ -296,6 +308,44 @@ def movimiento_aleatorio(enemigo, jugador):
         enemigo.direccion *= -1
         enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * random.uniform(0.3, 1.0))
 
+def movimiento_camper(enemigo, jugador):
+    # Permanece quieto hasta que el jugador está muy cerca, entonces se mueve hacia él
+    distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
+    if distancia < 80:
+        # Se activa y se mueve hacia el jugador
+        enemigo.velocidad_x = (VELOCIDAD_MOVIMIENTO * 0.8) if jugador.x > enemigo.x else -(VELOCIDAD_MOVIMIENTO * 0.8)
+    else:
+        enemigo.velocidad_x = 0
+
+
+def movimiento_zigzag(enemigo, jugador):
+    # Se mueve en zigzag horizontal y vertical
+    if not hasattr(enemigo, 'zigzag_dir'):
+        enemigo.zigzag_dir = 1
+        enemigo.zigzag_timer = 0
+    enemigo.zigzag_timer += 1
+    if enemigo.zigzag_timer > 30:
+        enemigo.zigzag_dir *= -1
+        enemigo.zigzag_timer = 0
+    enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.6)
+    enemigo.velocidad_y += enemigo.zigzag_dir * 0.3  # Pequeño movimiento vertical
+
+
+def movimiento_explosivo(enemigo, jugador):
+    # Se lanza hacia el jugador y "explota" (desaparece) si está muy cerca
+    distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
+    if distancia < 50:
+        # Simula explosión eliminando al enemigo
+        if enemigo in enemigos_activos:
+            enemigos_activos.remove(enemigo)
+        return
+    # Se lanza rápidamente hacia el jugador
+    enemigo.velocidad_x = (VELOCIDAD_MOVIMIENTO * 1.5) if jugador.x > enemigo.x else -(VELOCIDAD_MOVIMIENTO * 1.5)
+    # Opcional: puede saltar hacia el jugador
+    if enemigo.en_suelo and abs(enemigo.x - jugador.x) < 100:
+        enemigo.velocidad_y = VELOCIDAD_SALTO * 0.7
+        enemigo.en_suelo = False
+
 # --- CLASE ENEMIGO MODIFICADA ---
 class Enemigo:
     def __init__(self, x, y, tipo_id):
@@ -330,6 +380,12 @@ class Enemigo:
             movimiento_perseguidor(self, jugador)
         elif self.tipo_comportamiento == 'aleatorio':
             movimiento_aleatorio(self, jugador)
+        elif self.tipo_comportamiento == 'camper':
+            movimiento_camper(self, jugador)
+        elif self.tipo_comportamiento == 'zigzag':
+            movimiento_zigzag(self, jugador)
+        elif self.tipo_comportamiento == 'explosivo':
+            movimiento_explosivo(self, jugador)
         # Actualizar posición vertical
         nueva_y = self.y + self.velocidad_y
         if not verificar_colision_vertical(self.x, nueva_y):
