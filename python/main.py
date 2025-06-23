@@ -42,8 +42,8 @@ CONFIG_JUEGO = {
     'DOBLE_SALTO_FACTOR': 0.8,
     'RADIO_INTERACCION_FACTOR': 1.5,
     # Configuraciones de caída
-    'PERDER_POR_CAIDA': True,
-    'LIMITE_INFERIOR': False, # Si es False, el personaje no puede caer por debajo del mapa
+    'PERDER_POR_CAIDA': False,
+    'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -349,11 +349,20 @@ class Enemigo:
             self.direccion *= -1
             self.velocidad_x = 0
         # Mantener al enemigo dentro de los límites
-        self.x = max(0, min(WIDTH - TILE_SIZE, self.x))
-        if self.y >= HEIGHT - TILE_SIZE:
-            self.y = HEIGHT - TILE_SIZE
-            self.velocidad_y = 0
-            self.en_suelo = True
+        self.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - ENEMIGO_SIZE, self.x))
+
+        if CONFIG_JUEGO['LIMITE_INFERIOR']:
+            # Si el límite inferior está activado, no dejar que el enemigo caiga
+            limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - ENEMIGO_SIZE
+            if self.y > limite_inferior_y:
+                self.y = limite_inferior_y
+                self.velocidad_y = 0
+                self.en_suelo = True
+        else:
+            # Si el límite está desactivado, el enemigo se elimina si cae del mapa
+            if self.y > MATRIZ_ALTO * TILE_SIZE:
+                if self in enemigos_activos:
+                    enemigos_activos.remove(self)
 
 # --- CLASE PROYECTIL PARA TILE7 ---
 class Proyectil:
@@ -382,11 +391,23 @@ class Proyectil:
         self.x += self.velocidad_x
         self.y += self.velocidad_y
         
-        # Si sale de la pantalla, marcar para eliminar
-        if self.x > MATRIZ_ANCHO * TILE_SIZE or self.x < -self.ancho or \
-           self.y > MATRIZ_ALTO * TILE_SIZE or self.y < -self.alto:
+        # Si sale de la pantalla (lados o arriba), marcar para eliminar
+        if self.x > MATRIZ_ANCHO * TILE_SIZE or self.x < -self.ancho or self.y < -self.alto:
             if self in enemigos_activos:
                 enemigos_activos.remove(self)
+            return 
+
+        if CONFIG_JUEGO['LIMITE_INFERIOR']:
+            # Si el límite inferior está activado, detener el proyectil en el borde
+            limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - self.alto
+            if self.y > limite_inferior_y:
+                self.y = limite_inferior_y
+                self.velocidad_y = 0 
+        else:
+            # Si el límite inferior está desactivado, eliminar el proyectil si cae
+            if self.y > MATRIZ_ALTO * TILE_SIZE:
+                if self in enemigos_activos:
+                    enemigos_activos.remove(self)
 
 with open('mapa.txt', 'r', encoding='utf-8') as f:
     content = f.read()
@@ -775,17 +796,21 @@ def update():
 
         # Comprobar si el personaje se ha caído por debajo del mapa
         if CONFIG_JUEGO['LIMITE_INFERIOR']:
-            if personaje.y > MATRIZ_ALTO * TILE_SIZE:
-                if CONFIG_JUEGO['PERDER_POR_CAIDA']:
-                    game_over = True
-        else:
-            # Si el límite inferior está desactivado, no dejar que el personaje caiga
+            # Si el límite inferior está activado, no dejar que el personaje caiga
             limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - personaje.hitbox_height
             if personaje.y > limite_inferior_y:
+                if CONFIG_JUEGO['PERDER_POR_CAIDA']:
+                    game_over = True
+                
                 personaje.y = limite_inferior_y
                 personaje.velocidad_y = 0
                 personaje.en_suelo = True
                 personaje.puede_doble_salto = False
+        else:
+            # Si el límite inferior está desactivado, el personaje puede caer y perder
+            if personaje.y > MATRIZ_ALTO * TILE_SIZE:
+                if CONFIG_JUEGO['PERDER_POR_CAIDA']:
+                    game_over = True
 
         # Actualizar dirección del personaje
         if personaje.velocidad_x > 0:

@@ -18,7 +18,7 @@ my_map = [
   [3,3,3,3,3,3,5,5,5,5,5,5,5,5,4,4,4,4],
   [3,3,3,3,3,3,3,3,5,5,5,5,5,5,5,5,5,5],
   [3,3,3,3,3,3,3,3,3,3,3,5,5,5,5,5,5,5],
-  [3,3,3,3,3,3,3,3,3,3,3,3,3,3,5,5,5,5]
+  [3,3,3,3,3,3,3,6,6,6,6,6,6,6,6,6,6,6]
 ];
 
 my_rotations = [
@@ -228,12 +228,13 @@ tileset_dict = {
     134: {"path": "../python/images/terrenos/tile117.png", "id": "terreno117"},
     135: {"path": "../python/images/terrenos/tile118.png", "id": "terreno118"},
     136: {"path": "../python/images/terrenos/tile119.png", "id": "terreno119"},
-    137: {"path": "../python/images/enemigos/tile0.png", "id": "objeto0"},
-    138: {"path": "../python/images/enemigos/tile3.png", "id": "objeto1"},
-    139: {"path": "../python/images/enemigos/tile4.png", "id": "objeto2"},
-    140: {"path": "../python/images/enemigos/tile5.png", "id": "objeto3"},
-    141: {"path": "../python/images/enemigos/tile6.png", "id": "objeto4"},
-    142: {"path": "../python/images/enemigos/tile7.png", "id": "objeto5"}
+    137: {"path": "../python/images/terrenos/tile120.png", "id": "terreno120"},
+    138: {"path": "../python/images/enemigos/tile0.png", "id": "objeto0"},
+    139: {"path": "../python/images/enemigos/tile3.png", "id": "objeto1"},
+    140: {"path": "../python/images/enemigos/tile4.png", "id": "objeto2"},
+    141: {"path": "../python/images/enemigos/tile5.png", "id": "objeto3"},
+    142: {"path": "../python/images/enemigos/tile6.png", "id": "objeto4"},
+    143: {"path": "../python/images/enemigos/tile7.png", "id": "objeto5"}
 }
 
 # ID Mapping (Numeric ID: Original ID)
@@ -242,16 +243,16 @@ tileset_dict = {
 # 3: 3 (fondos/tile3.png)
 # 4: 4 (fondos/tile4.png)
 # 5: 2 (fondos/tile2.png)
-# 6: 137 (enemigos/tile0.png)
-# 7: 140 (enemigos/tile5.png)
-# 8: 142 (enemigos/tile7.png)
+# 6: 137 (terrenos/tile120.png)
+# 7: 140 (enemigos/tile4.png)
+# 8: 142 (enemigos/tile6.png)
 # End ID Mapping
 
 # Matrix Size: 20x18
 # Tile Size: 32px
 
 # Configuración del Juego
-# Exportado el: 22/6/2025, 18:14:46
+# Exportado el: 22/6/2025, 20:31:21
 
 # Diccionario de configuraciones
 configuraciones = {
