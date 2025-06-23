@@ -47,6 +47,7 @@ CONFIG_JUEGO = {
     # Configuraciones de caída
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
+    'ITEMS_BLOQUEAN_PASO': True,
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -529,11 +530,11 @@ def verificar_colision_horizontal(x, y):
         for offset_y in range(0, personaje.hitbox_height, 5):
             # Borde izquierdo
             tile_id, item_id = obtener_tile_en_posicion(x, y + offset_y)
-            if item_id in ITEMS:  # Solo verificamos items
+            if CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS:  # Solo verificamos items si está activado
                 return True
             # Borde derecho
             tile_id, item_id = obtener_tile_en_posicion(x + personaje.hitbox_width, y + offset_y)
-            if item_id in ITEMS:  # Solo verificamos items
+            if CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS:  # Solo verificamos items si está activado
                 return True
         return False
     else:  # Para enemigos u otros objetos, mantener la lógica original
@@ -551,7 +552,7 @@ def verificar_colision_vertical(x, y):
         if personaje.velocidad_y > 0:
             for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y + personaje.hitbox_height)
-                if (tile_id in TERRENOS) or (item_id in ITEMS):  # Verificamos terrenos para detectar suelo
+                if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Verificamos terrenos y solo items si está activado
                     nombre_imagen = id_to_image.get(tile_id, 'desconocido')
                     print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                     if nombre_imagen == 'terrenos/tile120.png':
@@ -562,7 +563,7 @@ def verificar_colision_vertical(x, y):
         elif personaje.velocidad_y < 0:  # Si está saltando
             for offset_x in range(0, personaje.hitbox_width, TILE_SIZE):
                 tile_id, item_id = obtener_tile_en_posicion(x + offset_x, y)
-                if (tile_id in TERRENOS) or (item_id in ITEMS):  # Mantenemos colisión con terrenos al saltar
+                if (tile_id in TERRENOS) or (CONFIG_JUEGO['ITEMS_BLOQUEAN_PASO'] and item_id in ITEMS):  # Mantenemos colisión con terrenos y solo items si está activado
                     nombre_imagen = id_to_image.get(tile_id, 'desconocido')
                     print(f'Colisión con terreno: ID {tile_id}, imagen: {nombre_imagen}')
                     if nombre_imagen == 'terrenos/tile120.png':
@@ -1093,7 +1094,7 @@ def dibujar_panel_detallado_items():
             
             # Dibujar la cantidad
             cantidad_texto = f"x{cantidad}"
-            screen.draw.text(cantidad_texto, (panel_x + 135 - padding, y_pos + 5), color="yellow", fontsize=14, anchor=("right", "top"))
+            screen.draw.text(cantidad_texto, (panel_x + 135 - padding, y_pos + 5), color="yellow", fontsize=14)
 
 def dibujar_menu_principal():
     """Dibuja el menú principal con los 3 botones"""
