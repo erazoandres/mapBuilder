@@ -27,5 +27,9 @@ def images(filename):
 def aporta():
     return send_from_directory(WEB_DIR, 'aporta.html')
 
+@app.route('/python/main.py')
+def main_py():
+    return send_from_directory(os.path.join(BASE_DIR, 'python'), 'main.py')
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000) 

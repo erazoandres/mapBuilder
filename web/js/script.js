@@ -619,30 +619,58 @@ function exportarMatriz() {
   fileContentString += '#    GRAVEDAD = configuraciones["gravedad"]\n';
   fileContentString += '#    etc.\n';
 
-  // Crear y guardar el archivo
-  const blob = new Blob([fileContentString], { type: 'text/plain;charset=utf-8' });
-  
-  // Crear un elemento de entrada de archivo oculto
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.style.display = 'none';
-  fileInput.nwsaveas = 'mapa.txt';
-  document.body.appendChild(fileInput);
+  // --- INICIO: LÓGICA ZIP ---
+  // 1. Crear el zip
+  const zip = new JSZip();
 
-  // Crear un elemento de enlace para la descarga
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'mapa.txt';
-  a.style.display = 'none';
-  document.body.appendChild(a);
+  // 2. Agregar mapa.txt
+  zip.file('mapa.txt', fileContentString);
 
-  // Simular clic en el enlace para iniciar la descarga
-  a.click();
+  // 3. Agregar main.py (descargarlo del servidor)
+  fetch('/python/main.py')
+    .then(response => response.ok ? response.text() : Promise.reject('No se pudo obtener main.py'))
+    .then(mainPyContent => {
+      zip.file('main.py', mainPyContent);
 
-  // Limpiar
-  document.body.removeChild(a);
-  document.body.removeChild(fileInput);
-  URL.revokeObjectURL(a.href);
+      // 4. Agregar solo las imágenes usadas en el mapping
+      const idMapForImages = Array.from(idMap.entries());
+      const imagePromises = [];
+      idMapForImages.forEach(([stringId, numId]) => {
+        const img = document.querySelector(`.tiles img[data-id='${stringId}']`);
+        if (img) {
+          // Obtener la ruta relativa a /images/
+          const src = img.src;
+          const match = src.match(/\/images\/(.*)$/);
+          if (match) {
+            const relativePath = match[1];
+            // Descargar la imagen como blob
+            imagePromises.push(
+              fetch('/images/' + relativePath)
+                .then(r => r.blob())
+                .then(blob => zip.file('images/' + relativePath, blob))
+            );
+          }
+        }
+      });
+
+      // Esperar a que todas las imágenes se agreguen
+      Promise.all(imagePromises).then(() => {
+        // 5. Generar el zip y forzar la descarga
+        zip.generateAsync({ type: 'blob' }).then(function(content) {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(content);
+          a.download = 'game.zip';
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        });
+      });
+    })
+    .catch(err => {
+      alert('Error al exportar: ' + err);
+    });
+  // --- FIN: LÓGICA ZIP ---
 
   // Guardar en localStorage
   try {
