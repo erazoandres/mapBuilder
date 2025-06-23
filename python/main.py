@@ -960,7 +960,7 @@ def on_key_down(key):
             personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO']
             personaje.en_suelo = False
 
-        if key == keys.R and personaje.objetos_cerca:
+        if key == keys.E and personaje.objetos_cerca:
             x, y, item_id = personaje.objetos_cerca[0]
             # Agregar el item a la colección si no está ya recolectado
             if item_id not in items_recolectados:
@@ -1259,12 +1259,20 @@ def draw():
 
                     # Dibujar borde amarillo si el item está cerca del personaje
                     if item_id in ITEMS and any(x_tile == columna and y_tile == fila for x_tile, y_tile, _ in personaje.objetos_cerca):
-                        # Dibujar borde amarillo
-                        for i in range(4):
-                            screen.draw.line((x + i, y + i), (x + CONFIG_JUEGO['TILE_SIZE'] - i, y + i), (255, 255, 0))
-                            screen.draw.line((x + i, y + i), (x + i, CONFIG_JUEGO['TILE_SIZE'] - i), (255, 255, 0))
-                            screen.draw.line((x + CONFIG_JUEGO['TILE_SIZE'] - i, y + i), (x + CONFIG_JUEGO['TILE_SIZE'] - i, y + CONFIG_JUEGO['TILE_SIZE'] - i), (255, 255, 0))
-                            screen.draw.line((x + i, y + CONFIG_JUEGO['TILE_SIZE'] - i), (x + CONFIG_JUEGO['TILE_SIZE'] - i, y + CONFIG_JUEGO['TILE_SIZE'] - i), (255, 255, 0))
+                        # Crear el actor para obtener el tamaño real de la imagen
+                        item_actor = Actor(id_to_image[item_id], topleft=(x, y))
+                        rect_borde = Rect(item_actor.left, item_actor.top, item_actor.width, item_actor.height)
+                        # Borde exterior
+                        screen.draw.rect(rect_borde, (255, 255, 0))
+                        # Borde de 2px (4 líneas)
+                        screen.draw.line(rect_borde.topleft, rect_borde.topright, (255, 255, 0))
+                        screen.draw.line((rect_borde.left, rect_borde.top + 1), (rect_borde.right, rect_borde.top + 1), (255, 255, 0))
+                        screen.draw.line(rect_borde.bottomleft, rect_borde.bottomright, (255, 255, 0))
+                        screen.draw.line((rect_borde.left, rect_borde.bottom - 1), (rect_borde.right, rect_borde.bottom - 1), (255, 255, 0))
+                        screen.draw.line(rect_borde.topleft, rect_borde.bottomleft, (255, 255, 0))
+                        screen.draw.line((rect_borde.left + 1, rect_borde.top), (rect_borde.left + 1, rect_borde.bottom), (255, 255, 0))
+                        screen.draw.line(rect_borde.topright, rect_borde.bottomright, (255, 255, 0))
+                        screen.draw.line((rect_borde.right - 1, rect_borde.top), (rect_borde.right - 1, rect_borde.bottom), (255, 255, 0))
         
         # Dibujar los enemigos activos que están en pantalla
         for enemigo in enemigos_activos:
@@ -1310,7 +1318,7 @@ def draw():
         if personaje.objetos_cerca:
             texto_x = personaje_screen_x + personaje.hitbox_width / 2
             texto_y = personaje_screen_y - 20
-            screen.draw.text("Presiona R para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
+            screen.draw.text("Presiona E para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
 
         if game_over:
             screen.draw.text("¡Has perdido!", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
