@@ -41,9 +41,15 @@ CONFIG_JUEGO = {
     # Nueva opción: perder por proyectil
     'PERDER_POR_PROYECTIL': True,
     # Nueva opción: daño por proyectil (si es False, muerte instantánea; si es True, resta vida)
-    'DANO_POR_PROYECTIL': False,
+    'DANO_POR_PROYECTIL': True,
     # Nueva opción: mostrar barra de vida
-    'MOSTRAR_BARRA_VIDA': True
+    'MOSTRAR_BARRA_VIDA': True,
+    # Nueva opción: vida máxima del personaje (1-100)
+    'VIDA_MAXIMA': 3,
+    # Nueva opción: daño recibido por proyectil
+    'DANO_PROYECTIL': 1,
+    # Nueva opción: daño recibido por colisión con enemigo
+    'DANO_ENEMIGO': 20
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -234,6 +240,7 @@ personaje.puede_doble_salto = False  # Nueva variable para el doble salto
 # Obtener el tamaño real de la imagen del personaje
 personaje.hitbox_width = personaje.width
 personaje.hitbox_height = personaje.height
+personaje.vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)  # Vida inicial configurable
 
 # Aplicar configuración de tamaño de hitbox después de crear el personaje
 def aplicar_configuracion_hitbox():
@@ -796,7 +803,7 @@ def update():
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
                 personaje.puede_doble_salto = False
-                personaje.vida = 3  # Restaurar vida al reiniciar
+                personaje.vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)  # Restaurar vida al reiniciar
                 personaje.invulnerable = False
                 personaje.tiempo_invulnerable = 0
                 # No reiniciar la colección de items para mantener el progreso
@@ -959,8 +966,9 @@ def update():
                     if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
                         if CONFIG_JUEGO.get('PERDER_POR_PROYECTIL', True):
                             if CONFIG_JUEGO.get('DANO_POR_PROYECTIL', False):
-                                # Daño progresivo
-                                personaje.vida -= 1
+                                # Daño progresivo configurable
+                                dano = CONFIG_JUEGO.get('DANO_PROYECTIL', 10)
+                                personaje.vida -= dano
                                 personaje.invulnerable = True
                                 personaje.tiempo_invulnerable = 60  # 1 segundo de invulnerabilidad
                                 if personaje.vida <= 0:
@@ -974,6 +982,22 @@ def update():
                                 # Eliminar el proyectil
                                 if enemigo in enemigos_activos:
                                     enemigos_activos.remove(enemigo)
+            # --- Lógica de daño por colisión con enemigo ---
+            # Si el enemigo NO es proyectil ni especial (ya manejado arriba)
+            if not (isinstance(enemigo, Proyectil) or isinstance(enemigo, ProyectilArtillero)):
+                if (personaje.x < enemigo.x + ENEMIGO_SIZE and
+                    personaje.x + personaje.hitbox_width > enemigo.x and
+                    personaje.y < enemigo.y + ENEMIGO_SIZE and
+                    personaje.y + personaje.hitbox_height > enemigo.y):
+                    # Si no es el caso especial de saltar sobre el enemigo
+                    if not (hasattr(enemigo, 'recibir_daño') and personaje.velocidad_y > 0 and personaje.y < enemigo.y):
+                        if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:
+                            dano = CONFIG_JUEGO.get('DANO_ENEMIGO', 20)
+                            personaje.vida -= dano
+                            personaje.invulnerable = True
+                            personaje.tiempo_invulnerable = 60
+                            if personaje.vida <= 0:
+                                game_over = True
         # --- Lógica para reducir la invulnerabilidad del personaje ---
         if hasattr(personaje, 'invulnerable') and personaje.invulnerable:
             personaje.tiempo_invulnerable -= 1
@@ -1017,7 +1041,7 @@ def on_key_down(key):
                 personaje.y = CONFIG_JUEGO['PERSONAJE_POS_INICIAL_Y']
                 personaje.velocidad_y = 0
                 personaje.velocidad_x = 0
-                personaje.vida = 3  # Restaurar vida al reiniciar
+                personaje.vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)  # Restaurar vida al reiniciar
                 personaje.invulnerable = False
                 personaje.tiempo_invulnerable = 0
                 # No reiniciar la colección de items para mantener el progreso
@@ -1707,12 +1731,8 @@ inicializar_enemigos()
 # --- FUNCIÓN PARA DIBUJAR LA BARRA DE VIDA ---
 def dibujar_barra_vida_personaje():
     """Dibuja una barra de vida moderna en la esquina superior izquierda."""
-    max_vida = 3  # Valor por defecto
-    if hasattr(personaje, 'vida'):
-        vida_actual = personaje.vida
-    else:
-        vida_actual = max_vida
-    # Puedes hacer que max_vida sea configurable si lo deseas
+    max_vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)
+    vida_actual = getattr(personaje, 'vida', max_vida)
     x = 30
     y = 30
     ancho = 200
