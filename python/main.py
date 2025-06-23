@@ -35,6 +35,7 @@ CONFIG_JUEGO = {
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
     'ITEMS_BLOQUEAN_PASO': True,
+    'MOSTRAR_PANEL_DETALLADO': True
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -84,7 +85,7 @@ estado_juego = "menu"  # "menu", "jugando", "extras"
 boton_seleccionado = 0  # 0: Jugar, 1: Extras
 
 # Variable para mostrar panel detallado de items
-mostrar_panel_detallado = False
+mostrar_panel_detallado = CONFIG_JUEGO['MOSTRAR_PANEL_DETALLADO']
 
 # Variables para el modo de colocación de terreno
 modo_colocacion_terreno = False
@@ -706,12 +707,7 @@ def update():
                 # No reiniciar la colección de items para mantener el progreso
                 return
 
-        if keyboard.F:
-            modo_desarrollador = not modo_desarrollador
-        
-        # Mostrar/ocultar panel detallado de items
-        if keyboard.U:
-            mostrar_panel_detallado = not mostrar_panel_detallado
+ 
         
         # Activar/desactivar modo de colocación de terreno
         if keyboard.Y:
@@ -899,11 +895,12 @@ def on_key_down(key):
                 # No reiniciar la colección de items para mantener el progreso
                 return
 
+        # Mover aquí el control de la tecla F
         if key == keys.F: # type: ignore
             modo_desarrollador = not modo_desarrollador
         
         # Mostrar/ocultar panel detallado de items
-        if key == keys.U or key == keys.I:
+        if key == keys.I:
             mostrar_panel_detallado = not mostrar_panel_detallado
         
         # Activar/desactivar modo de colocación de terreno
