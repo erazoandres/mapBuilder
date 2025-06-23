@@ -103,6 +103,11 @@ posicion_terreno_x = 0
 posicion_terreno_y = 0
 tipo_terreno_actual = 1  # ID del terreno a colocar (por defecto 1)
 
+# Variables para el modo de borrado
+modo_borrado = False
+posicion_borrado_x = 0
+posicion_borrado_y = 0
+
 TERRENOS = []
 ITEMS = []
 ENEMIGOS = []
@@ -681,7 +686,7 @@ def verificar_colision(x, y, es_personaje=False):
     return colision_vertical, colision_horizontal, es_suelo
 
 def update():
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual, cuadros_colocados, LIMITE_CUADROS_COLOCACION
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, tipo_terreno_actual, cuadros_colocados, LIMITE_CUADROS_COLOCACION, modo_borrado
     
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -722,6 +727,7 @@ def update():
         if keyboard.Y:
             modo_colocacion_terreno = not modo_colocacion_terreno
             if modo_colocacion_terreno:
+                modo_borrado = False # Desactivar modo borrado
                 # Inicializar posición del terreno en la posición del personaje
                 posicion_terreno_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
                 posicion_terreno_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
@@ -759,19 +765,10 @@ def update():
                 # Nota: El volumen del sonido se puede ajustar editando el archivo de audio directamente
                 # sounds.jump.play()  # Sonido de salto (volumen controlado por el archivo de audio)
 
-        # Interacción con items - controles fluidos
-        if keyboard.E and personaje.objetos_cerca:
-            x, y, item_id = personaje.objetos_cerca[0]
-            # Agregar el item a la colección si no está ya recolectado
-            if item_id not in items_recolectados:
-                items_recolectados[item_id] = 1
-            else:
-                items_recolectados[item_id] += 1
-            my_items[y][x] = 0
-            personaje.objetos_cerca.remove((x, y, item_id))
+        # Interacción con items - se maneja en on_key_down para que sea una sola pulsación
 
         # Movimiento horizontal - controles fluidos
-        if not modo_colocacion_terreno:  # Solo permitir movimiento si no está en modo colocación
+        if not modo_colocacion_terreno and not modo_borrado:  # Solo permitir movimiento si no está en ningún modo
             if keyboard.LEFT:
                 personaje.velocidad_x = -CONFIG_JUEGO['VELOCIDAD_MOVIMIENTO']
             elif keyboard.RIGHT:
@@ -871,7 +868,7 @@ def update():
                     pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual, modo_borrado, posicion_borrado_x, posicion_borrado_y
 
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -921,12 +918,24 @@ def on_key_down(key):
         if key == keys.Y:
             modo_colocacion_terreno = not modo_colocacion_terreno
             if modo_colocacion_terreno:
+                modo_borrado = False # Desactivar modo borrado
                 # Inicializar posición del terreno en la posición del personaje
                 posicion_terreno_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
                 posicion_terreno_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
             else:
                 # Salir del modo de colocación
                 pass
+        
+        # Activar/desactivar modo de borrado
+        if key == keys.R:
+            modo_borrado = not modo_borrado
+            if modo_borrado:
+                modo_colocacion_terreno = False # Desactivar modo colocación
+                # Inicializar posición del cuadro en la posición del personaje
+                posicion_borrado_x = int(personaje.x // TILE_SIZE) * TILE_SIZE
+                posicion_borrado_y = int(personaje.y // TILE_SIZE) * TILE_SIZE
+            else:
+                pass # Salir de modo borrado
         
         # Reinicio completo del juego (incluyendo colección)
         if key == keys.F5:
@@ -984,6 +993,22 @@ def on_key_down(key):
                         print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
                     print("¡Límite de cuadros de colocación alcanzado!")
+        
+        # Lógica del modo de borrado
+        elif modo_borrado:
+            # Mover el cuadro de borrado con las flechas
+            if key == keys.LEFT:
+                posicion_borrado_x = max(0, posicion_borrado_x - TILE_SIZE)
+            elif key == keys.RIGHT:
+                posicion_borrado_x = min((MATRIZ_ANCHO - 1) * TILE_SIZE, posicion_borrado_x + TILE_SIZE)
+            elif key == keys.UP:
+                posicion_borrado_y = max(0, posicion_borrado_y - TILE_SIZE)
+            elif key == keys.DOWN:
+                posicion_borrado_y = min((MATRIZ_ALTO - 1) * TILE_SIZE, posicion_borrado_y + TILE_SIZE)
+            elif key == keys.T:  # Confirmar borrado con la tecla T
+                columna = int(posicion_borrado_x // TILE_SIZE)
+                fila = int(posicion_borrado_y // TILE_SIZE)
+                borrar_elemento(columna, fila)
 
 def on_key_up(key):
     if key == keys.LEFT or key == keys.RIGHT:
@@ -1284,12 +1309,17 @@ def draw():
             screen.draw.text("F5: Reinicio completo", (10, 50), color="yellow", fontsize=14)
             screen.draw.text("U: Panel detallado de items", (10, 70), color="yellow", fontsize=14)
             screen.draw.text("Y: Modo colocación terreno", (10, 90), color="yellow", fontsize=14)
+            screen.draw.text("R: Modo borrado", (10, 110), color="yellow", fontsize=14)
             
             # Mostrar información del modo de colocación si está activo
             if modo_colocacion_terreno:
-                screen.draw.text("MODO COLOCACIÓN ACTIVO", (10, 110), color="red", fontsize=16)
-                screen.draw.text("Flechas: Mover cuadro", (10, 130), color="yellow", fontsize=14)
-                screen.draw.text("T: Colocar terreno", (10, 150), color="yellow", fontsize=14)
+                screen.draw.text("MODO COLOCACIÓN ACTIVO", (10, 130), color="red", fontsize=16)
+                screen.draw.text("Flechas: Mover cuadro", (10, 150), color="yellow", fontsize=14)
+                screen.draw.text("T: Colocar terreno", (10, 170), color="yellow", fontsize=14)
+            elif modo_borrado:
+                screen.draw.text("MODO BORRADO ACTIVO", (10, 130), color="red", fontsize=16)
+                screen.draw.text("Flechas: Mover cuadro", (10, 150), color="yellow", fontsize=14)
+                screen.draw.text("T: Borrar elemento", (10, 170), color="yellow", fontsize=14)
 
         # Dibujar el panel detallado de items
         dibujar_panel_detallado_items()
@@ -1297,8 +1327,11 @@ def draw():
         # Dibujar el cuadro de colocación de terreno
         dibujar_cuadro_colocacion_terreno()
 
+        # Dibujar el cuadro de borrado
+        dibujar_cuadro_borrado()
+
 def on_mouse_down(pos, button):
-    global estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, tipo_terreno_actual
+    global estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, tipo_terreno_actual, modo_borrado
     if estado_juego == "menu":
         # Definir dimensiones y posiciones de los botones igual que en dibujar_menu_principal
         boton_width = 250
@@ -1327,6 +1360,7 @@ def on_mouse_down(pos, button):
             # Activar/desactivar modo de colocación de terreno
             modo_colocacion_terreno = not modo_colocacion_terreno
             if modo_colocacion_terreno:
+                modo_borrado = False # Desactivar modo borrado
                 # Calcular la posición de inserción según el mouse
                 x_mapa = pos[0] + camera_x
                 y_mapa = pos[1] + camera_y
@@ -1352,20 +1386,86 @@ def on_mouse_down(pos, button):
                     print(f"Terreno colocado con mouse en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
                     print("¡Límite de cuadros de colocación alcanzado!")
+        elif button == mouse.LEFT and modo_borrado:
+            # Borrar elemento en la posición del mouse
+            x_mapa = pos[0] + camera_x
+            y_mapa = pos[1] + camera_y
+            columna = int(x_mapa // TILE_SIZE)
+            fila = int(y_mapa // TILE_SIZE)
+            borrar_elemento(columna, fila)
 
 def on_mouse_move(pos):
-    global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y
+    global modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, modo_borrado, posicion_borrado_x, posicion_borrado_y
     if modo_colocacion_terreno:
         # Calcular la posición de inserción según el mouse
         x_mapa = pos[0] + camera_x
         y_mapa = pos[1] + camera_y
         posicion_terreno_x = int(x_mapa // TILE_SIZE) * TILE_SIZE
         posicion_terreno_y = int(y_mapa // TILE_SIZE) * TILE_SIZE
+    elif modo_borrado:
+        # Calcular la posición del cuadro de borrado según el mouse
+        x_mapa = pos[0] + camera_x
+        y_mapa = pos[1] + camera_y
+        posicion_borrado_x = int(x_mapa // TILE_SIZE) * TILE_SIZE
+        posicion_borrado_y = int(y_mapa // TILE_SIZE) * TILE_SIZE
 
-# Inicializar enemigos al cargar el juego
-inicializar_enemigos()
+def encontrar_tile_cercano(fila, columna):
+    """Busca un tile de terreno cercano para usar como relleno."""
+    # Buscar en un área de 3x3 alrededor de la posición
+    for f_offset in range(-1, 2):
+        for c_offset in range(-1, 2):
+            if f_offset == 0 and c_offset == 0:
+                continue # Omitir el centro
+            
+            f_vecino, c_vecino = fila + f_offset, columna + c_offset
+            
+            # Verificar si el vecino está dentro del mapa
+            if 0 <= f_vecino < MATRIZ_ALTO and 0 <= c_vecino < MATRIZ_ANCHO:
+                tile_id = my_map[f_vecino][c_vecino]
+                if tile_id in TERRENOS:
+                    return tile_id # Devuelve el primer tile de terreno encontrado
+    
+    return 0 # Si no se encuentra ninguno, devuelve aire/vacío
 
+def borrar_elemento(columna, fila):
+    """Borra un elemento (item o terreno) en la posición dada."""
+    if 0 <= fila < MATRIZ_ALTO and 0 <= columna < MATRIZ_ANCHO:
+        # Solo borrar si hay algo que borrar
+        if my_map[fila][columna] != 0 or my_items[fila][columna] != 0:
+            id_reemplazo = encontrar_tile_cercano(fila, columna)
+            
+            my_map[fila][columna] = id_reemplazo
+            my_items[fila][columna] = 0
+            my_rotations[fila][columna] = 0
+            my_items_rotations[fila][columna] = 0
+            
+            print(f"Elemento en ({fila}, {columna}) borrado y rellenado con tile ID {id_reemplazo}.")
+        else:
+            print(f"No hay nada que borrar en ({fila}, {columna}).")
 
+def dibujar_cuadro_borrado():
+    """Dibuja un cuadro indicador para el modo borrado."""
+    if not modo_borrado:
+        return
+    
+    x = posicion_borrado_x - camera_x
+    y = posicion_borrado_y - camera_y
+
+    if -TILE_SIZE <= x <= WINDOW_WIDTH and -TILE_SIZE <= y <= HEIGHT:
+        color_borde = (255, 0, 0) # Rojo para borrado
+        dash = 4
+        length = TILE_SIZE
+        for i in range(0, length, dash*2):
+            screen.draw.line((x + i, y), (x + min(i+dash, length), y), color_borde)
+            screen.draw.line((x + i, y + length-1), (x + min(i+dash, length), y + length-1), color_borde)
+        for i in range(0, length, dash*2):
+            screen.draw.line((x, y + i), (x, y + min(i+dash, length)), color_borde)
+            screen.draw.line((x + length-1, y + i), (x + length-1, y + min(i+dash, length)), color_borde)
+        
+        texto_x = x + TILE_SIZE // 2
+        texto_y = y - 25
+        screen.draw.text("BORRAR", center=(texto_x, texto_y), color="red", fontsize=18)
+        screen.draw.text("T/Click para borrar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
 
 def dibujar_pantalla_controles():
     """Dibuja la pantalla de ayuda con los controles del juego."""
@@ -1412,6 +1512,7 @@ def dibujar_pantalla_controles():
     # Instrucción para volver
     screen.draw.text("Presiona ESC para volver al menú", center=(centro_x, HEIGHT - 50), color="white", fontsize=22)
 
-
+# Inicializar enemigos al cargar el juego
+inicializar_enemigos()
 
 pgzrun.go()
