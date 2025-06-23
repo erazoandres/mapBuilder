@@ -34,86 +34,6 @@
         <div class="config-container compact">
           <div class="config-grid">
             <div class="config-item">
-              <label>Velocidad del Personaje</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('velocidad_personaje', -1)">◀</button>
-                <span id="velocidad_personaje">3</span>
-                <button onclick="cambiarValor('velocidad_personaje', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Velocidad de Salto</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('velocidad_salto', -1)">◀</button>
-                <span id="velocidad_salto">15</span>
-                <button onclick="cambiarValor('velocidad_salto', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Gravedad</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('gravedad', -1)">◀</button>
-                <span id="gravedad">0.8</span>
-                <button onclick="cambiarValor('gravedad', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Probabilidad Salto Enemigo</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('prob_salto_enemigo', -1)">◀</button>
-                <span id="prob_salto_enemigo">0.02</span>
-                <button onclick="cambiarValor('prob_salto_enemigo', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Velocidad de Cámara</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('velocidad_camara', -1)">◀</button>
-                <span id="velocidad_camara">8</span>
-                <button onclick="cambiarValor('velocidad_camara', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Margen de Cámara</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('margen_camara', -1)">◀</button>
-                <span id="margen_camara">100</span>
-                <button onclick="cambiarValor('margen_camara', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Volumen de Sonido</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('volumen_sonido', -1)">◀</button>
-                <span id="volumen_sonido">50</span>
-                <button onclick="cambiarValor('volumen_sonido', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Modo Pantalla Completa</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('pantalla_completa', -1)">◀</button>
-                <span id="pantalla_completa">No</span>
-                <button onclick="cambiarValor('pantalla_completa', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Tamaño de Hitbox</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('tamaño_hitbox', -1)">◀</button>
-                <span id="tamaño_hitbox">Normal</span>
-                <button onclick="cambiarValor('tamaño_hitbox', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
-              <label>Efectos Visuales</label>
-              <div class="value-control">
-                <button onclick="cambiarValor('efectos_visuales', -1)">◀</button>
-                <span id="efectos_visuales">Básicos</span>
-                <button onclick="cambiarValor('efectos_visuales', 1)">▶</button>
-              </div>
-            </div>
-            <div class="config-item">
               <label>Tamaño de Tile</label>
               <div class="value-control">
                 <button onclick="cambiarValor('TILE_SIZE', -1)">◀</button>
@@ -132,17 +52,17 @@
             <div class="config-item">
               <label>Probabilidad Salto Enemigo</label>
               <div class="value-control">
-                <button onclick="cambiarValor('PROBABILIDAD_SALTO_ENEMIGO', -0.0001)">◀</button>
+                <button onclick="cambiarValor('PROBABILIDAD_SALTO_ENEMIGO', -1)">◀</button>
                 <span id="PROBABILIDAD_SALTO_ENEMIGO">0.000000000000002</span>
-                <button onclick="cambiarValor('PROBABILIDAD_SALTO_ENEMIGO', 0.0001)">▶</button>
+                <button onclick="cambiarValor('PROBABILIDAD_SALTO_ENEMIGO', 1)">▶</button>
               </div>
             </div>
             <div class="config-item">
               <label>Gravedad</label>
               <div class="value-control">
-                <button onclick="cambiarValor('GRAVEDAD', -0.1)">◀</button>
+                <button onclick="cambiarValor('GRAVEDAD', -1)">◀</button>
                 <span id="GRAVEDAD">0.8</span>
-                <button onclick="cambiarValor('GRAVEDAD', 0.1)">▶</button>
+                <button onclick="cambiarValor('GRAVEDAD', 1)">▶</button>
               </div>
             </div>
             <div class="config-item">
@@ -172,9 +92,9 @@
             <div class="config-item">
               <label>Margen de Cámara</label>
               <div class="value-control">
-                <button onclick="cambiarValor('CAMERA_MARGIN', -10)">◀</button>
+                <button onclick="cambiarValor('CAMERA_MARGIN', -1)">◀</button>
                 <span id="CAMERA_MARGIN">100</span>
-                <button onclick="cambiarValor('CAMERA_MARGIN', 10)">▶</button>
+                <button onclick="cambiarValor('CAMERA_MARGIN', 1)">▶</button>
               </div>
             </div>
             <div class="config-item">
@@ -260,25 +180,25 @@
             <div class="config-item">
               <label>Factor Doble Salto</label>
               <div class="value-control">
-                <button onclick="cambiarValor('DOBLE_SALTO_FACTOR', -0.1)">◀</button>
+                <button onclick="cambiarValor('DOBLE_SALTO_FACTOR', -1)">◀</button>
                 <span id="DOBLE_SALTO_FACTOR">0.8</span>
-                <button onclick="cambiarValor('DOBLE_SALTO_FACTOR', 0.1)">▶</button>
+                <button onclick="cambiarValor('DOBLE_SALTO_FACTOR', 1)">▶</button>
               </div>
             </div>
             <div class="config-item">
               <label>Rebote Enemigo</label>
               <div class="value-control">
-                <button onclick="cambiarValor('REBOTE_ENEMIGO', -0.1)">◀</button>
+                <button onclick="cambiarValor('REBOTE_ENEMIGO', -1)">◀</button>
                 <span id="REBOTE_ENEMIGO">0.7</span>
-                <button onclick="cambiarValor('REBOTE_ENEMIGO', 0.1)">▶</button>
+                <button onclick="cambiarValor('REBOTE_ENEMIGO', 1)">▶</button>
               </div>
             </div>
             <div class="config-item">
               <label>Rebote Enemigo Dañado</label>
               <div class="value-control">
-                <button onclick="cambiarValor('REBOTE_ENEMIGO_DAÑADO', -0.1)">◀</button>
+                <button onclick="cambiarValor('REBOTE_ENEMIGO_DAÑADO', -1)">◀</button>
                 <span id="REBOTE_ENEMIGO_DAÑADO">0.4</span>
-                <button onclick="cambiarValor('REBOTE_ENEMIGO_DAÑADO', 0.1)">▶</button>
+                <button onclick="cambiarValor('REBOTE_ENEMIGO_DAÑADO', 1)">▶</button>
               </div>
             </div>
             <div class="config-item">

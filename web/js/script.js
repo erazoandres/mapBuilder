@@ -21,29 +21,71 @@ let tilesetDictionary = {};
 
 // Configuración del juego
 const configuraciones = {
-    velocidad_personaje: [1, 2, 3, 4, 5],
-    velocidad_salto: [10, 12, 15, 18, 20],
-    gravedad: [0.5, 0.8, 1.0, 1.2, 1.5],
-    prob_salto_enemigo: [0.01, 0.02, 0.05, 0.1],
-    velocidad_camara: [5, 8, 10, 12, 15],
-    margen_camara: [50, 100, 150, 200],
-    volumen_sonido: [0, 25, 50, 75, 100],
-    pantalla_completa: ["No", "Sí"],
-    tamaño_hitbox: ["Pequeño", "Normal", "Grande"],
-    efectos_visuales: ["Básicos", "Mejorados", "Máximos"]
+    TILE_SIZE: [16, 24, 32, 40, 48, 56, 64],
+    ENEMIGO_SIZE: [16, 24, 32, 40, 48, 56, 64],
+    PROBABILIDAD_SALTO_ENEMIGO: [0, 0.000000000000001, 0.000000000000002, 0.000000000000005, 0.00000000000001, 0.00000000000002, 0.00000000000005, 0.0000000000001],
+    GRAVEDAD: [0.1, 0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.5, 2],
+    VELOCIDAD_SALTO: [-25, -20, -18, -15, -12, -10, -8],
+    VELOCIDAD_MOVIMIENTO: [1, 2, 3, 4, 5, 6, 7, 8, 10],
+    CAMERA_SPEED: [1, 2, 4, 6, 8, 10, 12, 15],
+    CAMERA_MARGIN: [10, 25, 50, 75, 100, 150, 200, 300],
+    VOLUMEN_SONIDO: [0, 10, 25, 50, 75, 100],
+    PANTALLA_COMPLETA: ['No', 'Sí'],
+    EFECTOS_VISUALES: ['Básicos', 'Mejorados', 'Máximos'],
+    TAMANO_CUADRO_COLOCACION: [8, 12, 16, 20, 24, 32, 40],
+    LIMITE_CUADROS_COLOCACION: [1, 2, 5, 10, 15, 20, 30],
+    LIMITE_CUADROS_BORRADO: [1, 2, 5, 10, 15, 20, 30],
+    ENEMIGO_ESPECIAL_VIDA: [1, 2, 3, 4, 5, 10],
+    ARTILLERO_VEL_PROYECTIL: [1, 2, 3, 4, 5, 6, 8, 10],
+    PERSONAJE_POS_INICIAL_X: [0, 10, 20, 30, 40, 50, 75, 100, 150, 200],
+    PERSONAJE_POS_INICIAL_Y: [0, 10, 20, 30, 40, 50, 75, 100, 150, 200],
+    DOBLE_SALTO_FACTOR: [0.1, 0.2, 0.4, 0.6, 0.8, 1, 1.2],
+    REBOTE_ENEMIGO: [0, 0.1, 0.2, 0.4, 0.6, 0.7, 0.8, 1],
+    REBOTE_ENEMIGO_DAÑADO: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1],
+    PERDER_POR_CAIDA: ['No', 'Sí'],
+    LIMITE_INFERIOR: ['No', 'Sí'],
+    ITEMS_BLOQUEAN_PASO: ['No', 'Sí'],
+    MOSTRAR_PANEL_DETALLADO: ['No', 'Sí'],
+    PERDER_POR_PROYECTIL: ['No', 'Sí'],
+    DANO_POR_PROYECTIL: ['No', 'Sí'],
+    MOSTRAR_BARRA_VIDA: ['No', 'Sí'],
+    VIDA_MAXIMA: [1, 2, 3, 4, 5, 10, 20, 50, 100],
+    DANO_PROYECTIL: [1, 2, 3, 4, 5, 10],
+    DANO_ENEMIGO: [1, 2, 3, 4, 5, 10]
 };
 
 const valoresActuales = {
-    velocidad_personaje: 3,
-    velocidad_salto: 15,
-    gravedad: 0.8,
-    prob_salto_enemigo: 0.02,
-    velocidad_camara: 8,
-    margen_camara: 100,
-    volumen_sonido: 50,
-    pantalla_completa: "No",
-    tamaño_hitbox: "Normal",
-    efectos_visuales: "Básicos"
+    TILE_SIZE: 40,
+    ENEMIGO_SIZE: 40,
+    PROBABILIDAD_SALTO_ENEMIGO: 0.000000000000002,
+    GRAVEDAD: 0.8,
+    VELOCIDAD_SALTO: -15,
+    VELOCIDAD_MOVIMIENTO: 3,
+    CAMERA_SPEED: 8,
+    CAMERA_MARGIN: 100,
+    VOLUMEN_SONIDO: 50,
+    PANTALLA_COMPLETA: 'No',
+    EFECTOS_VISUALES: 'Básicos',
+    TAMANO_CUADRO_COLOCACION: 24,
+    LIMITE_CUADROS_COLOCACION: 10,
+    LIMITE_CUADROS_BORRADO: 10,
+    ENEMIGO_ESPECIAL_VIDA: 3,
+    ARTILLERO_VEL_PROYECTIL: 6,
+    PERSONAJE_POS_INICIAL_X: 50,
+    PERSONAJE_POS_INICIAL_Y: 100,
+    DOBLE_SALTO_FACTOR: 0.8,
+    REBOTE_ENEMIGO: 0.7,
+    REBOTE_ENEMIGO_DAÑADO: 0.4,
+    PERDER_POR_CAIDA: 'Sí',
+    LIMITE_INFERIOR: 'Sí',
+    ITEMS_BLOQUEAN_PASO: 'Sí',
+    MOSTRAR_PANEL_DETALLADO: 'No',
+    PERDER_POR_PROYECTIL: 'Sí',
+    DANO_POR_PROYECTIL: 'Sí',
+    MOSTRAR_BARRA_VIDA: 'Sí',
+    VIDA_MAXIMA: 3,
+    DANO_PROYECTIL: 1,
+    DANO_ENEMIGO: 1
 };
 
 // Cargar mapa al inicio si existe
@@ -554,16 +596,20 @@ function exportarMatriz() {
   fileContentString += '# Exportado el: ' + new Date().toLocaleString() + '\n\n';
   fileContentString += '# Diccionario de configuraciones\n';
   fileContentString += 'configuraciones = {\n';
-  fileContentString += `    "velocidad_personaje": ${valoresActuales.velocidad_personaje},\n`;
-  fileContentString += `    "velocidad_salto": ${valoresActuales.velocidad_salto},\n`;
-  fileContentString += `    "gravedad": ${valoresActuales.gravedad},\n`;
-  fileContentString += `    "prob_salto_enemigo": ${valoresActuales.prob_salto_enemigo},\n`;
-  fileContentString += `    "velocidad_camara": ${valoresActuales.velocidad_camara},\n`;
-  fileContentString += `    "margen_camara": ${valoresActuales.margen_camara},\n`;
-  fileContentString += `    "volumen_sonido": ${valoresActuales.volumen_sonido},\n`;
-  fileContentString += `    "pantalla_completa": "${valoresActuales.pantalla_completa}",\n`;
-  fileContentString += `    "tamaño_hitbox": "${valoresActuales.tamaño_hitbox}",\n`;
-  fileContentString += `    "efectos_visuales": "${valoresActuales.efectos_visuales}"\n`;
+  Object.entries(valoresActuales).forEach(([key, value], idx, arr) => {
+    let exportValue = value;
+    // Convertir booleanos (Sí/No) a True/False
+    if (value === 'Sí') exportValue = true;
+    else if (value === 'No') exportValue = false;
+    // Escribir strings con comillas, números y booleanos tal cual
+    if (typeof exportValue === 'string') {
+      fileContentString += `    "${key}": \"${exportValue}\"`;
+    } else {
+      fileContentString += `    "${key}": ${exportValue}`;
+    }
+    if (idx < arr.length - 1) fileContentString += ',\n';
+    else fileContentString += '\n';
+  });
   fileContentString += '}\n\n';
   fileContentString += '# Instrucciones para usar en Python:\n';
   fileContentString += '# 1. Copia este diccionario en tu archivo main.py\n';
