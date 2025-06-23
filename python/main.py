@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 import pgzrun
@@ -6,7 +9,7 @@ import random
 import time
 import math
 
-# Diccionario global de configuración del juego
+# Diccionario global de configuracion del juego
 CONFIG_JUEGO = {
     'TILE_SIZE': 40,
     'ENEMIGO_SIZE': 40,
@@ -15,16 +18,16 @@ CONFIG_JUEGO = {
     'VELOCIDAD_SALTO': -15,
     'VELOCIDAD_MOVIMIENTO': 3,
     'CAMERA_SPEED': 8,
-    'CAMERA_MARGIN': 100,  # Valor por defecto, se ajusta después
+    'CAMERA_MARGIN': 100,  # Valor por defecto, se ajusta despues
     'VOLUMEN_SONIDO': 50,
     'PANTALLA_COMPLETA': False,
-    'EFECTOS_VISUALES': 'Básicos',
+    'EFECTOS_VISUALES': 'Basicos',
     'TAMANO_CUADRO_COLOCACION': 24,
     'LIMITE_CUADROS_COLOCACION': 10,
     'LIMITE_CUADROS_BORRADO': 10,
-    # Configuraciones específicas para enemigo especial (tile7)
+    # Configuraciones especificas para enemigo especial (tile7)
     'ENEMIGO_ESPECIAL_VIDA': 3,
-    # Configuración de proyectil artillero
+    # Configuracion de proyectil artillero
     'ARTILLERO_VEL_PROYECTIL': 6,
     # Configuraciones de Personaje
     'PERSONAJE_POS_INICIAL_X': 50,
@@ -32,7 +35,7 @@ CONFIG_JUEGO = {
     'DOBLE_SALTO_FACTOR': 0.8,
     # Configuraciones de rebote y daño
     'REBOTE_ENEMIGO': 0.7,  # Rebote al eliminar enemigo especial
-    'REBOTE_ENEMIGO_DAÑADO': 0.4,  # Rebote al dañar pero no eliminar
+    'REBOTE_ENEMIGO_DANADO': 0.4,  # Rebote al daniar pero no eliminar
     # Configuraciones de caída
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
@@ -165,7 +168,7 @@ def cargar_configuraciones():
     global GRAVEDAD, VELOCIDAD_SALTO, VELOCIDAD_MOVIMIENTO, PROBABILIDAD_SALTO_ENEMIGO, CAMERA_SPEED, CAMERA_MARGIN, VOLUMEN_SONIDO, PANTALLA_COMPLETA, EFECTOS_VISUALES, PERSONAJE_POS_INICIAL_X, PERSONAJE_POS_INICIAL_Y
     
     try:
-        with open('mapa.txt', 'r') as f:
+        with open('mapa.txt', 'r', encoding='utf-8') as f:
             content = f.read()
             
             # Buscar el diccionario de configuraciones
@@ -246,7 +249,7 @@ personaje.vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)  # Vida inicial configurable
 def aplicar_configuracion_hitbox():
     global personaje
     try:
-        with open('mapa.txt', 'r') as f:
+        with open('mapa.txt', 'r', encoding='utf-8') as f:
             content = f.read()
             if 'configuraciones = {' in content:
                 start = content.find('configuraciones = {')
@@ -947,7 +950,7 @@ def update():
                             personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO']
                         else:
                             # Enemigo dañado pero no eliminado
-                            personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO_DAÑADO']
+                            personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO_DANADO']
                     else:
                         # El personaje recibe daño
                         if not hasattr(personaje, 'invulnerable') or not personaje.invulnerable:

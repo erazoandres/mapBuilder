@@ -598,14 +598,17 @@ function exportarMatriz() {
   fileContentString += 'configuraciones = {\n';
   Object.entries(valoresActuales).forEach(([key, value], idx, arr) => {
     let exportValue = value;
-    // Convertir booleanos (Sí/No) a True/False
-    if (value === 'Sí') exportValue = true;
-    else if (value === 'No') exportValue = false;
+    // Convertir booleanos JS a True/False de Python
+    if (exportValue === true) exportValue = 'True';
+    else if (exportValue === false) exportValue = 'False';
+    // Convertir strings 'Sí'/'No' a True/False
+    if (value === 'Sí') exportValue = 'True';
+    else if (value === 'No') exportValue = 'False';
     // Escribir strings con comillas, números y booleanos tal cual
-    if (typeof exportValue === 'string') {
-      fileContentString += `    "${key}": \"${exportValue}\"`;
+    if (typeof exportValue === 'string' && exportValue !== 'True' && exportValue !== 'False') {
+      fileContentString += `    \"${key}\": \"${exportValue}\"`;
     } else {
-      fileContentString += `    "${key}": ${exportValue}`;
+      fileContentString += `    \"${key}\": ${exportValue}`;
     }
     if (idx < arr.length - 1) fileContentString += ',\n';
     else fileContentString += '\n';
@@ -630,7 +633,15 @@ function exportarMatriz() {
   fetch('/python/main.py')
     .then(response => response.ok ? response.text() : Promise.reject('No se pudo obtener main.py'))
     .then(mainPyContent => {
-      zip.file('main.py', mainPyContent);
+      // Asegurar que el contenido tenga BOM UTF-8
+      const bom = '\ufeff';
+      if (!mainPyContent.startsWith(bom)) {
+        mainPyContent = bom + mainPyContent;
+      }
+      
+      // Convertir el texto a un Blob con codificación UTF-8
+      const mainPyBlob = new Blob([mainPyContent], { type: 'text/plain;charset=utf-8' });
+      zip.file('main.py', mainPyBlob);
 
       // 4. Agregar solo las imágenes usadas en el mapping
       const idMapForImages = Array.from(idMap.entries());
@@ -652,6 +663,17 @@ function exportarMatriz() {
           }
         }
       });
+      // --- SIEMPRE incluir personajes/tile0.png y personajes/tile1.png ---
+      imagePromises.push(
+        fetch('/images/personajes/tile0.png')
+          .then(r => r.blob())
+          .then(blob => zip.file('images/personajes/tile0.png', blob))
+      );
+      imagePromises.push(
+        fetch('/images/personajes/tile1.png')
+          .then(r => r.blob())
+          .then(blob => zip.file('images/personajes/tile1.png', blob))
+      );
 
       // Esperar a que todas las imágenes se agreguen
       Promise.all(imagePromises).then(() => {

@@ -29,7 +29,10 @@ def aporta():
 
 @app.route('/python/main.py')
 def main_py():
-    return send_from_directory(os.path.join(BASE_DIR, 'python'), 'main.py')
+    file_path = os.path.join(BASE_DIR, 'python', 'main.py')
+    with open(file_path, 'rb') as f:
+        content = f.read()
+    return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000) 
