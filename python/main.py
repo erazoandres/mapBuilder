@@ -960,6 +960,8 @@ def on_key_down(key):
                     if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
                         my_map[fila][columna] = tipo_terreno_actual
                         cuadros_colocados += 1
+                        posicion_terreno_x = columna * TILE_SIZE
+                        posicion_terreno_y = fila * TILE_SIZE
                         print(f"Terreno colocado con tecla T en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
                 else:
                     print("¡Límite de cuadros de colocación alcanzado!")
@@ -1284,7 +1286,7 @@ def draw():
         dibujar_cuadro_colocacion_terreno()
 
 def on_mouse_down(pos, button):
-    global estado_juego, boton_seleccionado
+    global estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, tipo_terreno_actual
     if estado_juego == "menu":
         # Definir dimensiones y posiciones de los botones igual que en dibujar_menu_principal
         boton_width = 250
@@ -1308,6 +1310,36 @@ def on_mouse_down(pos, button):
                 elif boton_seleccionado == 1:
                     estado_juego = "extras"
                 break
+    elif estado_juego == "jugando":
+        if button == mouse.RIGHT:
+            # Activar/desactivar modo de colocación de terreno
+            modo_colocacion_terreno = not modo_colocacion_terreno
+            if modo_colocacion_terreno:
+                # Calcular la posición de inserción según el mouse
+                x_mapa = pos[0] + camera_x
+                y_mapa = pos[1] + camera_y
+                posicion_terreno_x = int(x_mapa // TILE_SIZE) * TILE_SIZE
+                posicion_terreno_y = int(y_mapa // TILE_SIZE) * TILE_SIZE
+                # Seleccionar el primer tipo de terreno si existe
+                if TERRENOS:
+                    tipo_terreno_actual = TERRENOS[0]
+                else:
+                    tipo_terreno_actual = 1
+        elif button == mouse.LEFT and modo_colocacion_terreno:
+            # Insertar terreno en la posición del mouse
+            x_mapa = pos[0] + camera_x
+            y_mapa = pos[1] + camera_y
+            columna = int(x_mapa // TILE_SIZE)
+            fila = int(y_mapa // TILE_SIZE)
+            if 0 <= fila < len(my_map) and 0 <= columna < len(my_map[0]):
+                if cuadros_colocados < LIMITE_CUADROS_COLOCACION:
+                    my_map[fila][columna] = tipo_terreno_actual
+                    cuadros_colocados += 1
+                    posicion_terreno_x = columna * TILE_SIZE
+                    posicion_terreno_y = fila * TILE_SIZE
+                    print(f"Terreno colocado con mouse en posición ({fila}, {columna}) - Total colocados: {cuadros_colocados}")
+                else:
+                    print("¡Límite de cuadros de colocación alcanzado!")
 
 # Inicializar enemigos al cargar el juego
 inicializar_enemigos()
