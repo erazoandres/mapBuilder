@@ -21,6 +21,7 @@ CONFIG_JUEGO = {
     'EFECTOS_VISUALES': 'Básicos',
     'TAMANO_CUADRO_COLOCACION': 24,
     'LIMITE_CUADROS_COLOCACION': 10,
+    'LIMITE_CUADROS_BORRADO': 10,
     'PERSEGUIDOR_RANGO_X': 200,
     'PERSEGUIDOR_RANGO_Y': 40,
     'SALTADOR_RANGO_X': 100,
@@ -118,6 +119,7 @@ items_recolectados = {}  # Cambiado de lista a diccionario para contar items
 
 
 cuadros_colocados = 0  # Contador de cuadros colocados
+cuadros_borrados = 0
 
 # Diccionario de tipos de comportamiento de enemigos
 TIPOS_COMPORTAMIENTO_ENEMIGO = {
@@ -749,6 +751,8 @@ def update():
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
             items_recolectados.clear()  # Limpiar la colección
+            cuadros_colocados = 0
+            cuadros_borrados = 0
             # Reinicializar el mapa de items
             inicializar_enemigos()
             return
@@ -868,7 +872,7 @@ def update():
                     pass
 
 def on_key_down(key):
-    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual, modo_borrado, posicion_borrado_x, posicion_borrado_y
+    global game_over, modo_desarrollador, mostrar_panel_detallado, estado_juego, boton_seleccionado, modo_colocacion_terreno, posicion_terreno_x, posicion_terreno_y, cuadros_colocados, LIMITE_CUADROS_COLOCACION, tipo_terreno_actual, modo_borrado, posicion_borrado_x, posicion_borrado_y, cuadros_borrados
 
     # Si estamos en el menú principal
     if estado_juego == "menu":
@@ -946,6 +950,8 @@ def on_key_down(key):
             personaje.velocidad_x = 0
             personaje.puede_doble_salto = False
             items_recolectados.clear()  # Limpiar la colección
+            cuadros_colocados = 0
+            cuadros_borrados = 0
             # Reinicializar el mapa de items
             inicializar_enemigos()
             return
@@ -1390,8 +1396,8 @@ def on_mouse_down(pos, button):
             # Borrar elemento en la posición del mouse
             x_mapa = pos[0] + camera_x
             y_mapa = pos[1] + camera_y
-            columna = int(x_mapa // TILE_SIZE) * TILE_SIZE
-            fila = int(y_mapa // TILE_SIZE) * TILE_SIZE
+            columna = int(x_mapa // TILE_SIZE)
+            fila = int(y_mapa // TILE_SIZE)
             borrar_elemento(columna, fila)
 
 def on_mouse_move(pos):
@@ -1430,6 +1436,12 @@ def encontrar_tile_cercano(fila, columna):
 
 def borrar_elemento(columna, fila):
     """Borra un elemento (item o terreno) en la posición dada, pero no los fondos."""
+    global cuadros_borrados
+
+    if cuadros_borrados >= CONFIG_JUEGO['LIMITE_CUADROS_BORRADO']:
+        print("¡Límite de cuadros de borrado alcanzado!")
+        return
+
     if not (0 <= fila < MATRIZ_ALTO and 0 <= columna < MATRIZ_ANCHO):
         return
 
@@ -1442,12 +1454,14 @@ def borrar_elemento(columna, fila):
         if 'fondos/' in id_to_image[tile_id]:
             es_fondo = True
             
+    borrado_exitoso = False
     # Lógica de borrado
     if es_fondo:
         # Si es un fondo, solo podemos borrar el item que está encima
         if item_id != 0:
             my_items[fila][columna] = 0
             my_items_rotations[fila][columna] = 0
+            borrado_exitoso = True
             print(f"Item en ({fila}, {columna}) borrado. El fondo permanece.")
         else:
             print(f"No se puede borrar el bloque de fondo en ({fila}, {columna}). No hay item para borrar.")
@@ -1459,9 +1473,13 @@ def borrar_elemento(columna, fila):
             my_items[fila][columna] = 0
             my_rotations[fila][columna] = 0
             my_items_rotations[fila][columna] = 0
+            borrado_exitoso = True
             print(f"Elemento en ({fila}, {columna}) borrado y rellenado con tile ID {id_reemplazo}.")
         else:
             print(f"No hay nada que borrar en ({fila}, {columna}).")
+    
+    if borrado_exitoso:
+        cuadros_borrados += 1
 
 def dibujar_cuadro_borrado():
     """Dibuja un cuadro indicador para el modo borrado."""
@@ -1485,7 +1503,13 @@ def dibujar_cuadro_borrado():
         texto_x = x + TILE_SIZE // 2
         texto_y = y - 25
         screen.draw.text("BORRAR", center=(texto_x, texto_y), color="red", fontsize=18)
-        screen.draw.text("T/Click para borrar", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+        
+        limite = CONFIG_JUEGO['LIMITE_CUADROS_BORRADO']
+        if cuadros_borrados < limite:
+            restantes = limite - cuadros_borrados
+            screen.draw.text(f"T/Click para borrar ({restantes} restantes)", center=(texto_x, texto_y + 15), color="white", fontsize=10)
+        else:
+            screen.draw.text("¡Límite alcanzado!", center=(texto_x, texto_y + 15), color="red", fontsize=18)
 
 def dibujar_pantalla_controles():
     """Dibuja la pantalla de ayuda con los controles del juego."""
