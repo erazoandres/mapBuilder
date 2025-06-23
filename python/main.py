@@ -22,41 +22,19 @@ CONFIG_JUEGO = {
     'TAMANO_CUADRO_COLOCACION': 24,
     'LIMITE_CUADROS_COLOCACION': 10,
     'LIMITE_CUADROS_BORRADO': 10,
-    'PERSEGUIDOR_RANGO_X': 200,
-    'PERSEGUIDOR_RANGO_Y': 40,
-    'SALTADOR_RANGO_X': 100,
-    'SALTADOR_PROB_SALTO': 0.02,
-    'ALEATORIO_MIN_FRAMES': 60,
-    'ALEATORIO_MAX_FRAMES': 180,
-    'PATRULLA_VELOCIDAD': 0.7,
-    'SALTADOR_VELOCIDAD': 0.5,
-    'PERSEGUIDOR_VELOCIDAD': 0.9,
-    'ALEATORIO_VEL_MIN': 0.3,
-    'ALEATORIO_VEL_MAX': 1.0,
     # Configuraciones específicas para enemigo especial (tile7)
     'ENEMIGO_ESPECIAL_VIDA': 3,
-    'ENEMIGO_ESPECIAL_VELOCIDAD': 1.2,
-    'ENEMIGO_ESPECIAL_RANGO_DETECCION': 150,
-    'ENEMIGO_ESPECIAL_RANGO_ATAQUE': 80,
-    'ENEMIGO_ESPECIAL_TIEMPO_INVULNERABLE': 60,
     # Configuraciones de Personaje
     'PERSONAJE_POS_INICIAL_X': 50,
     'PERSONAJE_POS_INICIAL_Y': 100,
     'DOBLE_SALTO_FACTOR': 0.8,
-    'RADIO_INTERACCION_FACTOR': 1.5,
     # Configuraciones de rebote y daño
     'REBOTE_ENEMIGO': 0.7,  # Rebote al eliminar enemigo especial
     'REBOTE_ENEMIGO_DAÑADO': 0.4,  # Rebote al dañar pero no eliminar
-    # Configuraciones de caída avanzadas
+    # Configuraciones de caída
     'PERDER_POR_CAIDA': True,
     'LIMITE_INFERIOR': True, # Si es True, el personaje no puede caer por debajo del mapa
     'ITEMS_BLOQUEAN_PASO': True,
-    'CAIDA_SIN_LIMITE': False, # Permite caída infinita
-    'REGRESAR_POSICION_INICIAL': False, # Regresa a posición inicial al caer
-    # Configuración de invulnerabilidad del personaje (si se implementa)
-    'PERSONAJE_TIEMPO_INVULNERABLE': 60, # frames
-    # Configuración de vida del personaje (si se implementa)
-    'PERSONAJE_VIDA_MAX': 3,
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el código relevante
@@ -1317,6 +1295,10 @@ def draw():
                     if hasattr(enemigo, 'estado'):
                         screen.draw.text(f"Estado: {enemigo.estado}", (x, y_enemigo - 25), color="yellow", fontsize=10)
                         screen.draw.text(f"Vida: {enemigo.vida}", (x, y_enemigo - 35), color="yellow", fontsize=10)
+                    # Mostrar el comportamiento encima de cada enemigo
+                    if hasattr(enemigo, 'tipo_comportamiento'):
+                        nombre_comportamiento = TIPOS_COMPORTAMIENTO_ENEMIGO.get(enemigo.tipo_comportamiento, {}).get('nombre', enemigo.tipo_comportamiento)
+                        screen.draw.text(f"{nombre_comportamiento}", (x + CONFIG_JUEGO['ENEMIGO_SIZE']//2, y_enemigo - 15), color="cyan", fontsize=14, anchor=(0.5, 1))
 
         # Dibujar personaje
         personaje_screen_x = personaje.x - camera_x
