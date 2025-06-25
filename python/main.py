@@ -102,7 +102,6 @@ TERRENOS = []
 ITEMS = []
 ENEMIGOS = []
 ENEMIGO_ESPECIAL_ID = None
-enemigos_activos = []# Lista para almacenar los enemigos activos
 lista_enemigos = [] # Lista global para almacenar todos los enemigos generados
 
 # Lista para almacenar los items recolectados
@@ -324,7 +323,7 @@ def movimiento_artillero(enemigo, jugador):
             vx = vel * dx / distancia
             vy = vel * dy / distancia
             proyectil = ProyectilArtillero(enemigo.x, enemigo.y, vx, vy)
-            enemigos_activos.append(proyectil)
+            lista_enemigos.append(proyectil)
         enemigo.cooldown_disparo = 90  # Dispara cada 90 frames aprox.
     # El artillero puede patrullar ligeramente
     enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.3)
@@ -334,8 +333,8 @@ def movimiento_explosivo(enemigo, jugador):
     distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
     if distancia < 50:
         # Simula explosion eliminando al enemigo
-        if enemigo in enemigos_activos:
-            enemigos_activos.remove(enemigo)
+        if enemigo in lista_enemigos:
+            lista_enemigos.remove(enemigo)
         return
     # Se lanza rapidamente hacia el jugador
     enemigo.velocidad_x = (VELOCIDAD_MOVIMIENTO * 1.5) if jugador.x > enemigo.x else -(VELOCIDAD_MOVIMIENTO * 1.5)
@@ -392,8 +391,8 @@ class Enemigo:
                 self.en_suelo = True
         else:
             if self.y > MATRIZ_ALTO * CONFIG_JUEGO['TILE_SIZE']:
-                if self in enemigos_activos:
-                    enemigos_activos.remove(self)
+                if self in lista_enemigos:
+                    lista_enemigos.remove(self)
 
 class Proyectil:
     def __init__(self, x, y, tipo_id, rotacion=0):
@@ -414,8 +413,8 @@ class Proyectil:
         self.x += self.velocidad_x
         self.y += self.velocidad_y
         if self.x > MATRIZ_ANCHO * CONFIG_JUEGO['TILE_SIZE'] or self.x < -self.ancho or self.y < -self.alto:
-            if self in enemigos_activos:
-                enemigos_activos.remove(self)
+            if self in lista_enemigos:
+                lista_enemigos.remove(self)
             return 
         if CONFIG_JUEGO['LIMITE_INFERIOR']:
             limite_inferior_y = MATRIZ_ALTO * CONFIG_JUEGO['TILE_SIZE'] - self.alto
@@ -424,8 +423,8 @@ class Proyectil:
                 self.velocidad_y = 0 
         else:
             if self.y > MATRIZ_ALTO * CONFIG_JUEGO['TILE_SIZE']:
-                if self in enemigos_activos:
-                    enemigos_activos.remove(self)
+                if self in lista_enemigos:
+                    lista_enemigos.remove(self)
 
 class ProyectilArtillero:
     def __init__(self, x, y, vx, vy):
@@ -444,8 +443,8 @@ class ProyectilArtillero:
         self.y += self.velocidad_y
         if (self.x < -self.ancho or self.x > MATRIZ_ANCHO * CONFIG_JUEGO['TILE_SIZE'] or
             self.y < -self.alto or self.y > MATRIZ_ALTO * CONFIG_JUEGO['TILE_SIZE']):
-            if self in enemigos_activos:
-                enemigos_activos.remove(self)
+            if self in lista_enemigos:
+                lista_enemigos.remove(self)
 
 class ComportamientoEnemigo:
     def mover(self, enemigo, jugador):
@@ -512,7 +511,7 @@ class Artillero(ComportamientoEnemigo):
                 vx = vel * dx / distancia
                 vy = vel * dy / distancia
                 proyectil = ProyectilArtillero(enemigo.x, enemigo.y, vx, vy)
-                enemigos_activos.append(proyectil)
+                lista_enemigos.append(proyectil)
             enemigo.cooldown_disparo = 90
         enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.3)
 
@@ -520,8 +519,8 @@ class Explosivo(ComportamientoEnemigo):
     def mover(self, enemigo, jugador):
         distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
         if distancia < 50:
-            if enemigo in enemigos_activos:
-                enemigos_activos.remove(enemigo)
+            if enemigo in lista_enemigos:
+                lista_enemigos.remove(enemigo)
             return
         enemigo.velocidad_x = (VELOCIDAD_MOVIMIENTO * 1.5) if jugador.x > enemigo.x else -(VELOCIDAD_MOVIMIENTO * 1.5)
         if enemigo.en_suelo and abs(enemigo.x - jugador.x) < 100:
@@ -720,7 +719,6 @@ def verificar_interaccion():
                     personaje.objetos_cerca.append((x, y, item_id))
 
 def inicializar_enemigos():
-    enemigos_activos.clear()
     lista_enemigos.clear()  # Limpiar la lista global al reiniciar
     comportamientos_posibles = [ComportamientoEnemigo, Saltador, Patrulla, Perseguidor, Aleatorio, Camper, Artillero, Explosivo]
     for fila in range(len(my_items)):
@@ -738,11 +736,10 @@ def inicializar_enemigos():
                     # Forzar el comportamiento elegido (si no es el base)
                     if clase_elegida != ComportamientoEnemigo:
                         nuevo_enemigo.comportamiento = clase_elegida()
-                enemigos_activos.append(nuevo_enemigo)
                 lista_enemigos.append(nuevo_enemigo)
                 my_items[fila][columna] = 0
-    print(f"Total de enemigos inicializados: {len(enemigos_activos)}")
-    for i, enemigo in enumerate(enemigos_activos):
+    print(f"Total de enemigos inicializados: {len(lista_enemigos)}")
+    for i, enemigo in enumerate(lista_enemigos):
         tipo = type(enemigo).__name__
         print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
 
@@ -962,7 +959,7 @@ def update():
         verificar_interaccion()
         
         # Actualizar enemigos
-        for enemigo in enemigos_activos:
+        for enemigo in lista_enemigos:
             enemigo.actualizar(personaje)
             
             # Comprobar colision con el personaje usando el hitbox real
@@ -977,7 +974,7 @@ def update():
                     if personaje.velocidad_y > 0 and personaje.y < enemigo.y:
                         if enemigo.recibir_dano():
                             # Enemigo eliminado
-                            enemigos_activos.remove(enemigo)
+                            lista_enemigos.remove(enemigo)
                             # Rebote del personaje
                             personaje.velocidad_y = CONFIG_JUEGO['VELOCIDAD_SALTO'] * CONFIG_JUEGO['REBOTE_ENEMIGO']
                         else:
@@ -1009,14 +1006,14 @@ def update():
                                 if personaje.vida <= 0:
                                     game_over = True
                                 # Eliminar el proyectil
-                                if enemigo in enemigos_activos:
-                                    enemigos_activos.remove(enemigo)
+                                if enemigo in lista_enemigos:
+                                    lista_enemigos.remove(enemigo)
                             else:
                                 # Muerte instantanea
                                 game_over = True
                                 # Eliminar el proyectil
-                                if enemigo in enemigos_activos:
-                                    enemigos_activos.remove(enemigo)
+                                if enemigo in lista_enemigos:
+                                    lista_enemigos.remove(enemigo)
             # --- Logica de dano por colision con enemigo ---
             # Si el enemigo NO es proyectil ni especial (ya manejado arriba)
             if not (isinstance(enemigo, Proyectil) or isinstance(enemigo, ProyectilArtillero)):
@@ -1447,7 +1444,7 @@ def draw():
                         screen.draw.line((rect_borde.right - 1, rect_borde.top), (rect_borde.right - 1, rect_borde.bottom), (255, 255, 0))
         
         # Dibujar los enemigos activos que estan en pantalla
-        for enemigo in enemigos_activos:
+        for enemigo in lista_enemigos:
             x = enemigo.x - camera_x
             y_enemigo = enemigo.y - camera_y
             if -CONFIG_JUEGO['ENEMIGO_SIZE'] <= x <= CONFIG_JUEGO['WIDTH'] and -CONFIG_JUEGO['ENEMIGO_SIZE'] <= y_enemigo <= CONFIG_JUEGO['HEIGHT']:
