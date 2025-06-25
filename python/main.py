@@ -91,17 +91,22 @@ modo_borrado = False
 posicion_borrado_x = 0
 posicion_borrado_y = 0
 
+game_over = False
+modo_desarrollador = False
+personaje_direccion = 0
+
+cuadros_colocados = 0  # Contador de cuadros colocados
+cuadros_borrados = 0
+
 TERRENOS = []
 ITEMS = []
 ENEMIGOS = []
 ENEMIGO_ESPECIAL_ID = None
+enemigos_activos = []# Lista para almacenar los enemigos activos
+lista_enemigos = [] # Lista global para almacenar todos los enemigos generados
 
 # Lista para almacenar los items recolectados
 items_recolectados = {}  # Cambiado de lista a diccionario para contar items
-
-
-cuadros_colocados = 0  # Contador de cuadros colocados
-cuadros_borrados = 0
 
 # Diccionario de tipos de comportamiento de enemigos
 TIPOS_COMPORTAMIENTO_ENEMIGO = {
@@ -134,10 +139,6 @@ TIPOS_COMPORTAMIENTO_ENEMIGO = {
         'descripcion': 'Enemigo que se lanza hacia el jugador y explota al acercarse.'
     },
 }
-
-# Ejemplo de como asociar un tipo de comportamiento a un enemigo:
-# enemigo.tipo_comportamiento = 'saltador'
-# Luego, en la logica de actualizacion del enemigo, se puede usar TIPOS_COMPORTAMIENTO_ENEMIGO[enemigo.tipo_comportamiento]
 
 # Leer configuraciones del archivo mapa.txt
 def cargar_configuraciones():
@@ -251,12 +252,6 @@ def aplicar_configuracion_hitbox():
         pass
 
 aplicar_configuracion_hitbox()
-
-# Lista para almacenar los enemigos activos
-enemigos_activos = []
-
-# Lista global para almacenar todos los enemigos generados
-lista_enemigos = []
 
 # --- FUNCIONES DE MOVIMIENTO PARA CADA COMPORTAMIENTO ---
 def movimiento_saltador(enemigo, jugador):
@@ -639,9 +634,6 @@ if 'my_items_rotations' not in locals():
     my_items_rotations = []
 my_items_rotations = expand_matrix(my_items_rotations, MATRIZ_ALTO, MATRIZ_ANCHO)
 
-game_over = False
-modo_desarrollador = False
-personaje_direccion = 0
 
 def obtener_tile_en_posicion(x, y):
     columna = int(x // CONFIG_JUEGO['TILE_SIZE'])
