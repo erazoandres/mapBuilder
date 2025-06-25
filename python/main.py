@@ -1,8 +1,6 @@
-# coding: utf-8 
-
-
 import os
 os.environ['SDL_VIDEO_CENTERED'] = '1'
+
 import pgzrun
 import re
 import random
@@ -52,7 +50,11 @@ CONFIG_JUEGO = {
     # Nueva opcion: dano recibido por proyectil
     'DANO_PROYECTIL': 1,
     # Nueva opcion: dano recibido por colision con enemigo
-    'DANO_ENEMIGO': 1
+    'DANO_ENEMIGO': 1,
+    # Ancho de la ventana del juego en píxeles
+    'WIDTH': 800,
+    # Alto de la ventana del juego en píxeles
+    'HEIGHT': 600,
 }
 
 # Reemplazar todas las variables directas por CONFIG_JUEGO['NOMBRE'] en el codigo relevante
@@ -85,8 +87,6 @@ with open('mapa.txt', 'r', encoding='utf-8') as f:
 # Tamano de la ventana del juego
 WIDTH = 800
 HEIGHT = 600
-WINDOW_WIDTH = WIDTH # Usaremos el ancho total para la vista de juego por ahora
-WINDOW_HEIGHT = HEIGHT # Usaremos el alto total
 
 # Variables globales para configuraciones adicionales
 VOLUMEN_SONIDO = 50
@@ -1228,13 +1228,13 @@ def update_camera():
     global camera_x, camera_y
     
     # --- MOVIMIENTO HORIZONTAL ---
-    center_x = WINDOW_WIDTH // 2
+    center_x = WIDTH // 2
     dist_x = personaje.x - (center_x + camera_x)
     
     if abs(dist_x) > CONFIG_JUEGO['CAMERA_MARGIN']:
         camera_x += CONFIG_JUEGO['CAMERA_SPEED'] if dist_x > 0 else -CONFIG_JUEGO['CAMERA_SPEED']
     
-    max_camera_x = MATRIZ_ANCHO * CONFIG_JUEGO['TILE_SIZE'] - WINDOW_WIDTH
+    max_camera_x = MATRIZ_ANCHO * CONFIG_JUEGO['TILE_SIZE'] - WIDTH
     camera_x = max(0, min(camera_x, max_camera_x if max_camera_x > 0 else 0))
 
     # --- MOVIMIENTO VERTICAL ---
@@ -1377,7 +1377,7 @@ def dibujar_cuadro_colocacion_terreno():
     y = posicion_terreno_y - camera_y
     
     # Solo dibujar si esta en pantalla
-    if -CONFIG_JUEGO['TILE_SIZE'] <= x <= WINDOW_WIDTH and -CONFIG_JUEGO['TILE_SIZE'] <= y <= HEIGHT:
+    if -CONFIG_JUEGO['TILE_SIZE'] <= x <= WIDTH and -CONFIG_JUEGO['TILE_SIZE'] <= y <= HEIGHT:
         # Calcular el area del cuadro pequeno
         cuadro_x = x + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
         cuadro_y = y + (CONFIG_JUEGO['TILE_SIZE'] - CONFIG_JUEGO['TAMANO_CUADRO_COLOCACION'])//2
@@ -1423,7 +1423,7 @@ def draw():
 
         # Calcular el rango de tiles visibles
         start_col = max(0, int(camera_x // CONFIG_JUEGO['TILE_SIZE']))
-        end_col = min(MATRIZ_ANCHO, int((camera_x + WINDOW_WIDTH) // CONFIG_JUEGO['TILE_SIZE']) + 1)
+        end_col = min(MATRIZ_ANCHO, int((camera_x + WIDTH) // CONFIG_JUEGO['TILE_SIZE']) + 1)
         start_row = max(0, int(camera_y // CONFIG_JUEGO['TILE_SIZE']))
         end_row = min(MATRIZ_ALTO, int((camera_y + HEIGHT) // CONFIG_JUEGO['TILE_SIZE']) + 1)
 
@@ -1482,7 +1482,7 @@ def draw():
         for enemigo in enemigos_activos:
             x = enemigo.x - camera_x
             y_enemigo = enemigo.y - camera_y
-            if -CONFIG_JUEGO['ENEMIGO_SIZE'] <= x <= WINDOW_WIDTH and -CONFIG_JUEGO['ENEMIGO_SIZE'] <= y_enemigo <= HEIGHT:
+            if -CONFIG_JUEGO['ENEMIGO_SIZE'] <= x <= WIDTH and -CONFIG_JUEGO['ENEMIGO_SIZE'] <= y_enemigo <= HEIGHT:
                 # Soporte para proyectiles artilleros
                 if hasattr(enemigo, 'obtener_imagen_actual') and hasattr(enemigo, 'ancho'):
                     enemigo_actor = Actor(enemigo.obtener_imagen_actual(), topleft=(x, y_enemigo))
@@ -1536,8 +1536,8 @@ def draw():
             screen.draw.text("Presiona E para tomar", center=(texto_x, texto_y), color="white", fontsize=20)
 
         if game_over:
-            screen.draw.text("Has perdido", center=(WINDOW_WIDTH//2, HEIGHT//2), fontsize=60, color="red")
-            screen.draw.text("Presiona R para reiniciar", center=(WINDOW_WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
+            screen.draw.text("Has perdido", center=(WIDTH//2, HEIGHT//2), fontsize=60, color="red")
+            screen.draw.text("Presiona R para reiniciar", center=(WIDTH//2, HEIGHT//2 + 50), fontsize=30, color="white")
 
         if modo_desarrollador:
             # Mostrar hitbox real del personaje
@@ -1725,7 +1725,7 @@ def dibujar_cuadro_borrado():
     x = posicion_borrado_x - camera_x
     y = posicion_borrado_y - camera_y
 
-    if -TILE_SIZE <= x <= WINDOW_WIDTH and -TILE_SIZE <= y <= HEIGHT:
+    if -TILE_SIZE <= x <= WIDTH and -TILE_SIZE <= y <= HEIGHT:
         color_borde = (255, 0, 0) # Rojo para borrado
         dash = 4
         length = TILE_SIZE
