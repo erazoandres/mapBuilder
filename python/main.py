@@ -279,6 +279,9 @@ aplicar_configuracion_hitbox()
 # Lista para almacenar los enemigos activos
 enemigos_activos = []
 
+# Lista global para almacenar todos los enemigos generados
+lista_enemigos = []
+
 # --- FUNCIONES DE MOVIMIENTO PARA CADA COMPORTAMIENTO ---
 def movimiento_saltador(enemigo, jugador):
     # Salta periodicamente o si el jugador esta cerca, y se mueve horizontalmente
@@ -369,7 +372,8 @@ def movimiento_explosivo(enemigo, jugador):
     if enemigo.en_suelo and abs(enemigo.x - jugador.x) < 100:
         enemigo.velocidad_y = VELOCIDAD_SALTO * 0.7
         enemigo.en_suelo = False
-# --- CLASE ENEMIGO MODIFICADA ---
+
+# --- CLASES DE COMPORTAMIENTO DE ENEMIGOS ---
 class Enemigo:
     def __init__(self, x, y, tipo_id):
         self.x = x
@@ -378,12 +382,12 @@ class Enemigo:
         self.velocidad_y = 0
         self.velocidad_x = 0
         self.en_suelo = False
-        self.direccion = random.choice([-1, 1])  # -1 izquierda, 1 derecha
-        self.tiempo_cambio_direccion = random.randint(60, 180)  # frames hasta cambiar direccion
+        self.direccion = random.choice([-1, 1])
+        self.tiempo_cambio_direccion = random.randint(60, 180)
         self.contador = 0
         self.imagen_base = id_to_image.get(tipo_id, "enemigos/default")
-        # Asignar comportamiento aleatorio
         self.tipo_comportamiento = random.choice(list(TIPOS_COMPORTAMIENTO_ENEMIGO.keys()))
+        self.comportamiento = MAPA_COMPORTAMIENTOS[self.tipo_comportamiento]
     
     def obtener_imagen_actual(self):
         if self.direccion == -1:
@@ -392,24 +396,8 @@ class Enemigo:
             return "enemigos/tile4.png"
     
     def actualizar(self, jugador=None):
-        # Aplicar gravedad
         self.velocidad_y += GRAVEDAD
-        # Logica de movimiento segun comportamiento
-        if self.tipo_comportamiento == 'saltador':
-            movimiento_saltador(self, jugador)
-        elif self.tipo_comportamiento == 'patrulla':
-            movimiento_patrulla(self, jugador)
-        elif self.tipo_comportamiento == 'perseguidor':
-            movimiento_perseguidor(self, jugador)
-        elif self.tipo_comportamiento == 'aleatorio':
-            movimiento_aleatorio(self, jugador)
-        elif self.tipo_comportamiento == 'camper':
-            movimiento_camper(self, jugador)
-        elif self.tipo_comportamiento == 'artillero':
-            movimiento_artillero(self, jugador)
-        elif self.tipo_comportamiento == 'explosivo':
-            movimiento_explosivo(self, jugador)
-        # Actualizar posicion vertical
+        self.comportamiento.mover(self, jugador)
         nueva_y = self.y + self.velocidad_y
         if not verificar_colision_vertical(self.x, nueva_y):
             self.y = nueva_y
@@ -418,75 +406,56 @@ class Enemigo:
             if self.velocidad_y > 0:
                 self.en_suelo = True
             self.velocidad_y = 0
-        # Actualizar posicion horizontal
         nueva_x = self.x + self.velocidad_x
         if not verificar_colision_horizontal(nueva_x, self.y):
             self.x = nueva_x
         else:
             self.direccion *= -1
             self.velocidad_x = 0
-        # Mantener al enemigo dentro de los limites
         self.x = max(0, min(MATRIZ_ANCHO * TILE_SIZE - ENEMIGO_SIZE, self.x))
-
         if CONFIG_JUEGO['LIMITE_INFERIOR']:
-            # Si el limite inferior esta activado, no dejar que el enemigo caiga
             limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - ENEMIGO_SIZE
             if self.y > limite_inferior_y:
                 self.y = limite_inferior_y
                 self.velocidad_y = 0
                 self.en_suelo = True
         else:
-            # Si el limite esta desactivado, el enemigo se elimina si cae del mapa
             if self.y > MATRIZ_ALTO * TILE_SIZE:
                 if self in enemigos_activos:
                     enemigos_activos.remove(self)
 
-# --- CLASE PROYECTIL PARA TILE7 ---
 class Proyectil:
     def __init__(self, x, y, tipo_id, rotacion=0):
         self.x = x
         self.y = y
         self.tipo_id = tipo_id
         self.rotacion = rotacion
-        
-        # Calcular velocidad basada en la rotacion
         velocidad_magnitud = VELOCIDAD_MOVIMIENTO
         angulo_rad = math.radians(self.rotacion)
-        
         self.velocidad_x = velocidad_magnitud * math.cos(angulo_rad)
         self.velocidad_y = velocidad_magnitud * math.sin(angulo_rad)
-
         self.imagen = "enemigos/tile7.png"
         self.ancho = ENEMIGO_SIZE
         self.alto = ENEMIGO_SIZE
-
     def obtener_imagen_actual(self):
         return self.imagen
-
     def actualizar(self, jugador=None):
-        # El proyectil se mueve en la direccion de su velocidad
         self.x += self.velocidad_x
         self.y += self.velocidad_y
-        
-        # Si sale de la pantalla (lados o arriba), marcar para eliminar
         if self.x > MATRIZ_ANCHO * TILE_SIZE or self.x < -self.ancho or self.y < -self.alto:
             if self in enemigos_activos:
                 enemigos_activos.remove(self)
             return 
-
         if CONFIG_JUEGO['LIMITE_INFERIOR']:
-            # Si el limite inferior esta activado, detener el proyectil en el borde
             limite_inferior_y = MATRIZ_ALTO * TILE_SIZE - self.alto
             if self.y > limite_inferior_y:
                 self.y = limite_inferior_y
                 self.velocidad_y = 0 
         else:
-            # Si el limite inferior esta desactivado, eliminar el proyectil si cae
             if self.y > MATRIZ_ALTO * TILE_SIZE:
                 if self in enemigos_activos:
                     enemigos_activos.remove(self)
 
-# --- CLASE PROYECTIL ARTILLERO ---
 class ProyectilArtillero:
     def __init__(self, x, y, vx, vy):
         self.x = x
@@ -502,11 +471,103 @@ class ProyectilArtillero:
     def actualizar(self, jugador=None):
         self.x += self.velocidad_x
         self.y += self.velocidad_y
-        # Eliminar si sale de la pantalla
         if (self.x < -self.ancho or self.x > MATRIZ_ANCHO * TILE_SIZE or
             self.y < -self.alto or self.y > MATRIZ_ALTO * TILE_SIZE):
             if self in enemigos_activos:
                 enemigos_activos.remove(self)
+
+class ComportamientoEnemigo:
+    def mover(self, enemigo, jugador):
+        pass
+
+class Saltador(ComportamientoEnemigo):
+    def mover(self, enemigo, jugador):
+        if enemigo.en_suelo:
+            if random.random() < 0.02 or abs(enemigo.x - jugador.x) < 100:
+                enemigo.velocidad_y = VELOCIDAD_SALTO
+                enemigo.en_suelo = False
+            if abs(enemigo.x - jugador.x) < 100:
+                enemigo.direccion = 1 if jugador.x > enemigo.x else -1
+        enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.5)
+
+class Patrulla(ComportamientoEnemigo):
+    def mover(self, enemigo, jugador):
+        enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.7)
+        if enemigo.x <= 0 or enemigo.x >= WIDTH - TILE_SIZE:
+            enemigo.direccion *= -1
+
+class Perseguidor(ComportamientoEnemigo):
+    def mover(self, enemigo, jugador):
+        distancia_x = jugador.x - enemigo.x
+        distancia_y = abs(jugador.y - enemigo.y)
+        if abs(distancia_x) < 200 and distancia_y < 40:
+            velocidad_objetivo = VELOCIDAD_MOVIMIENTO * 0.9 if distancia_x > 0 else -VELOCIDAD_MOVIMIENTO * 0.9
+            enemigo.velocidad_x += (velocidad_objetivo - enemigo.velocidad_x) * 0.1
+        else:
+            enemigo.velocidad_x = 0
+
+class Aleatorio(ComportamientoEnemigo):
+    def mover(self, enemigo, jugador):
+        if not hasattr(enemigo, 'frames_direccion'):
+            enemigo.frames_direccion = random.randint(60, 180)
+        enemigo.frames_direccion -= 1
+        if enemigo.frames_direccion <= 0:
+            enemigo.direccion = random.choice([-1, 0, 1])
+            enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * random.uniform(0.3, 1.0))
+            enemigo.frames_direccion = random.randint(60, 180)
+        if enemigo.x <= 0 or enemigo.x >= WIDTH - TILE_SIZE:
+            enemigo.direccion *= -1
+            enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * random.uniform(0.3, 1.0))
+
+class Camper(ComportamientoEnemigo):
+    def mover(self, enemigo, jugador):
+        distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
+        if distancia < 80:
+            enemigo.velocidad_x = (VELOCIDAD_MOVIMIENTO * 0.8) if jugador.x > enemigo.x else -(VELOCIDAD_MOVIMIENTO * 0.8)
+        else:
+            enemigo.velocidad_x = 0
+
+class Artillero(ComportamientoEnemigo):
+    def mover(self, enemigo, jugador):
+        if not hasattr(enemigo, 'cooldown_disparo'):
+            enemigo.cooldown_disparo = 0
+        enemigo.cooldown_disparo -= 1
+        if enemigo.cooldown_disparo <= 0:
+            dx = jugador.x - enemigo.x
+            dy = jugador.y - enemigo.y
+            distancia = (dx**2 + dy**2) ** 0.5
+            if distancia > 0:
+                vel = CONFIG_JUEGO['ARTILLERO_VEL_PROYECTIL']
+                vx = vel * dx / distancia
+                vy = vel * dy / distancia
+                proyectil = ProyectilArtillero(enemigo.x, enemigo.y, vx, vy)
+                enemigos_activos.append(proyectil)
+            enemigo.cooldown_disparo = 90
+        enemigo.velocidad_x = enemigo.direccion * (VELOCIDAD_MOVIMIENTO * 0.3)
+
+class Explosivo(ComportamientoEnemigo):
+    def mover(self, enemigo, jugador):
+        distancia = ((enemigo.x - jugador.x)**2 + (enemigo.y - jugador.y)**2)**0.5
+        if distancia < 50:
+            if enemigo in enemigos_activos:
+                enemigos_activos.remove(enemigo)
+            return
+        enemigo.velocidad_x = (VELOCIDAD_MOVIMIENTO * 1.5) if jugador.x > enemigo.x else -(VELOCIDAD_MOVIMIENTO * 1.5)
+        if enemigo.en_suelo and abs(enemigo.x - jugador.x) < 100:
+            enemigo.velocidad_y = VELOCIDAD_SALTO * 0.7
+            enemigo.en_suelo = False
+
+# Mapeo de tipo de comportamiento a clase
+MAPA_COMPORTAMIENTOS = {
+    'saltador': Saltador(),
+    'patrulla': Patrulla(),
+    'perseguidor': Perseguidor(),
+    'aleatorio': Aleatorio(),
+    'camper': Camper(),
+    'artillero': Artillero(),
+    'explosivo': Explosivo(),
+}
+
 
 with open('mapa.txt', 'r', encoding='utf-8') as f:
     content = f.read()
@@ -690,28 +751,32 @@ def verificar_interaccion():
                 if distancia <= radio_interaccion:
                     personaje.objetos_cerca.append((x, y, item_id))
 
-# Funcion para inicializar enemigos desde el mapa
 def inicializar_enemigos():
     enemigos_activos.clear()
+    lista_enemigos.clear()  # Limpiar la lista global al reiniciar
+    comportamientos_posibles = [ComportamientoEnemigo, Saltador, Patrulla, Perseguidor, Aleatorio, Camper, Artillero, Explosivo]
     for fila in range(len(my_items)):
         for columna in range(len(my_items[0])):
             item_id = my_items[fila][columna]
             if item_id in ENEMIGOS:
                 rotacion_item = my_items_rotations[fila][columna]
-                # Crear un nuevo enemigo y agregarlo a la lista
-                if ENEMIGO_ESPECIAL_ID is not None and item_id == ENEMIGO_ESPECIAL_ID:
+                # Elegir al azar una clase de comportamiento (incluyendo Proyectil)
+                clases_posibles = comportamientos_posibles + [Proyectil]
+                clase_elegida = random.choice(clases_posibles)
+                if clase_elegida == Proyectil:
                     nuevo_enemigo = Proyectil(columna * TILE_SIZE, fila * TILE_SIZE, item_id, rotacion_item)
                 else:
                     nuevo_enemigo = Enemigo(columna * TILE_SIZE, fila * TILE_SIZE, item_id)
-                
+                    # Forzar el comportamiento elegido (si no es el base)
+                    if clase_elegida != ComportamientoEnemigo:
+                        nuevo_enemigo.comportamiento = clase_elegida()
                 enemigos_activos.append(nuevo_enemigo)
-                # Eliminar el enemigo de la matriz para que no se dibuje estatico
+                lista_enemigos.append(nuevo_enemigo)
                 my_items[fila][columna] = 0
-    
     print(f"Total de enemigos inicializados: {len(enemigos_activos)}")
     for i, enemigo in enumerate(enemigos_activos):
-        tipo = "Proyectil" if isinstance(enemigo, Proyectil) else "Normal"
-        # print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
+        tipo = type(enemigo).__name__
+        print(f"  Enemigo {i+1}: {tipo} en ({enemigo.x}, {enemigo.y})")
 
 def verificar_colision(x, y, es_personaje=False):
     global game_over
@@ -1727,10 +1792,6 @@ def dibujar_pantalla_controles():
     # Instruccion para volver
     screen.draw.text("Presiona ESC para volver al menu", center=(centro_x, HEIGHT - 50), color="white", fontsize=22)
 
-# Inicializar enemigos al cargar el juego
-inicializar_enemigos()
-
-# --- FUNCION PARA DIBUJAR LA BARRA DE VIDA ---
 def dibujar_barra_vida_personaje():
     """Dibuja una barra de vida moderna en la esquina superior izquierda."""
     max_vida = CONFIG_JUEGO.get('VIDA_MAXIMA', 3)
@@ -1757,5 +1818,8 @@ def dibujar_barra_vida_personaje():
         screen.draw.filled_rect(Rect(x+ancho_vida, y, ancho-ancho_vida, alto), (80, 0, 0, 80))
     # Texto de vida
     screen.draw.text(f"Vida: {vida_actual}/{max_vida}", center=(x+ancho//2, y+alto//2), color="white", fontsize=22, owidth=0.5, ocolor="black")
+
+# Inicializar enemigos al cargar el juego
+inicializar_enemigos()
 
 pgzrun.go()
